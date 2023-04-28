@@ -1,4 +1,4 @@
-#!/usr/bin/env ash
+#!/bin/sh
 # Updated 2023.03.05 - By FOXBI
 # htttps://github.com/foxbi/ch_cpuinfo
 ver="4.2.1-r01"
@@ -560,6 +560,17 @@ EXEC_FN () {
 if [ -d $WORK_DIR ]
 then
     Y_N="y"
+    : '
+    if [ "$LC_CHK" == "CUSTOMLANG" ]
+    then
+        READ_YN "$MSGECHO04 "
+    elif [ "$LC_CHK" == "Seoul" ]
+    then
+        READ_YN "자동으로 실행합니다. n 선택시 대화형모드로 진행합니다. (취소하려면 q) [y/n] : "
+    else
+        READ_YN "Auto Excute, If you select n, proceed interactively  (Cancel : q) [y/n] : "
+    fi
+    ' :
     if [ "$Y_N" == "y" ]
     then
         mkdir -p $BKUP_DIR/$TIME
@@ -877,6 +888,8 @@ GATHER_FN
 
 cpu_cores=`echo ${cpu_cores}"-"${cpu_gen} | sed 's/\\\//g'`
 
+EXEC_FN
+: '
 if [ "$LC_CHK" == "CUSTOMLANG" ]
 then
     cecho g "$MSGECHO26\033[00m\n"
@@ -890,4 +903,100 @@ else
     cecho g "\033[0;36m${cpu_vendor} ${cpu_family} ${cpu_series} \033[0;31m[\033[0;36m${cpu_cores}\033[0;31m] \033[0;32mcontinue...\033[00m\n"
 fi
 
-EXEC_FN
+if [ "$LC_CHK" == "CUSTOMLANG" ]
+then
+    read -n1 -p  "$MSGECHO20 " run_select 
+elif [ "$LC_CHK" == "Seoul" ]
+then
+    read -n1 -p "1) 처음실행  2) 다시실행  3) 원상복구  - 번호 선택하세요 : " run_select 
+else
+    read -n1 -p "1) First run  2) Redo  3) Restore - Select Number : " run_select 
+fi
+   case "$run_select" in
+   1) run_check=run 
+      echo -e "\n " ;;
+   2) run_check=redo 
+      echo -e "\n " ;;
+   3) run_check=restore 
+      echo -e "\n " ;;
+   *) echo -e "\n" ;;
+   esac
+
+if [ "$run_check" == "redo" ]
+then
+    if [ "$LC_CHK" == "CUSTOMLANG" ]
+    then
+        READ_YN "$MSGECHO21"
+    elif [ "$LC_CHK" == "Seoul" ]
+    then
+        READ_YN "다시실행을 진행하시겠습니까? 원본백업으로 복구 후 진행합니다.(취소하려면 q) [y/n] : "
+    else
+        READ_YN "Do you want to proceed again? Restore to original file backup and proceed.(Cancel : q) [y/n] : "
+    fi
+    if [ "$Y_N" == "y" ]    
+    then
+        re_check=y        
+        BLCHECK_FN "$run_check"
+        run_check=run
+        EXEC_FN
+    elif [ "$Y_N" == "n" ]
+    then
+        if [ "$LC_CHK" == "CUSTOMLANG" ]
+        then
+            echo -e "$MSGECHO22"
+        elif [ "$LC_CHK" == "Seoul" ]
+        then
+            echo -e "다시실행을 진행하지 않습니다."   
+        else
+            echo -e "Do not proceed with the redo."    
+        fi
+    else
+        COMMENT10_FN
+    fi
+elif [ "$run_check" == "restore" ]
+then
+    if [ "$LC_CHK" == "CUSTOMLANG" ]
+    then
+        READ_YN "$MSGECHO23 "
+    elif [ "$LC_CHK" == "Seoul" ]
+    then
+        READ_YN "원본 백업파일을 이용하여 복구를 진행하시겠습니까? (취소하려면 q) [y/n] : "
+    else
+	    READ_YN "Do you want to restore using the original backup file? (Cancel : q) [y/n] : "
+    fi
+    if [ "$Y_N" == "y" ]    
+    then
+        re_check=n
+        BLCHECK_FN "$run_check"
+        RECOVER_FN
+    elif [ "$Y_N" == "n" ]
+    then
+        if [ "$LC_CHK" == "CUSTOMLANG" ]
+        then
+            echo -e "$MSGECHO24"
+        elif [ "$LC_CHK" == "Seoul" ]
+        then
+            echo -e "복구를 진행하지 않습니다."  
+        else
+            echo -e "No restore was performed."
+        fi
+    else
+        COMMENT10_FN
+    fi
+elif [ "$run_check" == "run" ]
+then
+    re_check=n
+    BLCHECK_FN "$run_check"
+    EXEC_FN
+else
+    if [ "$LC_CHK" == "CUSTOMLANG" ]
+    then
+        echo -e "$MSGECHO25"
+    elif [ "$LC_CHK" == "Seoul" ]
+    then
+        echo -e "올바른 번호선택바랍니다."
+    else
+        echo -e "Please select the correct number."
+    fi
+fi
+' :
