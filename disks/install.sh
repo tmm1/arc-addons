@@ -270,7 +270,6 @@ function nondtModel() {
     echo "pci${COUNT}=\"${P}\"" >> /etc.defaults/extensionPorts
     COUNT=$((${COUNT}+1))
   done
-  cp -vf /etc.defaults/extensionPorts /etc/extensionPorts
 }
 
 #
@@ -298,5 +297,6 @@ elif [ "${1}" = "late" ]; then
     echo "maxdisks=${NUMPORTS}"
     echo "internalportcfg=${INTPORTCFG}"
     echo "usbportcfg=${USBPORTCFG}"
+    cp -vf /etc.defaults/extensionPorts /etc/extensionPorts
   fi
 fi
