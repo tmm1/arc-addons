@@ -1,7 +1,7 @@
 #!/usr/bin/env ash
 
 if [ "${1}" = "jrExit" ]; then
-  /usr/bin/nvmeschache.sh 2>/dev/null
+  /usr/bin/nvmecache.sh 2>/dev/null
 elif [ "${1}" = "late" ]; then
   echo "Creating service to exec NVMe Cache"
   cp -v /usr/bin/nvmecache.sh /tmpRoot/usr/bin/nvmecache.sh
