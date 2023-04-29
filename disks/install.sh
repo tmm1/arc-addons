@@ -263,12 +263,14 @@ function nondtModel() {
     echo "set usbportcfg=${USBPORTCFG}"
   fi
   # NVME
-  echo "[pci]" > /etc/extensionPorts
-  chmod 755 /etc/extensionPorts
+  rm -f /etc.defaults/extensionPorts
+  echo "[pci]" > /etc.defaults/extensionPorts
+  chmod 755 /etc.defaults/extensionPorts
   for P in `nvmePorts false`; do
-    echo "pci${COUNT}=\"$P\"" >> /etc/extensionPorts
+    echo "pci${COUNT}=\"${P}\"" >> /etc.defaults/extensionPorts
     COUNT=$((${COUNT}+1))
   done
+  cp -vf /etc.defaults/extensionPorts /etc/extensionPorts
 }
 
 #
@@ -296,6 +298,5 @@ elif [ "${1}" = "late" ]; then
     echo "maxdisks=${NUMPORTS}"
     echo "internalportcfg=${INTPORTCFG}"
     echo "usbportcfg=${USBPORTCFG}"
-    cp -vf /etc/extensionPorts /tmpRoot/etc.defaults/extensionPorts
   fi
 fi
