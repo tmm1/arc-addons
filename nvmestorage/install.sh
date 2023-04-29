@@ -1,6 +1,6 @@
 #!/usr/bin/env ash
 
-if [ "${1}" = "jrExit" ]; then
+if [ "${1}" = "early" ]; then
   /usr/bin/nvmestorage.sh 2>/dev/null
 elif [ "${1}" = "late" ]; then
   echo "Creating service to exec NVMe Storage"
