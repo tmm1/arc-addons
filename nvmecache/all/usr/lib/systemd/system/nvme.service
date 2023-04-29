@@ -1,0 +1,14 @@
+[Unit]
+Description=NVMe Daemon
+DefaultDependencies=no
+IgnoreOnIsolate=true
+After=multi-user.target
+
+[Service]
+Restart=no
+RestartSec=30
+PIDFile=/var/run/nvme.pid
+ExecStart=/usr/bin/nvme
+
+[X-Synology]
+Author=Virtualization Team
