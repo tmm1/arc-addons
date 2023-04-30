@@ -43,7 +43,7 @@ elif [ "${1}" = "late" ]; then
   cp -fv /usr/bin/loadkeys /tmpRoot/usr/bin/
   cp -fv /usr/bin/setleds /tmpRoot/usr/bin/
   DEST="/tmpRoot/lib/systemd/system/keymap.service"
-  echo "[Unit]"                                                               > ${DEST}
+  echo "[Unit]"                                                                >${DEST}
   echo "Description=Configure keymap"                                         >>${DEST}
   echo "After=getty.target"                                                   >>${DEST}
   echo                                                                        >>${DEST}
@@ -55,8 +55,8 @@ elif [ "${1}" = "late" ]; then
   echo "[Install]"                                                            >>${DEST}
   echo "WantedBy=multi-user.target"                                           >>${DEST}
 
-  mkdir -p /tmpRoot/etc/systemd/system/multi-user.target.wants
-  ln -sf /lib/systemd/system/keymap.service /tmpRoot/lib/systemd/system/multi-user.target.wants/keymap.service
+  mkdir -vp /tmpRoot/lib/systemd/system/multi-user.target.wants
+  ln -vsf /lib/systemd/system/keymap.service /tmpRoot/lib/systemd/system/multi-user.target.wants/keymap.service
   # Workaround for DVA1622
   if [ "${MODEL}" = "DVA1622" ]; then
     echo > /dev/tty2

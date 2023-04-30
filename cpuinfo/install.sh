@@ -6,7 +6,7 @@ elif [ "${1}" = "late" ]; then
   echo "Creating service to exec CPU Info"
   cp -v /usr/bin/cpuinfo.sh /tmpRoot/usr/bin/cpuinfo.sh
   DEST="/tmpRoot/lib/systemd/system/cpuinfo.service"
-  echo "[Unit]"                                                               >${DEST}
+  echo "[Unit]"                                                                >${DEST}
   echo "Description=Enable CPU Info"                                          >>${DEST}
   echo                                                                        >>${DEST}
   echo "[Service]"                                                            >>${DEST}
@@ -18,6 +18,6 @@ elif [ "${1}" = "late" ]; then
   echo "[Install]"                                                            >>${DEST}
   echo "WantedBy=multi-user.target"                                           >>${DEST}
 
-  mkdir -p /tmpRoot/etc/systemd/system/multi-user.target.wants
-  ln -sf /lib/systemd/system/cpuinfo.service /tmpRoot/lib/systemd/system/multi-user.target.wants/cpuinfo.service
+  mkdir -vp /tmpRoot/etc/systemd/system/multi-user.target.wants
+  ln -vsf /lib/systemd/system/cpuinfo.service /tmpRoot/lib/systemd/system/multi-user.target.wants/cpuinfo.service
 fi
