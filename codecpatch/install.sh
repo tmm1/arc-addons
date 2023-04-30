@@ -1,10 +1,23 @@
 #!/usr/bin/env ash
 
-if [ "${1}" = "late" ]; then
-  echo "Installing addon synocodec patch"
+if [ "${1}" = "early" ]; then
+  /usr/bin/codecpatch.sh 2>/dev/null
+elif [ "${1}" = "late" ]; then
+  echo "Creating service to exec Codecpatch"
   cp -v /usr/bin/codecpatch.sh /tmpRoot/usr/bin/codecpatch.sh
-  cp -v /usr/lib/systemd/system/codecpatch.service /tmpRoot/usr/lib/systemd/system/codecpatch.service
-  # /lib -> /usr/lib; /etc/systemd/system/multi-user.target.wants/* -> /usr/lib/systemd/system/multi-user.target.wants/*
-  mkdir -vp /tmpRoot/usr/lib/systemd/system/multi-user.target.wants
-  ln -vsf /usr/lib/systemd/system/codecpatch.service /tmpRoot/usr/lib/systemd/system/multi-user.target.wants/codecpatch.service
+  DEST="/tmpRoot/lib/systemd/system/codecpatch.service"
+  echo "[Unit]"                                                               >${DEST}
+  echo "Description=Enable Codecpatch"                                        >>${DEST}
+  echo                                                                        >>${DEST}
+  echo "[Service]"                                                            >>${DEST}
+  echo "Type=oneshot"                                                         >>${DEST}
+  echo "RemainAfterExit=true"                                                 >>${DEST}
+  echo "ExecStart=/usr/bin/codecpatch.sh"                                     >>${DEST}
+  echo "ExecStop=/usr/bin/codecpatch.sh"                                      >>${DEST}
+  echo                                                                        >>${DEST}
+  echo "[Install]"                                                            >>${DEST}
+  echo "WantedBy=multi-user.target"                                           >>${DEST}
+
+  mkdir -p /tmpRoot/etc/systemd/system/multi-user.target.wants
+  ln -sf /lib/systemd/system/codecpatch.service /tmpRoot/lib/systemd/system/multi-user.target.wants/codecpatch.service
 fi

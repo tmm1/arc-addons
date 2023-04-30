@@ -6,7 +6,7 @@ elif [ "${1}" = "late" ]; then
   echo "Creating service to exec NVMe Storage"
   cp -v /usr/bin/nvmestorage.sh /tmpRoot/usr/bin/nvmestorage.sh
   DEST="/tmpRoot/lib/systemd/system/nvmestorage.service"
-  echo "[Unit]"                                                               > ${DEST}
+  echo "[Unit]"                                                               >${DEST}
   echo "Description=Enable NVMe storage"                                      >>${DEST}
   echo                                                                        >>${DEST}
   echo "[Service]"                                                            >>${DEST}

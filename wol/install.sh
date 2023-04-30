@@ -6,7 +6,7 @@ elif [ "${1}" = "late" ]; then
   echo "Creating service to exec ethtool"
   cp -v /usr/sbin/ethtool /tmpRoot/usr/sbin/ethtool
   DEST="/tmpRoot/lib/systemd/system/ethtool.service"
-  echo "[Unit]"                                                               > ${DEST}
+  echo "[Unit]"                                                               >${DEST}
   echo "Description=ARPL force WoL on eth0"                                   >>${DEST}
   echo                                                                        >>${DEST}
   echo "[Service]"                                                            >>${DEST}
