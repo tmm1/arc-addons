@@ -27,7 +27,7 @@ jobs:
             platform: apollolake
 
     if: inputs.eudev == true
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@main
