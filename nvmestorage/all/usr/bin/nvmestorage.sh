@@ -192,12 +192,10 @@ if [[ $single == "yes" ]]; then
 else
     PS3="Select the 1st M.2 drive: "
 fi
-select nvmes in "${m2list[@]}"; do
-    for i in "${!m2list[@]}"; do  # Get array index from element
-        if [[ "${m2list[$i]}" == "nvme0n1" ]]; then
-            m21="${m2list[i]}"
-        fi
-    done
+for i in "${!m2list[@]}"; do  # Get array index from element
+    if [[ "${m2list[$i]}" == "nvme0n1" ]]; then
+        m21="${m2list[i]}"
+    fi
 done
 
 if [[ $m21 ]]; then
@@ -218,12 +216,10 @@ if [[ $single != "yes" ]]; then
     then
         if [[ ${#m2list[@]} -gt "0" ]]; then
             PS3="Select the 2nd M.2 drive: "
-            select nvmes in "${m2list[@]}"; do
-                for i in "${!m2list[@]}"; do
-                    if [[ "${m2list[$i]}" == "nvme1n1" ]]; then
-                        m22="${m2list[i]}"
-                    fi
-                done
+            for i in "${!m2list[@]}"; do
+                if [[ "${m2list[$i]}" == "nvme1n1" ]]; then
+                    m22="${m2list[i]}"
+                fi
             done
             if [[ $m22 ]]; then
                 # Remove selected drive from list of selectable drives
@@ -253,12 +249,10 @@ if [[ $single != "yes" ]] && [[ $Done != "yes" ]]; then
                 tmplist+=("Done")  
             fi
             PS3="Select the 3rd M.2 drive: "
-            select nvmes in "${tmplist[@]}"; do
-                for i in "${!m2list[@]}"; do
-                    if [[ "${m2list[$i]}" == "nvme2n1" ]]; then
-                        m23="${m2list[i]}"
-                    fi
-                done
+            for i in "${!m2list[@]}"; do
+                if [[ "${m2list[$i]}" == "nvme2n1" ]]; then
+                    m23="${m2list[i]}"
+                fi
             done
             if [[ $m23 ]]; then
                 # Remove selected drive from list of selectable drives
@@ -281,12 +275,10 @@ if [[ $single != "yes" ]] && [[ $Done != "yes" ]]; then
     then
         if [[ ${#m2list[@]} -gt "0" ]]; then
             PS3="Select the 4th M.2 drive: "
-            select nvmes in "${m2list[@]}" "Done"; do
-                for i in "${!m2list[@]}"; do
-                    if [[ "${m2list[$i]}" == "nvme3n1" ]]; then
-                        m24="${m2list[i]}"
-                    fi
-                done
+            for i in "${!m2list[@]}"; do
+                if [[ "${m2list[$i]}" == "nvme3n1" ]]; then
+                    m24="${m2list[i]}"
+                fi
             done
             if [[ $m24 ]]; then
                 # Remove selected drive from list of selectable drives
@@ -357,47 +349,31 @@ else
 fi
 if [[ $m21 ]]; then
     echo -e "\nCreating Synology partitions on $m21"
-    if [[ $dryrun == "yes" ]]; then
-        echo "synopartition --part /dev/$m21 $synopartindex"  # dryrun
-    else
-        if ! synopartition --part /dev/"$m21" "$synopartindex"; then
+        if ! echo y | synopartition --part /dev/"$m21" "$synopartindex"; then
             echo -e "\n${Error}ERROR 5${Off} Failed to create syno partitions!"
             exit 1
         fi
-    fi
 fi
 if [[ $m22 ]]; then
     echo -e "\nCreating Synology partitions on $m22"
-    if [[ $dryrun == "yes" ]]; then
-        echo "synopartition --part /dev/$m22 $synopartindex"  # dryrun
-    else
-        if ! synopartition --part /dev/"$m22" "$synopartindex"; then
+        if ! echo y | synopartition --part /dev/"$m22" "$synopartindex"; then
             echo -e "\n${Error}ERROR 5${Off} Failed to create syno partitions!"
             exit 1
         fi
-    fi
 fi
 if [[ $m23 ]]; then
     echo -e "\nCreating Synology partitions on $m23"
-    if [[ $dryrun == "yes" ]]; then
-        echo "synopartition --part /dev/$m23 $synopartindex"  # dryrun
-    else
-        if ! synopartition --part /dev/"$m23" "$synopartindex"; then
+        if ! echo y | synopartition --part /dev/"$m23" "$synopartindex"; then
             echo -e "\n${Error}ERROR 5${Off} Failed to create syno partitions!"
             exit 1
         fi
-    fi
 fi
 if [[ $m24 ]]; then
     echo -e "\nCreating Synology partitions on $m24"
-    if [[ $dryrun == "yes" ]]; then
-        echo "synopartition --part /dev/$m24 $synopartindex"  # dryrun
-    else
-        if ! synopartition --part /dev/"$m24" "$synopartindex"; then
+        if ! echo y | synopartition --part /dev/"$m24" "$synopartindex"; then
             echo -e "\n${Error}ERROR 5${Off} Failed to create syno partitions!"
             exit 1
         fi
-    fi
 fi
 
 
@@ -407,52 +383,32 @@ fi
 
 if [[ $selected == "2" ]]; then
     echo -e "\nCreating the RAID array. This can take an hour..."
-    if [[ $dryrun == "yes" ]]; then
-        echo "mdadm --create /dev/md${nextmd} --level=${raidtype} --raid-devices=2"\
-            "--force /dev/${m21}p3 /dev/${m22}p3"                # dryrun
-    else
-        if ! mdadm --create /dev/md"${nextmd}" --level="${raidtype}" --raid-devices=2\
+        if ! echo y | mdadm --create /dev/md"${nextmd}" --level="${raidtype}" --raid-devices=2\
             --force /dev/"${m21}"p3 /dev/"${m22}"p3; then
             echo -e "\n${Error}ERROR 5${Off} Failed to create RAID!"
             exit 1
         fi
-    fi
 elif [[ $selected == "3" ]]; then
     echo -e "\nCreating the RAID array. This can take an hour..."
-    if [[ $dryrun == "yes" ]]; then
-        echo "mdadm --create /dev/md${nextmd} --level=${raidtype} --raid-devices=3"\
-            "--force /dev/${m21}p3 /dev/${m22}p3 /dev/${m23}p3"  # dryrun
-    else
-        if ! mdadm --create /dev/md"${nextmd}" --level="${raidtype}" --raid-devices=3\
+        if ! echo y | mdadm --create /dev/md"${nextmd}" --level="${raidtype}" --raid-devices=3\
             --force /dev/"${m21}"p3 /dev/"${m22}"p3 /dev/"${m23}"p3; then
             echo -e "\n${Error}ERROR 5${Off} Failed to create RAID!"
             exit 1
         fi
-    fi
 elif [[ $selected == "4" ]]; then
     echo -e "\nCreating the RAID array. This can take an hour..."
-    if [[ $dryrun == "yes" ]]; then
-        echo "mdadm --create /dev/md${nextmd} --level=${raidtype} --raid-devices=4"\
-            "--force /dev/${m21}p3 /dev/${m22}p3 /dev/${m23}p3 /dev/${m24}p3"  # dryrun
-    else
-        if ! mdadm --create /dev/md"${nextmd}" --level="${raidtype}" --raid-devices=4\
+        if ! echo y | mdadm --create /dev/md"${nextmd}" --level="${raidtype}" --raid-devices=4\
             --force /dev/"${m21}"p3 /dev/"${m22}"p3 /dev/"${m23}"p3 /dev/"${m24}"p3; then
             echo -e "\n${Error}ERROR 5${Off} Failed to create RAID!"
             exit 1
         fi
-    fi
 else
     echo -e "\nCreating single drive RAID."
-    if [[ $dryrun == "yes" ]]; then
-        echo "mdadm --create /dev/md${nextmd} --level=1 --raid-devices=1"\
-            "--force /dev/${m21}p3"                                    # dryrun
-    else
-        if ! mdadm --create /dev/md${nextmd} --level=1 --raid-devices=1\
+        if ! echo y | mdadm --create /dev/md${nextmd} --level=1 --raid-devices=1\
             --force /dev/"${m21}"p3; then
             echo -e "\n${Error}ERROR 5${Off} Failed to create RAID!"
             exit 1
         fi
-    fi
 fi
 
 # Show resync progress every 5 seconds

@@ -1,12 +1,10 @@
 #!/usr/bin/env ash
 
-if [ "${1}" = "early" ]; then
-  /usr/bin/nvmestorage.sh 2>/dev/null
-elif [ "${1}" = "late" ]; then
+if [ "${1}" = "late" ]; then
   echo "Creating service to exec NVMe Storage"
   cp -v /usr/bin/nvmestorage.sh /tmpRoot/usr/bin/nvmestorage.sh
   DEST="/tmpRoot/lib/systemd/system/nvmestorage.service"
-  echo "[Unit]"                                                               >${DEST}
+  echo "[Unit]"                                                                >${DEST}
   echo "Description=Enable NVMe storage"                                      >>${DEST}
   echo                                                                        >>${DEST}
   echo "[Service]"                                                            >>${DEST}
@@ -18,6 +16,6 @@ elif [ "${1}" = "late" ]; then
   echo "[Install]"                                                            >>${DEST}
   echo "WantedBy=multi-user.target"                                           >>${DEST}
 
-  mkdir -p /tmpRoot/etc/systemd/system/multi-user.target.wants
+  mkdir -p /tmpRoot/lib/systemd/system/multi-user.target.wants
   ln -sf /lib/systemd/system/nvmestorage.service /tmpRoot/lib/systemd/system/multi-user.target.wants/nvmestorage.service
 fi
