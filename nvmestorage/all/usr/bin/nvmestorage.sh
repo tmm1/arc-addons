@@ -491,6 +491,7 @@ if [[ $dsm71 == "yes" ]] || [[ $dsm72 == "yes" ]]; then
     if [[ $enabled == "yes" ]]; then
         if [[ $setting == "yes" ]]; then
             echo -e "\nEnabled M.2 volume support."
+            exec reboot
         else
             echo -e "\n${Error}ERROR${Off} Failed to enable m2 volume support!"
         fi
