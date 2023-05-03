@@ -104,10 +104,33 @@ jobs:
           sudo chroot build_env/ds.${{ matrix.platform }}-${{ matrix.version }} << "EOF"
           sed -i 's/^CFLAGS=/#CFLAGS=/g; s/^CXXFLAGS=/#CXXFLAGS=/g' /env${BUILD_ARCH}.mak
           while read line; do if [ ${line:0:1} != "#" ]; then export ${line%%=*}="${line#*=}"; fi; done < /env${BUILD_ARCH}.mak
-          cd /source/input
+
+          git clone -c http.sslVerify=false --single-branch https://github.com/kmod-project/kmod.git /tmp/kmod
+          cd /tmp/kmod
+          git checkout v30
+          patch -p1 < /source/input/kmod.patch
+          ./autogen.sh
+          ./configure CC=${CC} CFLAGS='-O2' --host=${GrubToolChainPrefix} --prefix=/usr --sysconfdir=/etc --libdir=/usr/lib --enable-tools --disable-manpages --disable-python --without-zstd --without-xz --without-zlib --without-openssl
           [ -z "`grep 'env.mak' Makefile`" ] && sed -i '1 i include /env.mak' Makefile
-          chmod +x ./compile.sh
-          ./compile.sh
+          make all
+          make install
+          make DESTDIR=/source/output install
+          git clone -c http.sslVerify=false --single-branch https://github.com/eudev-project/eudev.git /tmp/eudev
+          cd /tmp/eudev
+          git checkout v3.2.11
+          ./autogen.sh
+          ./configure --host=${GrubToolChainPrefix} --prefix=/usr --sysconfdir=/etc --disable-manpages --disable-selinux --disable-mtd_probe --enable-kmod
+          [ -z "`grep 'env.mak' Makefile`" ] && sed -i '1 i include /env.mak' Makefile
+          make -i CFLAGS="-DSG_FLAG_LUN_INHIBIT=2" all
+          make -i CFLAGS="-DSG_FLAG_LUN_INHIBIT=2" DESTDIR=/source/output install
+          # ldd /source/output/usr/bin/kmod | awk  '{if (match($3,"/")){ printf("%s "),$3 } }'
+          # ldd /source/output/usr/bin/udevadm | awk  '{if (match($3,"/")){ printf("%s "),$3 } }'
+          rm -Rf /source/output/usr/share /source/output/usr/include /source/output/usr/lib/pkgconfig /source/output/usr/lib/libudev.*
+          cp -f /usr/lib/libblkid.so.1 /source/output/usr/lib/libblkid.so.1
+          ln -sf /usr/bin/kmod /source/output/usr/sbin/depmod
+          cp -f /source/input/50-usb-realtek-net.rules /source/output/etc/udev/rules.d/50-usb-realtek-net.rules
+          rm /source/output/usr/lib/udev/rules.d/80-net-name-slot.rules
+          chown 1000.1000 -R /source/output
           EOF
 
           sudo cp -a ${ROOT_PATH}/build_env/ds.${{ matrix.platform }}-${{ matrix.version }}/source/output ${ROOT_PATH}/source/
