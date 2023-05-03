@@ -14,7 +14,11 @@ fi
 echo "Rebooting to ${1} mode"
 echo 1 > /proc/sys/kernel/syno_install_flag
 mount /dev/synoboot1 /mnt
-grub-editenv /mnt/grub/grubenv set next_entry="${1}"
+GRUBPATH="$(dirname $(find /mnt/ -name grub.cfg | head -1))"
+ENVFILE="${GRUBPATH}/grubenv"
+[ ! -f "${ENVFILE}" ] && grub-editenv ${ENVFILE} create
+
+grub-editenv ${ENVFILE} set next_entry="${1}"
 umount /mnt
 [ -x /usr/syno/sbin/synopoweroff ] && \
   /usr/syno/sbin/synopoweroff -r ||
