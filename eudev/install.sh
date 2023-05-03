@@ -3,8 +3,8 @@
 if [ "${1}" = "modules" ]; then
   echo "Starting eudev daemon"
   [ -e /proc/sys/kernel/hotplug ] && printf '\000\000\000\000' > /proc/sys/kernel/hotplug
-  chmod 755 /sbin/udevd /bin/kmod /bin/udevadm /lib/udev/*
-  /sbin/udevd -d || { echo "FAIL"; exit 1; }
+  chmod 755 /usr/sbin/udevd /usr/bin/kmod /usr/bin/udevadm /lib/udev/*
+  /usr/sbin/udevd -d || { echo "FAIL"; exit 1; }
   echo "Triggering add events to udev"
   udevadm trigger --type=subsystems --action=add
   udevadm trigger --type=devices --action=add
