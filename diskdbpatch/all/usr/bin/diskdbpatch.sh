@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1083,SC2054,SC2121,SC2207
 
-scriptver="v2.2.45"
+scriptver="v23.5.1"
 script=DiskDBPatch
-repo="AuxXxilium/DiskDBPatch"
+repo="AuxXxilium/arc-addons"
 
 # Check BASH variable is is non-empty and posix mode is off, else abort with error.
 [ "$BASH" ] && ! shopt -qo posix || {
@@ -25,10 +25,8 @@ Cyan='\e[0;36m'
 Error='\e[41m'
 Off='\e[0m'
 
-
 usage(){
     cat <<EOF
-$script $scriptver
 
 Usage: $(basename "$0") [options]
 
@@ -46,20 +44,16 @@ EOF
     exit 0
 }
 
-
 scriptversion(){
     cat <<EOF
-$script $scriptver
+$script $scriptver - by AuxXxilium
 
 See https://github.com/$repo
 EOF
-    exit 0
 }
-
 
 # Save options used
 args="$*"
-
 
 # Check for flags with getopt
 if options="$(getopt -o abcdefghijklmnopqrstuvwxyz0123456789 -a \
@@ -111,12 +105,10 @@ else
     usage
 fi
 
-
 if [[ $debug == "yes" ]]; then
     # set -x
     export PS4='`[[ $? == 0 ]] || echo "\e[1;31;40m($?)\e[m\n "`:.$LINENO:'
 fi
-
 
 # Check script is running as root
 if [[ $( whoami ) != "root" ]]; then
@@ -171,129 +163,6 @@ fi
 echo "Using options: $args"
 
 #echo ""  # To keep output readable
-
-
-#------------------------------------------------------------------------------
-# Check latest release with GitHub API
-
-get_latest_release() {
-    # Curl timeout options:
-    # https://unix.stackexchange.com/questions/94604/does-curl-have-a-timeout
-    curl --silent -m 10 --connect-timeout 5 \
-        "https://api.github.com/repos/$1/releases/latest" |
-    grep '"tag_name":' |          # Get tag line
-    sed -E 's/.*"([^"]+)".*/\1/'  # Pluck JSON value
-}
-
-tag=$(get_latest_release "$repo")
-shorttag="${tag:1}"
-#scriptpath=$(dirname -- "$0")
-
-# Get script location
-# https://stackoverflow.com/questions/59895/
-source=${BASH_SOURCE[0]}
-while [ -L "$source" ]; do # Resolve $source until the file is no longer a symlink
-    scriptpath=$( cd -P "$( dirname "$source" )" >/dev/null 2>&1 && pwd )
-    source=$(readlink "$source")
-    # If $source was a relative symlink, we need to resolve it 
-    # relative to the path where the symlink file was located
-    [[ $source != /* ]] && source=$scriptpath/$source
-done
-scriptpath=$( cd -P "$( dirname "$source" )" >/dev/null 2>&1 && pwd )
-#echo "Script location: $scriptpath"  # debug
-
-
-if ! printf "%s\n%s\n" "$tag" "$scriptver" |
-        sort --check --version-sort &> /dev/null ; then
-    echo -e "\n${Cyan}There is a newer version of this script available.${Off}"
-    echo -e "Current version: ${scriptver}\nLatest version:  $tag"
-    if [[ -f $scriptpath/$script-$shorttag.tar.gz ]]; then
-        # They have the latest version tar.gz downloaded but are using older version
-        echo "https://github.com/$repo/releases/latest"
-        sleep 10
-    elif [[ -d $scriptpath/$script-$shorttag ]]; then
-        # They have the latest version extracted but are using older version
-        echo "https://github.com/$repo/releases/latest"
-        sleep 10
-    else
-        echo -e "${Cyan}Do you want to download $tag now?${Off} [y/n]"
-        read -r -t 30 reply
-        if [[ ${reply,,} == "y" ]]; then
-            if cd /tmp; then
-                url="https://github.com/$repo/archive/refs/tags/$tag.tar.gz"
-                if ! curl -LJO -m 30 --connect-timeout 5 "$url";
-                then
-                    echo -e "${Error}ERROR ${Off} Failed to download"\
-                        "$script-$shorttag.tar.gz!"
-                else
-                    if [[ -f /tmp/$script-$shorttag.tar.gz ]]; then
-                        # Extract tar file to /tmp/<script-name>
-                        if ! tar -xf "/tmp/$script-$shorttag.tar.gz" -C "/tmp"; then
-                            echo -e "${Error}ERROR ${Off} Failed to"\
-                                "extract $script-$shorttag.tar.gz!"
-                        else
-                            # Copy new script sh files to script location
-                            if ! cp -p "/tmp/$script-$shorttag/"*.sh "$scriptpath"; then
-                                copyerr=1
-                                echo -e "${Error}ERROR ${Off} Failed to copy"\
-                                    "$script-$shorttag .sh file(s) to:\n $scriptpath"
-                            else                   
-                                # Set permsissions on CHANGES.txt
-                                if ! chmod 744 "$scriptpath/"*.sh ; then
-                                    permerr=1
-                                    echo -e "${Error}ERROR ${Off} Failed to set permissions on:"
-                                    echo "$scriptpath *.sh file(s)"
-                                fi
-                            fi
-
-                            # Copy new CHANGES.txt file to script location
-                            if ! cp -p "/tmp/$script-$shorttag/CHANGES.txt" "$scriptpath"; then
-                                copyerr=1
-                                echo -e "${Error}ERROR ${Off} Failed to copy"\
-                                    "$script-$shorttag/CHANGES.txt to:\n $scriptpath"
-                            else                   
-                                # Set permsissions on CHANGES.txt
-                                if ! chmod 744 "$scriptpath/CHANGES.txt"; then
-                                    permerr=1
-                                    echo -e "${Error}ERROR ${Off} Failed to set permissions on:"
-                                    echo "$scriptpath/CHANGES.txt"
-                                fi
-                            fi
-
-                            # Delete downloaded .tar.gz file
-                            if ! rm "/tmp/$script-$shorttag.tar.gz"; then
-                                echo -e "${Error}ERROR ${Off} Failed to delete"\
-                                    "downloaded /tmp/$script-$shorttag.tar.gz!"
-                            fi
-
-                            # Delete extracted tmp files
-                            if ! rm -r "/tmp/$script-$shorttag"; then
-                                echo -e "${Error}ERROR ${Off} Failed to delete"\
-                                    "downloaded /tmp/$script-$shorttag!"
-                            fi
-
-                            # Notify of success (if there were no errors)
-                            if [[ $copyerr != 1 ]] && [[ $permerr != 1 ]]; then
-                                echo -e "\n$tag and changes.txt downloaded to:"\
-                                    "$scriptpath"
-                                echo -e "${Cyan}Do you want to stop this script"\
-                                    "so you can run the new one?${Off} [y/n]"
-                                read -r reply
-                                if [[ ${reply,,} == "y" ]]; then exit; fi
-                            fi
-                        fi
-                    else
-                        echo -e "${Error}ERROR ${Off}"\
-                            "/tmp/$script-$shorttag.tar.gz not found!"
-                        #ls /tmp | grep "$script"  # debug
-                    fi
-                fi
-            else
-                echo -e "${Error}ERROR ${Off} Failed to cd to /tmp!"
-            fi
-        fi
-    fi
-fi
 
 
 #------------------------------------------------------------------------------
