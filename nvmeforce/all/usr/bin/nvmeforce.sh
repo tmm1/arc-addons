@@ -4,8 +4,8 @@
 # NVMe Storage Patch by AuxXxilium
 #
 
-scriptver="23.5.1"
-script=nvmestorage.sh
+scriptver="v23.5.1"
+script=nvmeforce.sh
 
 # Check BASH variable is is non-empty and posix mode is off, else abort with error.
 [ "$BASH" ] && ! shopt -qo posix || {
