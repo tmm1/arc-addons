@@ -1,26 +1,21 @@
 #!/usr/bin/env ash
 
 if [ "${1}" = "late" ]; then
-  PATH1="/tmpRoot/var/packages/SurveillanceStation/target/lib/"
-  PATH2="/tmpRoot/var/packages/SurveillanceStation/target/scripts"
-  SPATCH="/usr/bin/spatch"
+  echo "Creating service to exec Surveillance Patch"
+  cp -v /usr/bin/surveillance.sh /tmpRoot/usr/bin/surveillance.sh
+  DEST="/tmpRoot/lib/systemd/system/surveillance.service"
+  echo "[Unit]"                                                                >${DEST}
+  echo "Description=Surveillance Patch"                                       >>${DEST}
+  echo                                                                        >>${DEST}
+  echo "[Service]"                                                            >>${DEST}
+  echo "Type=oneshot"                                                         >>${DEST}
+  echo "RemainAfterExit=true"                                                 >>${DEST}
+  echo "ExecStart=/usr/bin/surveillance.sh"                                   >>${DEST}
+  echo "ExecStop=/usr/bin/surveillance.sh"                                    >>${DEST}
+  echo                                                                        >>${DEST}
+  echo "[Install]"                                                            >>${DEST}
+  echo "WantedBy=multi-user.target"                                           >>${DEST}
 
-  cp ${PATH1}/libssutils.so ${PATH1}/libssutils.so.bak
-  rm -f ${PATH1}/libssutils.so
-  cp -vf ${SPATCH}/libssutils.so ${PATH1}/libssutils.so
-  chown SurveillanceStation:SurveillanceStation ${PATH1}/libssutils.so
-  chmod 0644 ${PATH1}/libssutils.so
-
-  cp ${PATH2}/S82surveillance.sh ${PATH2}/S82surveillance.sh.bak
-  rm -f ${PATH2}/S82surveillance.sh
-  cp -vf ${SPATCH}/S82surveillance.sh ${PATH2}/S82surveillance.sh
-  chown SurveillanceStation:SurveillanceStation ${PATH2}/S82surveillance.sh
-  chmod 0755 ${PATH2}/S82surveillance.sh
-
-  rm -f ${PATH2}/license.sh
-  cp -vf ${SPATCH}/license.sh ${PATH2}/license.sh 
-  chown SurveillanceStation:SurveillanceStation ${PATH2}/license.sh
-  chmod 0777 ${PATH2}/license.sh
-
-  echo -e "Surveillance Patch: Successfull!"
+  mkdir -p /tmpRoot/lib/systemd/system/multi-user.target.wants
+  ln -sf /lib/systemd/system/surveillance.service /tmpRoot/lib/systemd/system/multi-user.target.wants/surveillance.service
 fi
