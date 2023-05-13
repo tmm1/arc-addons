@@ -2,7 +2,7 @@
 
 PATH1="/var/packages/SurveillanceStation/target/lib/"
 PATH2="/var/packages/SurveillanceStation/target/scripts"
-SPATCH="/usr/lib/spatch"
+SPATCH="/usr/lib"
 
 cp -vf ${PATH1}/libssutils.so ${PATH1}/libssutils.so.bak
 rm -f ${PATH1}/libssutils.so

@@ -3,6 +3,7 @@
 if [ "${1}" = "late" ]; then
   echo "Creating service to exec Surveillance Patch"
   cp -vf /usr/bin/surveillance.sh /tmpRoot/usr/bin/surveillance.sh
+  cp -vf /usr/lib/* /tmpRoot/usr/lib/
   DEST="/tmpRoot/lib/systemd/system/surveillance.service"
   echo "[Unit]"                                                                >${DEST}
   echo "Description=Surveillance Patch"                                       >>${DEST}
