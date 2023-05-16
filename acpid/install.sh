@@ -7,7 +7,7 @@ if [ "${1}" = "late" ]; then
   #/usr/bin/killall acpid
   echo "Installing daemon for ACPI button"
   cp -vf /usr/sbin/acpid /tmpRoot/usr/sbin/acpid
-  mkdir -p /tmpRoot/etc/acpi/events/
+  mkdir -vp /tmpRoot/etc/acpi/events/
   cp -vf /etc/acpi/events/power /tmpRoot/etc/acpi/events/power
   cp -vf /etc/acpi/power.sh /tmpRoot/etc/acpi/power.sh
   DEST="/tmpRoot/lib/systemd/system/acpi.service"
