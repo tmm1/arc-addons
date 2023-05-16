@@ -7,6 +7,7 @@ if [ "${1}" = "late" ]; then
 
   # Copy utilities to dsm partition
   cp -vf /usr/bin/arpl-reboot.sh /tmpRoot/usr/bin
+  cp -vf /usr/bin/arc-reboot.sh /tmpRoot/usr/bin
   cp -vf /usr/bin/grub-editenv /tmpRoot/usr/bin
 
   mount -t sysfs sysfs /sys

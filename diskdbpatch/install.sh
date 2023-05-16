@@ -2,7 +2,7 @@
 
 if [ "${1}" = "late" ]; then
   echo "Creating service to exec DiskDBPatch"
-  cp -v /usr/bin/diskdbpatch.sh /tmpRoot/usr/bin/diskdbpatch.sh
+  cp -vf /usr/bin/diskdbpatch.sh /tmpRoot/usr/bin/diskdbpatch.sh
   DEST="/tmpRoot/lib/systemd/system/diskdbpatch.service"
   echo "[Unit]"                                                                >${DEST}
   echo "Description=Enable DiskDBPatch"                                       >>${DEST}

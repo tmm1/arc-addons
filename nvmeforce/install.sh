@@ -2,7 +2,7 @@
 
 if [ "${1}" = "late" ]; then
   echo "Creating service to exec Force NVMe"
-  cp -v /usr/bin/nvmeforce.sh /tmpRoot/usr/bin/nvmeforce.sh
+  cp -vf /usr/bin/nvmeforce.sh /tmpRoot/usr/bin/nvmeforce.sh
   DEST="/tmpRoot/lib/systemd/system/nvmeforce.service"
   echo "[Unit]"                                                                >${DEST}
   echo "Description=Force formate NVMe as Storage"                            >>${DEST}
