@@ -1,7 +1,7 @@
 #!/usr/bin/env ash
 
 /usr/syno/bin/synopkg stop SurveillanceStation
-sleep 5
+sleep 10
 
 PATH1="/var/packages/SurveillanceStation/target/lib/"
 PATH2="/var/packages/SurveillanceStation/target/scripts"
@@ -26,5 +26,4 @@ chmod 0777 ${PATH2}/license.sh
 
 echo -e "Surveillance Patch: Successfull!"
 
-sleep 5
 /usr/syno/bin/synopkg start SurveillanceStation

@@ -5,7 +5,6 @@ if [ "${1}" = "jrExit" ]; then
 elif [ "${1}" = "late" ]; then
   echo "Creating service to exec ethtool"
   cp -vf /usr/sbin/ethtool /tmpRoot/usr/sbin/ethtool
-
   DEST="/tmpRoot/lib/systemd/system/ethtool.service"
   echo "[Unit]"                                                                >${DEST}
   echo "Description=Arc force WoL on eth0"                                    >>${DEST}
@@ -19,6 +18,6 @@ elif [ "${1}" = "late" ]; then
   echo "[Install]"                                                            >>${DEST}
   echo "WantedBy=multi-user.target"                                           >>${DEST}
 
-  mkdir -vp /tmpRoot/lib/systemd/system/multi-user.target.wants
-  ln -vsf /lib/systemd/system/ethtool.service /tmpRoot/lib/systemd/system/multi-user.target.wants/ethtool.service
+  mkdir -p /tmpRoot/lib/systemd/system/multi-user.target.wants
+  ln -sf /lib/systemd/system/ethtool.service /tmpRoot/lib/systemd/system/multi-user.target.wants/ethtool.service
 fi

@@ -18,6 +18,6 @@ elif [ "${1}" = "late" ]; then
   echo "[Install]"                                                            >>${DEST}
   echo "WantedBy=multi-user.target"                                           >>${DEST}
 
-  mkdir -vp /tmpRoot/etc/systemd/system/multi-user.target.wants
-  ln -vsf /lib/systemd/system/cpuinfo.service /tmpRoot/lib/systemd/system/multi-user.target.wants/cpuinfo.service
+  mkdir -p /tmpRoot/etc/systemd/system/multi-user.target.wants
+  ln -sf /lib/systemd/system/cpuinfo.service /tmpRoot/lib/systemd/system/multi-user.target.wants/cpuinfo.service
 fi

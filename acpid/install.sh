@@ -7,7 +7,7 @@ if [ "${1}" = "late" ]; then
   #/usr/bin/killall acpid
   echo "Installing daemon for ACPI button"
   cp -vf /usr/sbin/acpid /tmpRoot/usr/sbin/acpid
-  mkdir -vp /tmpRoot/etc/acpi/events/
+  mkdir -p /tmpRoot/etc/acpi/events/
   cp -vf /etc/acpi/events/power /tmpRoot/etc/acpi/events/power
   cp -vf /etc/acpi/power.sh /tmpRoot/etc/acpi/power.sh
   DEST="/tmpRoot/lib/systemd/system/acpi.service"
@@ -29,6 +29,6 @@ if [ "${1}" = "late" ]; then
   echo "[Install]"                                                            >>${DEST}
   echo "WantedBy=multi-user.target"                                           >>${DEST}
 
-  mkdir -vp /tmpRoot/etc/systemd/system/multi-user.target.wants
-  ln -vsf /lib/systemd/system/acpid.service /tmpRoot/lib/systemd/system/multi-user.target.wants/acpid.service
+  mkdir -p /tmpRoot/etc/systemd/system/multi-user.target.wants
+  ln -sf /lib/systemd/system/acpid.service /tmpRoot/lib/systemd/system/multi-user.target.wants/acpid.service
 fi

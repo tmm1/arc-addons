@@ -13,7 +13,7 @@ if [ "${1}" = "modules" ]; then
     done
   fi
   /usr/sbin/modprobe fbcon
-  echo "ARPL console - wait..." > /dev/tty1
+  echo "Arc console - wait..." > /dev/tty1
   # Workaround for DVA1622
   if [ "${MODEL}" = "DVA1622" ]; then
     echo > /dev/tty2
@@ -36,8 +36,8 @@ elif [ "${1}" = "late" ]; then
   # run when boot installed DSM
   cp -vf /tmpRoot/lib/systemd/system/serial-getty\@.service /tmpRoot/lib/systemd/system/getty\@.service
   ${SED_PATH} -i 's|^ExecStart=.*|ExecStart=-/sbin/agetty %I 115200 linux|' /tmpRoot/lib/systemd/system/getty\@.service
-  mkdir -vp /tmpRoot/lib/systemd/system/getty.target.wants
-  ln -sfv /lib/systemd/system/getty\@.service /tmpRoot/lib/systemd/system/getty.target.wants/getty\@tty1.service
+  mkdir -p /tmpRoot/lib/systemd/system/getty.target.wants
+  ln -sf /lib/systemd/system/getty\@.service /tmpRoot/lib/systemd/system/getty.target.wants/getty\@tty1.service
   echo -e "DSM mode\n" > /tmpRoot/etc/issue
   cp -fRv /usr/share/keymaps /tmpRoot/usr/share/
   cp -vf /usr/bin/loadkeys /tmpRoot/usr/bin/
@@ -55,8 +55,8 @@ elif [ "${1}" = "late" ]; then
   echo "[Install]"                                                            >>${DEST}
   echo "WantedBy=multi-user.target"                                           >>${DEST}
 
-  mkdir -vp /tmpRoot/lib/systemd/system/multi-user.target.wants
-  ln -vsf /lib/systemd/system/keymap.service /tmpRoot/lib/systemd/system/multi-user.target.wants/keymap.service
+  mkdir -p /tmpRoot/lib/systemd/system/multi-user.target.wants
+  ln -sf /lib/systemd/system/keymap.service /tmpRoot/lib/systemd/system/multi-user.target.wants/keymap.service
   # Workaround for DVA1622
   if [ "${MODEL}" = "DVA1622" ]; then
     echo > /dev/tty2

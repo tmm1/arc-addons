@@ -1,6 +1,6 @@
 version: 1
 name: nvmeenable
-description: "Enable NVMe as Storage"
+description: "Enable NVMe as Storage (Beta)"
 all:
   install-script: "install.sh"
   copy: "all"

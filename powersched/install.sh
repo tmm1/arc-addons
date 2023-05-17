@@ -11,6 +11,6 @@ if [ `mount | grep tmpRoot | wc -l` -gt 0 ] ; then
     # Clean old entries
     ${SED_PATH} -i '/\/usr\/sbin\/powersched/d' /tmpRoot/etc/crontab 
     # Add line to crontab, execute each minute
-    echo "*       *       *       *       *       root    /usr/sbin/powersched #arpl powersched addon" >> /tmpRoot/etc/crontab
+    echo "*       *       *       *       *       root    /usr/sbin/powersched #arc powersched addon" >> /tmpRoot/etc/crontab
   fi
 fi
