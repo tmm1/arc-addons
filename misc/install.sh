@@ -63,7 +63,7 @@ if [ "${1}" = "late" ]; then
 
   # Nvidia GPU
   if [ -f /tmpRoot/usr/lib/modules-load.d/70-syno-nvidia-gpu.conf ]; then
-    NVIDIADEV=$(cat /proc/bus/pci/devices | grep -i 10de | wc -l)
+    NVIDIADEV=`cat /proc/bus/pci/devices | grep -i 10de | wc -l`
     if [ ${NVIDIADEV} -eq 0 ]; then
         echo "NVIDIA GPU is not detected, disabling "
         ${SED_PATH} -i 's/^nvidia/# nvidia/g' /tmpRoot/usr/lib/modules-load.d/70-syno-nvidia-gpu.conf
