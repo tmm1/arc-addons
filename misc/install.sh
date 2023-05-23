@@ -52,7 +52,7 @@ if [ "${1}" = "late" ]; then
 
   # Intel GPU
   if [ -f /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf ]; then
-      INTELGPU=$(cat /proc/bus/pci/devices | grep -i i915 | wc -l)
+      INTELGPU=`cat /proc/bus/pci/devices | grep -i i915 | wc -l`
       if [ $INTELGPU -eq 0 ]; then
           echo "Intel GPU is not detected, disabling "
           ${SED_PATH} -i 's/^i915/# i915/g' /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf
