@@ -415,7 +415,7 @@ MWORK_DIR="/usr/syno/synoman/mobile/ui"
 BKUP_DIR="/root/Xpenology_backup"
 VER_DIR="/etc.default"
  
-cecho c "DSM CPU Information Change Tool ver. \033[0;31m"$ver"\033[00m - made by FOXBI\n"
+cecho c "DSM CPU Information Change Tool ver. \033[0;31m"$ver"\033[00m\n"
 
 if [ -d "$VER_DIR" ]
 then
@@ -444,18 +444,6 @@ fi
 BL_CHK=$BL_NUM$BL_FIX
 TIME=`date +%Y%m%d%H%M%S`"_"$BL_CHK
 STIME="$TIME"
-
-if [ "$MA_VER" -gt "4" ]
-then
-    if [ "$MA_VER" -eq "5" ]
-    then
-        MWORK_DIR="/usr/syno/synoman/webman/mapp"
-    fi
-    cecho g "Your version of DSM is \033[0;36mDSM \033[0;31m"$PD_VER"-"$BL_NUM" $BL_UP \033[0;32m \033[00m\n"
-else
-    echo -e "DSM version less than 5 is not supported. End the process."
-    exit 0
-fi
 
 if [ "$MA_VER" -ge "6" ]
 then
