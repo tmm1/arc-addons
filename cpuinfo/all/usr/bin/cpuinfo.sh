@@ -413,7 +413,7 @@ WORK_DIR="/usr/syno/synoman/webman/modules/AdminCenter"
 SWORK_DIR="/var/packages/SurveillanceStation/target/ui/modules/System"
 MWORK_DIR="/usr/syno/synoman/mobile/ui"
 BKUP_DIR="/root/Xpenology_backup"
-VER_DIR="/etc.default"
+VER_DIR="/etc.defaults"
  
 cecho c "DSM CPU Information Change Tool ver. \033[0;31m"$ver"\033[00m\n"
 
