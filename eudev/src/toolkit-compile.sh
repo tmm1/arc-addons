@@ -2,7 +2,7 @@
 
 git clone -c http.sslVerify=false --single-branch https://github.com/kmod-project/kmod.git /tmp/kmod
 cd /tmp/kmod
-git checkout v30
+git checkout master
 patch -p1 < /source/input/kmod.patch
 ./autogen.sh
 ./configure CFLAGS='-O2' --prefix=/usr --sysconfdir=/etc --libdir=/usr/lib --enable-tools --disable-manpages --disable-python --without-zstd --without-xz --without-zlib --without-openssl
@@ -11,7 +11,7 @@ make install
 make DESTDIR=/source/output install
 git clone -c http.sslVerify=false --single-branch https://github.com/eudev-project/eudev.git /tmp/eudev
 cd /tmp/eudev
-git checkout v3.2.11
+git checkout master
 ./autogen.sh
 ./configure --prefix=/usr --sysconfdir=/etc --disable-manpages --disable-selinux --disable-mtd_probe --enable-kmod
 make -i all
