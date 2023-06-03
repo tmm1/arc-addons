@@ -37,6 +37,23 @@ function _check_post_k() {
   fi
 }
 
+# Check if the raid has been completed currently
+function _check_rootraidstatus() {
+  if [ "`_get_conf_kv supportraid`" != "yes" ]; then
+    return 0
+  fi
+  State=$(cat /sys/block/md0/md/array_state) 2>/dev/null
+  if [ $? != 0 ]; then
+    return 1
+  fi
+  case ${State} in
+    "clear" | "inactive" | "suspended " | "readonly" | "read-auto")
+    return 1
+  ;;
+  esac
+  return 0
+}
+
 # Calculate # 0 bits
 function getNum0Bits() {
   local VALUE=$1
