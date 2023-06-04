@@ -1,6 +1,6 @@
 version: 1
 name: reboot
-description: "Add a script to restart to arc in the DSM scheduled task, need a simple click without ssh access."
+description: "Add Restart to arc in the DSM scheduled task. (Beta)"
 all:
   install-script: "install.sh"
   copy: all

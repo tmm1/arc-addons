@@ -1,6 +1,6 @@
 version: 1
 name: qemu-ga
-description: "The Qemu guset agent"
+description: "The Qemu guset agent (Beta)"
 all:
   install-script: "install.sh"
   copy: "all"
