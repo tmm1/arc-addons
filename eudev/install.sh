@@ -1,10 +1,10 @@
 #!/usr/bin/env ash
 
 if [ "${1}" = "modules" ]; then
-  echo "Starting eudev daemon"
+  echo "Starting eudev daemon - modules"
   [ -e /proc/sys/kernel/hotplug ] && printf '\000\000\000\000' > /proc/sys/kernel/hotplug
-  chmod 755 /usr/sbin/udevd /usr/bin/kmod /usr/bin/udevadm /usr/lib/udev/*
-  /usr/sbin/depmod -a
+  ln -s /lib/libkmod.so.2.4.0 /lib/libkmod.so.2
+  ln -s /usr/bin/udevadm /usr/sbin/udevadm
   /usr/sbin/udevd -d || { echo "FAIL"; exit 1; }
   echo "Triggering add events to udev"
   udevadm trigger --type=subsystems --action=add
@@ -14,14 +14,9 @@ if [ "${1}" = "modules" ]; then
   # Give more time
   sleep 10
   # Remove from memory to not conflict with RAID mount scripts
-  /bin/killall udevd
+  /usr/bin/killall udevd
 elif [ "${1}" = "late" ]; then
-  echo "Starting eudev daemon - late"
-  #copy modules
-  cp -rf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-  cp -rf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-  /usr/sbin/depmod -a -b /tmpRoot/
-  
+  echo "Starting eudev daemon - late"  
   # Copy rules
   cp -vf /etc/udev/rules.d/* /tmpRoot/lib/udev/rules.d/
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
