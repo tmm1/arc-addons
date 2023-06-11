@@ -1,6 +1,6 @@
 version: 1
 name: Deduplication
-description: "Disable Data duplication for SSD Pools (16GB RAM needed)"
+description: "Disable Data duplication for SSD Pools (Beta)"
 all:
   install-script: "install.sh"
   copy: "all"
