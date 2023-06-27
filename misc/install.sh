@@ -1,6 +1,7 @@
 #!/usr/bin/env ash
 
 SED_PATH='/tmpRoot/usr/bin/sed'
+XXD_PATH='/tmpRoot/usr/bin/xxd'
 
 if [ "${1}" = "late" ]; then
   echo "Script for fixing missing HW features dependencies and another functions"
@@ -46,6 +47,32 @@ if [ "${1}" = "late" ]; then
         echo "CPU does NOT support AES, aesni-intel will not load, disabling"
         ${SED_PATH} -i 's/support_aesni_intel="yes"/support_aesni_intel="no"/' /tmpRoot/etc.defaults/synoinfo.conf
         ${SED_PATH} -i 's/^aesni-intel/# aesni-intel/g' /tmpRoot/usr/lib/modules-load.d/70-crypto-kernel.conf
+    fi
+  fi
+
+  # Intel GPU
+  if [ -f /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf ] && [ -f /tmpRoot/lib/modules/i915.ko ]; then
+    export LD_LIBRARY_PATH=/tmpRoot/lib64
+    GPU="$(/tmpRoot/bin/lspci -n | grep 0300 | cut -d " " -f 3 | sed -e 's/://g')"
+    if [ -n "${GPU}" -a $(echo -n "${GPU}" | wc -c) -eq 8 ]; then
+      if [ $(grep -i ${GPU} /usr/bin/i915ids | wc -l) -eq 0 ]; then
+          echo "Intel GPU is not detected (${GPU}), nothing to do"
+          #${SED_PATH} -i 's/^i915/# i915/g' /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf
+      else
+          GPU_DEF="86800000923e0000"
+          GPU_BIN="${GPU:2:2}${GPU:0:2}0000${GPU:6:2}${GPU:4:2}0000"
+          KO_BIN=$(${XXD_PATH} -p /tmpRoot/lib/modules/i915.ko | tr -d \\n)
+          if [ $(echo -n "${KO_BIN}" | grep -i "${GPU_BIN}" | wc -l) -gt 0 ]; then
+              echo "Intel GPU is detected (${GPU}), already support"
+          else
+              echo "Intel GPU is detected (${GPU}), replace id"
+              if [ ! -f /tmpRoot/lib/modules/i915.ko.bak ]; then
+                  cp -f /tmpRoot/lib/modules/i915.ko /tmpRoot/lib/modules/i915.ko.bak
+              fi
+              KO_BIN=$(echo -n "${KO_BIN}" | sed "s/${GPU_DEF}/${GPU_BIN}/; s/308201f706092a86.*70656e6465647e0a//" 2>/dev/null)
+              echo -n "${KO_BIN}" | ${XXD_PATH} -r -p - > /tmpRoot/lib/modules/i915.ko
+          fi
+      fi
     fi
   fi
 
