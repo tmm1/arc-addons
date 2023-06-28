@@ -5,7 +5,7 @@ if [ "${1}" = "late" ]; then
   cp -vf /usr/sbin/codecpatch.sh /tmpRoot/usr/sbin/codecpatch.sh
   chmod 755 /tmpRoot/usr/sbin/codecpatch.sh
 
-  DEST="/tmpRoot/usr/lib/systemd/system/codecpatch.service"
+  DEST="/tmpRoot/lib/systemd/system/codecpatch.service"
   echo "[Unit]"                               >${DEST}
   echo "Description=Patch synocodectool"     >>${DEST}
   echo "After=multi-user.target"             >>${DEST}
@@ -19,5 +19,5 @@ if [ "${1}" = "late" ]; then
   echo "WantedBy=multi-user.target"          >>${DEST}
 
   mkdir -p /tmpRoot/lib/systemd/system/multi-user.target.wants
-  ln -sf /usr/lib/systemd/system/codecpatch.service /tmpRoot/lib/systemd/system/multi-user.target.wants/codecpatch.service
+  ln -sf /lib/systemd/system/codecpatch.service /tmpRoot/lib/systemd/system/multi-user.target.wants/codecpatch.service
 fi
