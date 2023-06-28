@@ -11,6 +11,7 @@ if [ "${1}" = "late" ]; then
   cp -vf /usr/bin/arpl-reboot.sh /tmpRoot/usr/bin
   cp -vf /usr/bin/arc-reboot.sh /tmpRoot/usr/bin
   cp -vf /usr/bin/grub-editenv /tmpRoot/usr/bin
+  cp -vf /usr/bin/i915ids /tmpRoot/usr/bin
 
   mount -t sysfs sysfs /sys
   modprobe acpi-cpufreq
