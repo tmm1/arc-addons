@@ -1,6 +1,6 @@
 version: 1
 name: amepatch
-description: "License for AME 3.1.0 (without Arc Patch)"
+description: "Dynamic Licensepatch for AME"
 all:
   install-script: "install.sh"
   copy: "all"
