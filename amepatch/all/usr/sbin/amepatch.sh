@@ -11,7 +11,6 @@ if [ -d "/var/packages/CodecPack" ]; then
     majorversion=$(cat /etc.defaults/VERSION | grep majorversion | sed 's/majorversion=//' | tr -d '"')
     minorversion=$(cat /etc.defaults/VERSION | grep minorversion | sed 's/minorversion=//' | tr -d '"')
     values=('669066909066906690' 'B801000000' '30')
-    hex_values=('1F28' '48F5' '4921' '4953' '4975' '9AC8')
     indices=(0 1 1 1 1 2)
     cp_usr_path='/var/packages/CodecPack/target/usr'
     so="$cp_usr_path/lib/libsynoame-license.so"
