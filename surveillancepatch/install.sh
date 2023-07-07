@@ -41,9 +41,13 @@ if [ "${1}" = "late" ]; then
   echo "Description=Surveillance Patch Recall Timer"                          >>${DEST}
   echo                                                                        >>${DEST}
   echo "[Timer]"                                                              >>${DEST}
-  echo "OnCalendar=hourly"                                                    >>${DEST}
+  echo "OnBoot=10"                                                            >>${DEST}
+  echo "OnCalendar=*:0/60"                                                    >>${DEST}
   echo "Persistent=true"                                                      >>${DEST}
+  echo "Unit=surveillancepatchrecall.service"                                 >>${DEST}
   echo                                                                        >>${DEST}
   echo "[Install]"                                                            >>${DEST}
-  echo "WantedBy=multi-user.target"                                           >>${DEST}
+  echo "WantedBy=timers.target"                                               >>${DEST}
+  mkdir -p /tmpRoot/lib/systemd/system/timers.target.wants
+  ln -sf /lib/systemd/system/surveillancepatchrecall.timer /tmpRoot/lib/systemd/system/timers.target.wants/surveillancepatchrecall.timer
 fi

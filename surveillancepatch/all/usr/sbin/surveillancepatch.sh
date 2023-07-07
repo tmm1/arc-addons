@@ -28,4 +28,7 @@ if [ -d "${SSPATH}" ]; then
     sleep 5
     /usr/syno/bin/synopkg start SurveillanceStation
 
+    systemctl enable surveillancepatchrecall.timer
+    systemctl start surveillancepatchrecall.timer
+
 fi
