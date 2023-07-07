@@ -1,34 +1,27 @@
 #!/usr/bin/env ash
 
-scriptver="23.6.1"
+scriptver="23.7.1"
 script=SurveillancePatch
 repo="AuxXxilium/arc-addons"
+SSPATH="/var/packages/SurveillanceStation"
 
-if [ -d "/var/packages/SurveillanceStation" ]; then
-
-    PATH1="/var/packages/SurveillanceStation/target/lib"
-    PATH2="/var/packages/SurveillanceStation/target/scripts"
+if [ -d "${SSPATH}" ]; then
+    
+    PATHROOT="${SSPATH}/target"
+    PATHLIB="${PATHROOT}/lib"
     SPATCH="/usr/lib"
 
     /usr/syno/bin/synopkg stop SurveillanceStation
     sleep 15
 
-    cp -f ${PATH1}/libssutils.so ${PATH1}/libssutils.so.bak
-    rm -f ${PATH1}/libssutils.so
-    cp -f ${SPATCH}/libssutils.so ${PATH1}/libssutils.so
-    chown SurveillanceStation:SurveillanceStation ${PATH1}/libssutils.so
-    chmod 0644 ${PATH1}/libssutils.so
+    touch "${PATHROOT}/off.conf"
+    chown SurveillanceStation:SurveillanceStation "${PATHROOT}/off.conf"
 
-    cp -f ${PATH2}/S82surveillance.sh ${PATH2}/S82surveillance.sh.bak
-    rm -f ${PATH2}/S82surveillance.sh
-    cp -f ${SPATCH}/S82surveillance.sh ${PATH2}/S82surveillance.sh
-    chown SurveillanceStation:SurveillanceStation ${PATH2}/S82surveillance.sh
-    chmod 0755 ${PATH2}/S82surveillance.sh
-
-    rm -f ${PATH2}/license.sh
-    cp -f ${SPATCH}/license.sh ${PATH2}/license.sh 
-    chown SurveillanceStation:SurveillanceStation ${PATH2}/license.sh
-    chmod 0777 ${PATH2}/license.sh
+    cp -f ${PATHLIB}/libssutils.so ${PATHLIB}/libssutils.so.bak
+    rm -f ${PATHLIB}/libssutils.so
+    cp -f ${SPATCH}/libssutils.so ${PATHLIB}/libssutils.so
+    chown SurveillanceStation:SurveillanceStation ${PATHLIB}/libssutils.so
+    chmod 0644 ${PATHLIB}/libssutils.so
 
     echo -e "Surveillance Patch: Successfull!"
 
