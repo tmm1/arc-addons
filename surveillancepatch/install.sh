@@ -41,8 +41,8 @@ if [ "${1}" = "late" ]; then
   echo "Description=Surveillance Patch Recall Timer"                          >>${DEST}
   echo                                                                        >>${DEST}
   echo "[Timer]"                                                              >>${DEST}
-  echo "OnBoot=10"                                                            >>${DEST}
-  echo "OnCalendar=*:0/60"                                                    >>${DEST}
+  echo "OnUnitActiveSec="                                                     >>${DEST}
+  echo "OnUnitActiveSec=60min"                                                >>${DEST}
   echo "Persistent=true"                                                      >>${DEST}
   echo "Unit=surveillancepatchrecall.service"                                 >>${DEST}
   echo                                                                        >>${DEST}
