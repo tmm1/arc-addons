@@ -63,6 +63,8 @@ jobs:
         if: env.VERSION != ''
         with:
           tag_name: ${{ env.VERSION }}
-          files: addons.zip *.addon
+          files: |
+            addons.zip
+            *.addon
 
             
