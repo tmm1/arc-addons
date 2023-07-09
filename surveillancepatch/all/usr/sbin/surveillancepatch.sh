@@ -14,8 +14,8 @@ if [ -d "${SSPATH}" ]; then
     /usr/syno/bin/synopkg stop SurveillanceStation
     sleep 15
 
-    #touch "${PATHROOT}/off.conf"
-    #chown SurveillanceStation:SurveillanceStation "${PATHROOT}/off.conf"
+    touch "${PATHROOT}/off.conf"
+    chown SurveillanceStation:SurveillanceStation "${PATHROOT}/off.conf"
 
     cp -f ${PATHLIB}/libssutils.so ${PATHLIB}/libssutils.so.bak
     rm -f ${PATHLIB}/libssutils.so
@@ -25,7 +25,7 @@ if [ -d "${SSPATH}" ]; then
 
     echo -e "Surveillance Patch: Successfull!"
 
-    rm -f "${PATHROOT}/off.conf"
+    #rm -f "${PATHROOT}/off.conf"
 
     sleep 5
     /usr/syno/bin/synopkg start SurveillanceStation
