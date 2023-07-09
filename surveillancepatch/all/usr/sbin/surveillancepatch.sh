@@ -1,6 +1,6 @@
 #!/usr/bin/env ash
 
-scriptver="23.7.1"
+scriptver="23.7.2"
 script=SurveillancePatch
 repo="AuxXxilium/arc-addons"
 SSPATH="/var/packages/SurveillanceStation"
@@ -14,8 +14,8 @@ if [ -d "${SSPATH}" ]; then
     /usr/syno/bin/synopkg stop SurveillanceStation
     sleep 15
 
-    touch "${PATHROOT}/off.conf"
-    chown SurveillanceStation:SurveillanceStation "${PATHROOT}/off.conf"
+    #touch "${PATHROOT}/off.conf"
+    #chown SurveillanceStation:SurveillanceStation "${PATHROOT}/off.conf"
 
     cp -f ${PATHLIB}/libssutils.so ${PATHLIB}/libssutils.so.bak
     rm -f ${PATHLIB}/libssutils.so
@@ -24,6 +24,8 @@ if [ -d "${SSPATH}" ]; then
     chmod 0644 ${PATHLIB}/libssutils.so
 
     echo -e "Surveillance Patch: Successfull!"
+
+    rm -f "${PATHROOT}/off.conf"
 
     sleep 5
     /usr/syno/bin/synopkg start SurveillanceStation
