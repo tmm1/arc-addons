@@ -1,6 +1,6 @@
 #!/usr/bin/env ash
 
-scriptver="23.7.2"
+scriptver="23.7.17"
 script=SurveillancePatch
 repo="AuxXxilium/arc-addons"
 SSPATH="/var/packages/SurveillanceStation"
