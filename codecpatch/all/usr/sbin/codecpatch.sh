@@ -1,6 +1,6 @@
 #!/usr/bin/env ash
 
-scriptver="23.6.1"
+scriptver="23.7.1"
 script=Codecpatch
 repo="AuxXxilium/arc-addons"
 
@@ -75,7 +75,7 @@ patch () {
         local backup_identifier="${original_hash:0:8}"
         if [[ -f "$backup_path/$bin_file.$backup_identifier" ]]; then
             backup_hash="$(sha1sum "$backup_path/$bin_file.$backup_identifier" | cut -f1 -d\ )"
-            if [[ "$original_hash"="$backup_hash" ]]; then
+            if [[ "$original_hash" = "$backup_hash" ]]; then
                 echo "Valid backup and patched synocodectool detected. Skipping patch."
                 exit 0
             else

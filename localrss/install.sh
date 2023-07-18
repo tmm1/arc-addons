@@ -1,7 +1,7 @@
 #!/usr/bin/env ash
 
 # External incoming required ${MLINK} and ${MCHECKSUM}
-if [ -z "${MLINK}" -o -z "${MCHECKSUM}" ]; then
+if [ -z "${MLINK}" ] || [ -z "${MCHECKSUM}" ]; then
   echo "MLINK or MCHECKSUM is not set"
   return
 fi

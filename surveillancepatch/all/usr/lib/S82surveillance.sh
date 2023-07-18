@@ -43,7 +43,7 @@ Start()
 
 	UpdateSSDbgLogRotateConf
 
-	if [ true == $(IsNonRecordingMode) -a true == $(IsServiceDataLinkAlive) ]; then
+	if [ true == $(IsNonRecordingMode) ] && [ true == $(IsServiceDataLinkAlive) ]; then
 		rm -f ${SS_NON_RECORDING_FILE}
 	fi
 
@@ -140,4 +140,4 @@ main()
 	esac
 }
 
-main "$@"
+main "$*"

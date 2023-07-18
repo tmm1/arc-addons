@@ -57,7 +57,7 @@ if [ "${1}" = "late" ]; then
     export LD_LIBRARY_PATH=/tmpRoot/usr/bin:/tmpRoot/usr/lib:${LD_LIBRARY_PATH}
     GPU="$(${LSPCI_PATH} -n | grep 0300 | grep 8086 | cut -d " " -f 3 | ${SED_PATH} -e 's/://g')"
     echo "${GPU}" >/tmpRoot/root/i915.GPU
-    if [ -n "${GPU}" -a $(echo -n "${GPU}" | wc -c) -eq 8 ]; then
+    if [ -n "${GPU}" ] && [ $(echo -n "${GPU}" | wc -c) -eq 8 ]; then
       if [ $(grep -i ${GPU} /usr/bin/i915ids | wc -l) -eq 0 ]; then
         echo "Intel GPU is not detected (${GPU}), nothing to do"
         #${SED_PATH} -i 's/^i915/# i915/g' /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf

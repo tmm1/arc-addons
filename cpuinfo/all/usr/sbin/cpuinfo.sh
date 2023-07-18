@@ -1,6 +1,6 @@
 #!/usr/bin/env ash
 
-scriptver="23.6.1"
+scriptver="23.7.1"
 script=CPUInfo
 repo="AuxXxilium/arc-addons"
 
@@ -8,7 +8,7 @@ repo="AuxXxilium/arc-addons"
 # Location Check
 # ==============================================================================
 
-LC_CHK=`cat /etc/synoinfo.conf | grep timezone | awk -F= '{print $2}' | sed 's/"//g'`
+LC_CHK=$(cat /etc/synoinfo.conf | grep timezone | awk -F= '{print $2}' | sed 's/"//g')
 
 # ==============================================================================
 # Y or N Function
@@ -105,42 +105,42 @@ PREPARE_FN () {
 }
 
 GATHER_FN () {
-    cpu_vendor_chk=`cat /proc/cpuinfo | grep model | grep name | sort -u | sed "s/(.)//g" | sed "s/(..)//g" | sed "s/CPU//g" | grep AMD | wc -l`
+    cpu_vendor_chk=$(cat /proc/cpuinfo | grep model | grep name | sort -u | sed "s/(.)//g" | sed "s/(..)//g" | sed "s/CPU//g" | grep AMD | wc -l)
     if [ "$cpu_vendor_chk" -gt "0" ]
     then
         cpu_vendor="AMD"
     else
-        cpu_vendor_chk=`cat /proc/cpuinfo | grep model | grep name | sort -u | sed "s/(.)//g" | sed "s/(..)//g" | sed "s/CPU//g" | grep Intel | wc -l`
+        cpu_vendor_chk=$(cat /proc/cpuinfo | grep model | grep name | sort -u | sed "s/(.)//g" | sed "s/(..)//g" | sed "s/CPU//g" | grep Intel | wc -l)
         if [ "$cpu_vendor_chk" -gt "0" ]
         then
             cpu_vendor="Intel"
         else    
-            cpu_vendor=`cat /proc/cpuinfo | grep Hardware | sort -u | awk '{print $3}' | head -1`
+            cpu_vendor=$(cat /proc/cpuinfo | grep Hardware | sort -u | awk '{print $3}' | head -1)
             if [ -z "$cpu_vendor" ]
             then
-                cpu_vendor=`cat /proc/cpuinfo grep model | grep name | sort -u | awk '{print $3}' | head -1`
+                cpu_vendor=$(cat /proc/cpuinfo grep model | grep name | sort -u | awk '{print $3}' | head -1)
             fi
         fi
     fi
     if [ "$cpu_vendor" == "AMD" ]
     then
-        pro_cnt=`cat /proc/cpuinfo | grep model | grep name | sort -u | awk -F: '{print $2}' | sed "s/^\s*AMD//g" | sed "s/^\s//g" | head -1 | grep -wi "PRO" | wc -l`
+        pro_cnt=$(cat /proc/cpuinfo | grep model | grep name | sort -u | awk -F: '{print $2}' | sed "s/^\s*AMD//g" | sed "s/^\s//g" | head -1 | grep -wi "PRO" | wc -l)
         if [ "$pro_cnt" -gt 0 ]
         then
             pro_chk="-wi PRO"
         else
             pro_chk="-v PRO"
         fi
-        cpu_series=`cat /proc/cpuinfo | grep model | grep name | sort -u | awk -F: '{print $2}' | sed "s/^\s*AMD//g" | sed "s/^\s//g" | head -1 | awk '{ for(i = NF; i > 1; i--) if ($i ~ /^[0-9]/) { for(j=i;j<=NF;j++)printf("%s ", $j);print("\n");break; }}' | sed "s/ *$//g"`
+        cpu_series=$(cat /proc/cpuinfo | grep model | grep name | sort -u | awk -F: '{print $2}' | sed "s/^\s*AMD//g" | sed "s/^\s//g" | head -1 | awk '{ for(i = NF; i > 1; i--) if ($i ~ /^[0-9]/) { for(j=i;j<=NF;j++)printf("%s ", $j);print("\n");break; }}' | sed "s/ *$//g")
         if  [ -z "$cpu_series" ]
         then
-            cpu_series=`cat /proc/cpuinfo | grep model | grep name | sort -u | awk -F: '{print $2}' | sed "s/^\s*AMD//g" | sed "s/^\s//g" | head -1 | awk '{ for(i = NF; i >= 1; i--) if ($i ~ ".*-.*") { print $i }}' | sed "s/ *$//g"`
+            cpu_series=$(cat /proc/cpuinfo | grep model | grep name | sort -u | awk -F: '{print $2}' | sed "s/^\s*AMD//g" | sed "s/^\s//g" | head -1 | awk '{ for(i = NF; i >= 1; i--) if ($i ~ ".*-.*") { print $i }}' | sed "s/ *$//g")
         fi
-        cpu_family=`cat /proc/cpuinfo | grep model | grep name | sort -u | awk -F: '{print $2}' | sed "s/^\s*AMD//g" | sed "s/^\s//g" | head -1 | awk -F"$cpu_series" '{print $1}' | sed "s/ *$//g"`
+        cpu_family=$(cat /proc/cpuinfo | grep model | grep name | sort -u | awk -F: '{print $2}' | sed "s/^\s*AMD//g" | sed "s/^\s//g" | head -1 | awk -F"$cpu_series" '{print $1}' | sed "s/ *$//g")
     elif [ "$cpu_vendor" == "Intel" ]
     then
-        cpu_family=`cat /proc/cpuinfo | grep model | grep name | sort -u | awk '{ for(i = 1; i < NF; i++) if ($i ~ /^Intel/) { for(j=i;j<=NF;j++)printf("%s ", $j);printf("\n") }}' | awk -F@ '{ print $1 }' | sed "s/(.)//g" | sed "s/(..)//g" | sed "s/ CPU//g" | awk '{print $2}' | head -1 | sed "s/ *$//g"`
-        cpu_series=`cat /proc/cpuinfo | grep model | grep name | sort -u | awk '{ for(i = 1; i < NF; i++) if ($i ~ /^Intel/) { for(j=i;j<=NF;j++)printf("%s ", $j);printf("\n") }}' | awk -F@ '{ print $1 }' | sed "s/(.)//g" | sed "s/(..)//g" | sed "s/ CPU//g" | awk -F"$cpu_family " '{print $2}' | head -1 | sed "s/ *$//g"`
+        cpu_family=$(cat /proc/cpuinfo | grep model | grep name | sort -u | awk '{ for(i = 1; i < NF; i++) if ($i ~ /^Intel/) { for(j=i;j<=NF;j++)printf("%s ", $j);printf("\n") }}' | awk -F@ '{ print $1 }' | sed "s/(.)//g" | sed "s/(..)//g" | sed "s/ CPU//g" | awk '{print $2}' | head -1 | sed "s/ *$//g")
+        cpu_series=$(cat /proc/cpuinfo | grep model | grep name | sort -u | awk '{ for(i = 1; i < NF; i++) if ($i ~ /^Intel/) { for(j=i;j<=NF;j++)printf("%s ", $j);printf("\n") }}' | awk -F@ '{ print $1 }' | sed "s/(.)//g" | sed "s/(..)//g" | sed "s/ CPU//g" | awk -F"$cpu_family " '{print $2}' | head -1 | sed "s/ *$//g")
         if [ -z "$cpu_series" ]
         then
             cpu_series="Unknown"
@@ -150,26 +150,26 @@ GATHER_FN () {
             cpu_series_b="$cpu_series"
             cpu_series="$cpu_family $cpu_series"
         else
-            m_chk=`echo "$cpu_series" | grep -wi ".* M .*" | wc -l`
+            m_chk=$(echo "$cpu_series" | grep -wi ".* M .*" | wc -l)
             if [ "$m_chk" -gt 0 ]
             then
-                cpu_series=`echo "$cpu_series" | sed "s/ M /-/g" | awk '{print $0"M"}'`
+                cpu_series=$(echo "$cpu_series" | sed "s/ M /-/g" | awk '{print $0"M"}')
             fi
         fi
     else    
-        cpu_family=`cat /proc/cpuinfo | grep model | grep name | sort -u | awk -F: '{print $2}' | sed "s/^\s*$cpu_vendor//g" | sed "s/^\s//g" | head -1`
+        cpu_family=$(cat /proc/cpuinfo | grep model | grep name | sort -u | awk -F: '{print $2}' | sed "s/^\s*$cpu_vendor//g" | sed "s/^\s//g" | head -1)
         cpu_series=""    
     fi
 ###
     cpu_detail=""  
 ###
 
-    PICNT=`cat /proc/cpuinfo | grep "^physical id" | sort -u | wc -l`
-    CICNT=`cat /proc/cpuinfo | grep "^core id" | sort -u | wc -l`
-    CCCNT=`cat /proc/cpuinfo | grep "^cpu cores" | sort -u | awk '{print $NF}'`
-    CSCNT=`cat /proc/cpuinfo | grep "^siblings" | sort -u | awk '{print $NF}'`
-    THCNT=`cat /proc/cpuinfo | grep "^processor" | wc -l`
-    ODCNT=`cat /proc/cpuinfo | grep "processor" | wc -l`
+    PICNT=$(cat /proc/cpuinfo | grep "^physical id" | sort -u | wc -l)
+    CICNT=$(cat /proc/cpuinfo | grep "^core id" | sort -u | wc -l)
+    CCCNT=$(cat /proc/cpuinfo | grep "^cpu cores" | sort -u | awk '{print $NF}')
+    CSCNT=$(cat /proc/cpuinfo | grep "^siblings" | sort -u | awk '{print $NF}')
+    THCNT=$(cat /proc/cpuinfo | grep "^processor" | wc -l)
+    ODCNT=$(cat /proc/cpuinfo | grep "processor" | wc -l)
     if [ "$THCNT" -gt "0" ] && [ "$PICNT" == "0" ] && [ "$CICNT" == "0" ] && [ "$CCCNT" == "" ] && [ "$CSCNT" == "" ]
     then
         PICNT="1"
@@ -213,15 +213,15 @@ PERFORM_FN () {
         then
             if [ "$MA_VER" -ge "7" ]
             then
-                cpu_info=`echo "${dt}.cpu_vendor=\"${cpu_vendor}\",${dt}.cpu_family=\"${cpu_family}\",${dt}.cpu_series=\"${cpu_series}\",${dt}.cpu_cores=\"${cpu_cores}\",${dt}.cpu_detail=\"${cpu_detail}\","`
+                cpu_info=$(echo "${dt}.cpu_vendor=\"${cpu_vendor}\",${dt}.cpu_family=\"${cpu_family}\",${dt}.cpu_series=\"${cpu_series}\",${dt}.cpu_cores=\"${cpu_cores}\",${dt}.cpu_detail=\"${cpu_detail}\",")
                 sed -i "s/Ext.isDefined(${dt}.cpu_vendor/${cpu_info}Ext.isDefined(${dt}.cpu_vendor/g" $BKUP_DIR/admin_center.js
                 if [ -f "$BKUP_DIR/System.js" ]
                 then
-                    cpu_info_s=`echo ${cpu_info} | sed "s/${dt}.cpu/${st}.cpu/g"`
+                    cpu_info_s=$(echo ${cpu_info} | sed "s/${dt}.cpu/${st}.cpu/g")
                     sed -i "s/Ext.isDefined(${st}.cpu_vendor/${cpu_info_s}Ext.isDefined(${st}.cpu_vendor/g" $BKUP_DIR/System.js
                 fi
             else
-                cpu_info=`echo "${dt}.cpu_vendor=\"${cpu_vendor}\";${dt}.cpu_family=\"${cpu_family}\";${dt}.cpu_series=\"${cpu_series}\";${dt}.cpu_cores=\"${cpu_cores}\";${dt}.cpu_detail=\"${cpu_detail}\";"`
+                cpu_info=$(echo "${dt}.cpu_vendor=\"${cpu_vendor}\";${dt}.cpu_family=\"${cpu_family}\";${dt}.cpu_series=\"${cpu_series}\";${dt}.cpu_cores=\"${cpu_cores}\";${dt}.cpu_detail=\"${cpu_detail}\";")
                 sed -i "s/if(Ext.isDefined(${dt}.cpu_vendor/${cpu_info}if(Ext.isDefined(${dt}.cpu_vendor/g" $BKUP_DIR/admin_center.js
             fi
             sed -i "s/${dt}.cpu_series)])/${dt}.cpu_series,${dt}.cpu_detail)])/g" $BKUP_DIR/admin_center.js
@@ -231,14 +231,14 @@ PERFORM_FN () {
                 sed -i "s/${st}.cpu_series)])/${st}.cpu_series,${st}.cpu_detail)])/g" $BKUP_DIR/System.js
                 sed -i "s/{2}\",${st}.cpu_vendor/{2} {3}\",${st}.cpu_vendor/g" $BKUP_DIR/System.js                  
             fi
-            cpu_info_m=`echo "{name: \"cpu_series\",renderer: function(value){var cpu_vendor=\"${cpu_vendor}\";var cpu_family=\"${cpu_family}\";var cpu_series=\"${cpu_series}\";var cpu_cores=\"${cpu_cores}\";return Ext.String.format('{0} {1} {2} [ {3} ]', cpu_vendor, cpu_family, cpu_series, cpu_cores);},label: _T(\"status\", \"cpu_model_name\")},"`
+            cpu_info_m=$(echo "{name: \"cpu_series\",renderer: function(value){var cpu_vendor=\"${cpu_vendor}\";var cpu_family=\"${cpu_family}\";var cpu_series=\"${cpu_series}\";var cpu_cores=\"${cpu_cores}\";return Ext.String.format('{0} {1} {2} [ {3} ]', cpu_vendor, cpu_family, cpu_series, cpu_cores);},label: _T(\"status\", \"cpu_model_name\")},")
             sed -i "s/\"ds_model\")},/\"ds_model\")},${cpu_info_m}/g" $BKUP_DIR/mobile.js
         else
             if [ "$MI_VER" -gt "0" ]
             then
-                cpu_info=`echo "${dt}.cpu_vendor=\"${cpu_vendor}\";${dt}.cpu_family=\"${cpu_family}\";${dt}.cpu_series=\"${cpu_series}\";${dt}.cpu_cores=\"${cpu_cores}\";"`
+                cpu_info=$(echo "${dt}.cpu_vendor=\"${cpu_vendor}\";${dt}.cpu_family=\"${cpu_family}\";${dt}.cpu_series=\"${cpu_series}\";${dt}.cpu_cores=\"${cpu_cores}\";")
             else
-                cpu_info=`echo "${dt}.cpu_vendor=\"${cpu_vendor}\";${dt}.cpu_family=\"${cpu_family} ${cpu_series}\";${dt}.cpu_cores=\"${cpu_cores}\";"`
+                cpu_info=$(echo "${dt}.cpu_vendor=\"${cpu_vendor}\";${dt}.cpu_family=\"${cpu_family} ${cpu_series}\";${dt}.cpu_cores=\"${cpu_cores}\";")
             fi
             sed -i "s/if(Ext.isDefined(${dt}.cpu_vendor/${cpu_info}if(Ext.isDefined(${dt}.cpu_vendor/g" $BKUP_DIR/admin_center.js
         fi
@@ -281,18 +281,18 @@ RERUN_FN () {
         then
             if [ "$MA_VER" -ge "7" ]
             then
-                info_cnt=`cat $WORK_DIR/admin_center.js | egrep "${dt}.model\]\),Ext.isDefined\(${dt}.cpu_vendor" | wc -l`
+                info_cnt=$(cat $WORK_DIR/admin_center.js | egrep "${dt}.model\]\),Ext.isDefined\(${dt}.cpu_vendor" | wc -l)
                 if [ -f "$BKUP_DIR/System.js" ]
                 then
-                    info_cnt_s=`cat $WORK_DIR/admin_center.js | egrep "${st}.model\]\),Ext.isDefined\(${st}.cpu_vendor" | wc -l`
+                    info_cnt_s=$(cat $WORK_DIR/admin_center.js | egrep "${st}.model\]\),Ext.isDefined\(${st}.cpu_vendor" | wc -l)
                 fi                
             else
-                info_cnt=`cat $WORK_DIR/admin_center.js | egrep ".model\]\);if\(Ext.isDefined|.model\]\)\}if\(Ext.isDefined" | wc -l`              
+                info_cnt=$(cat $WORK_DIR/admin_center.js | egrep ".model\]\);if\(Ext.isDefined|.model\]\)\}if\(Ext.isDefined" | wc -l)
             fi
-            info_cnt_m=`cat $MWORK_DIR/mobile.js | grep "ds_model\")},{name:\"ram_size" | wc -l`
+            info_cnt_m=$(cat $MWORK_DIR/mobile.js | grep "ds_model\")},{name:\"ram_size" | wc -l)
             if [ "$info_cnt" -eq "0" ] && [ "$info_cnt_m" -eq "0" ]
             then
-                ODCNT_CHK=`cat $WORK_DIR/admin_center.js | grep "cpu_cores=\"$ODCNT\"" | wc -l`
+                ODCNT_CHK=$(cat $WORK_DIR/admin_center.js | grep "cpu_cores=\"$ODCNT\"" | wc -l)
                 if [ "$ODCNT_CHK" -gt "0" ]
                 then
                     cpu_cores="$ODCNT"
@@ -310,7 +310,7 @@ RERUN_FN () {
                     sed -i "s/${dt}.cpu_detail)])/)])/g" $WORK_DIR/admin_center.js
                     sed -i "s/{2} {3}\",${dt}.cpu_vendor/{2}\",${dt}.cpu_vendor/g" $WORK_DIR/admin_center.js
 
-                    ODCNT_CHK=`cat $MWORK_DIR/mobile.js | grep "cpu_cores=\"$ODCNT\"" | wc -l`
+                    ODCNT_CHK=$(cat $MWORK_DIR/mobile.js | grep "cpu_cores=\"$ODCNT\"" | wc -l)
                     if [ "$ODCNT_CHK" -gt "0" ]
                     then
                         cpu_cores="$ODCNT"

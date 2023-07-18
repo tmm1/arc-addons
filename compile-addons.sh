@@ -3,14 +3,14 @@
 set -e
 
 TMP_PATH="/tmp"
-YQ_BIN="`dirname $0`/yq"
+YQ_BIN="$(dirname $0)/yq"
 TOOLKIT_VER="7.1"
 
 ###############################################################################
 #
 # 1 - Path of key
 function hasConfigKey() {
-  [ "`${YQ_BIN} eval '.'${1}' | has("'${2}'")' "${3}"`" == "true" ] && return 0 || return 1
+  [ "$(${YQ_BIN} eval '.'${1}' | has("'${2}'")' "${3}")" == "true" ] && return 0 || return 1
 }
 
 ###############################################################################
@@ -19,7 +19,7 @@ function hasConfigKey() {
 # 2 - Path of yaml config file
 # Return Value
 function readConfigKey() {
-  RESULT=`${YQ_BIN} eval '.'${1}' | explode(.)' "${2}"`
+  RESULT=$(${YQ_BIN} eval '.'${1}' | explode(.)' "${2}")
   [ "${RESULT}" == "null" ] && echo "" || echo ${RESULT}
 }
 
@@ -51,7 +51,7 @@ function compile-addon() {
     return 0
   fi
   # Check if has compile script
-  COMPILESCRIPT=`readConfigKey "compile-script" "${MANIFEST}"`
+  COMPILESCRIPT=$(readConfigKey "compile-script" "${MANIFEST}")
   if [ -n "${COMPILESCRIPT}" ]; then
     echo "Running compile script"
     pushd . >/dev/null
@@ -66,7 +66,7 @@ function compile-addon() {
     echo -e "\033[1;32m Processing 'all' section\033[0m"
     HAS_FILES=0
     # Get name of script to install, if defined. This script has low priority
-    INSTALL_SCRIPT="`readConfigKey "all.install-script" "${MANIFEST}"`"
+    INSTALL_SCRIPT="$(readConfigKey "all.install-script" "${MANIFEST}")"
     if [ -n "${INSTALL_SCRIPT}" ]; then
       if [ -f "${1}/${INSTALL_SCRIPT}" ]; then
         echo -e "\033[1;35m  Copying install script ${INSTALL_SCRIPT}\033[0m"
@@ -78,7 +78,7 @@ function compile-addon() {
       fi
     fi
     # Get folder name for copy
-    COPY_PATH="`readConfigKey "all.copy" "${MANIFEST}"`"
+    COPY_PATH="$(readConfigKey "all.copy" "${MANIFEST}")"
     # If folder exists, copy
     if [ -n "${COPY_PATH}" ]; then
       if [ -d "${1}/${COPY_PATH}" ]; then
@@ -102,7 +102,7 @@ function compile-addon() {
   # Now check files for individual models
   unset AVAL_FOR
   declare -a AVAL_FOR
-  for P in `readConfigEntriesArray "available-for" "${MANIFEST}"`; do
+  for P in $(readConfigEntriesArray "available-for" "${MANIFEST}"); do
     AVAL_FOR+=(${P})
   done
 
@@ -111,7 +111,7 @@ function compile-addon() {
     echo -e "\033[1;32m Processing '${P}' platform-kver section\033[0m"
     HAS_FILES=0
     # Get name of script to install, if defined. This script has high priority
-    INSTALL_SCRIPT="`readConfigKey 'available-for."'${P}'".install-script' "${MANIFEST}"`"
+    INSTALL_SCRIPT="$(readConfigKey 'available-for."'${P}'".install-script' "${MANIFEST}")"
     if [ -n "${INSTALL_SCRIPT}" ]; then
       if [ -f "${1}/${INSTALL_SCRIPT}" ]; then
         echo -e "\033[1;35m  Copying install script ${INSTALL_SCRIPT}\033[0m"
@@ -123,7 +123,7 @@ function compile-addon() {
       fi
     fi
     # Get folder name for copy
-    COPY_PATH="`readConfigKey 'available-for."'${P}'".copy' "${MANIFEST}"`"
+    COPY_PATH="$(readConfigKey 'available-for."'${P}'".copy' "${MANIFEST}")"
     # If folder exists, copy
     if [ -n "${COPY_PATH}" ]; then
       if [ -d "${1}/${COPY_PATH}" ]; then
@@ -135,12 +135,12 @@ function compile-addon() {
         echo -e "\033[1;33m  WARNING: folder '${1}/${COPY_PATH}' not found\033[0m"
       fi
     fi
-    HAS_MODULES="`readConfigKey 'available-for."'${P}'".modules' "${MANIFEST}"`"
+    HAS_MODULES="$(readConfigKey 'available-for."'${P}'".modules' "${MANIFEST}")"
     # Check if has modules for compile
     if [ "${HAS_MODULES}" = "true" ]; then
       echo "Compiling modules"
-      PLATFORM="`echo ${P} | cut -d'-' -f1`"
-      KVER="`echo ${P} | cut -d'-' -f2`"
+      PLATFORM="$(echo ${P} | cut -d'-' -f1)"
+      KVER="$(echo ${P} | cut -d'-' -f2)"
       # Compile using docker
       rm -rf "${TMP_PATH}/${1}-mods"
       mkdir -p "${TMP_PATH}/${1}-mods"
@@ -172,8 +172,8 @@ if [ $# -ge 1 ]; then
     compile-addon ${A%/}
   done
 else
-  while read D; do
-    DRIVER=`basename ${D}`
+  while read -r D; do
+    DRIVER=$(basename ${D})
     [ "${DRIVER:0:1}" = "." ] && continue
     compile-addon ${DRIVER}
   done < <(find -maxdepth 1 -type d)
