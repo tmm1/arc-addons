@@ -14,7 +14,7 @@ LC_CHK=$(cat /etc/synoinfo.conf | grep timezone | awk -F= '{print $2}' | sed 's/
 # Y or N Function
 # ==============================================================================
 READ_YN () { # $1:question $2:default
-   read -n1 -p "$1" Y_N
+   read  -r -n1 -p "$1" Y_N
     case "$Y_N" in
     y) Y_N="y"
          echo -e "\n" ;;
@@ -180,7 +180,7 @@ GATHER_FN () {
     if [ "$PICNT" -gt "1" ]
     then
         TPCNT="$PICNT CPUs"
-        TCCNT=`expr $PICNT \* $CCCNT`
+        TCCNT=$(expr $PICNT \* $CCCNT)
     else
         TPCNT="$PICNT CPU"
         TCCNT="$CCCNT"
@@ -281,13 +281,13 @@ RERUN_FN () {
         then
             if [ "$MA_VER" -ge "7" ]
             then
-                info_cnt=$(cat $WORK_DIR/admin_center.js | egrep "${dt}.model\]\),Ext.isDefined\(${dt}.cpu_vendor" | wc -l)
+                info_cnt=$(cat $WORK_DIR/admin_center.js | grep -E "${dt}.model\]\),Ext.isDefined\(${dt}.cpu_vendor" | wc -l)
                 if [ -f "$BKUP_DIR/System.js" ]
                 then
-                    info_cnt_s=$(cat $WORK_DIR/admin_center.js | egrep "${st}.model\]\),Ext.isDefined\(${st}.cpu_vendor" | wc -l)
+                    info_cnt_s=$(cat $WORK_DIR/admin_center.js | grep -E "${st}.model\]\),Ext.isDefined\(${st}.cpu_vendor" | wc -l)
                 fi                
             else
-                info_cnt=$(cat $WORK_DIR/admin_center.js | egrep ".model\]\);if\(Ext.isDefined|.model\]\)\}if\(Ext.isDefined" | wc -l)
+                info_cnt=$(cat $WORK_DIR/admin_center.js | grep -E ".model\]\);if\(Ext.isDefined|.model\]\)\}if\(Ext.isDefined" | wc -l)
             fi
             info_cnt_m=$(cat $MWORK_DIR/mobile.js | grep "ds_model\")},{name:\"ram_size" | wc -l)
             if [ "$info_cnt" -eq "0" ] && [ "$info_cnt_m" -eq "0" ]
@@ -417,7 +417,7 @@ MWORK_DIR="/usr/syno/synoman/mobile/ui"
 BKUP_DIR="/root/Xpenology_backup"
 VER_DIR="/etc.defaults"
  
-cecho c "DSM CPU Information Change Tool ver. \033[0;31m"$scriptver"\033[00m\n"
+cecho c "DSM CPU Information Change Tool ver. \033[0;31m${scriptver}\033[00m\n"
 
 if [ -d "$VER_DIR" ]
 then
@@ -428,11 +428,11 @@ fi
 
 if [ -f "$VER_FIL" ]
 then
-    MA_VER=`cat $VER_FIL | grep majorversion | awk -F \= '{print $2}' | sed 's/\"//g'`
-    MI_VER=`cat $VER_FIL | grep minorversion | awk -F \= '{print $2}' | sed 's/\"//g'`
-    PD_VER=`cat $VER_FIL | grep productversion | awk -F \= '{print $2}' | sed 's/\"//g'`
-    BL_NUM=`cat $VER_FIL | grep buildnumber | awk -F \= '{print $2}' | sed 's/\"//g'`    
-    BL_FIX=`cat $VER_FIL | grep smallfixnumber | awk -F \= '{print $2}' | sed 's/\"//g'`
+    MA_VER=$(cat $VER_FIL | grep majorversion | awk -F \= '{print $2}' | sed 's/\"//g')
+    MI_VER=$(cat $VER_FIL | grep minorversion | awk -F \= '{print $2}' | sed 's/\"//g')
+    PD_VER=$(cat $VER_FIL | grep productversion | awk -F \= '{print $2}' | sed 's/\"//g')
+    BL_NUM=$(cat $VER_FIL | grep buildnumber | awk -F \= '{print $2}' | sed 's/\"//g')
+    BL_FIX=$(cat $VER_FIL | grep smallfixnumber | awk -F \= '{print $2}' | sed 's/\"//g')
     if [ "$BL_FIX" -gt "0" ]
     then
         BL_UP="Update $BL_FIX"
@@ -444,7 +444,7 @@ else
 fi
 
 BL_CHK=$BL_NUM$BL_FIX
-TIME=`date +%Y%m%d%H%M%S`"_"$BL_CHK
+TIME=$(date +%Y%m%d%H%M%S)"_"$BL_CHK
 STIME="$TIME"
 
 if [ "$MA_VER" -ge "6" ]

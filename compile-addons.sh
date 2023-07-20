@@ -44,7 +44,7 @@ function compile-addon() {
   OUT_PATH="${TMP_PATH}/${1}"
   rm -rf "${OUT_PATH}"
   mkdir -p "${OUT_PATH}"
-  VER=`readConfigKey "version" "${MANIFEST}"`
+  VER=$(readConfigKey "version" "${MANIFEST}")
   # Check manifest version
   if [ ${VER} -ne 1 ]; then
     echo -e "\033[1;44mWarning: version ${VER} of manifest not suported, ignoring it\033[0m"
@@ -146,7 +146,7 @@ function compile-addon() {
       mkdir -p "${TMP_PATH}/${1}-mods"
 #      docker run --rm -t -v "${TMP_PATH}/${1}-mods":/output \
 #        -v "${PWD}/${1}/src/${KVER}":/input fbelavenuto/syno-toolkit:${PLATFORM}-${TOOLKIT_VER} compile-module
-      docker run --rm -t --user `id -u` -v "${TMP_PATH}/${1}-mods":/output \
+      docker run --rm -t --user $(id -u) -v "${TMP_PATH}/${1}-mods":/output \
         -v "${PWD}/${1}/src/${KVER}":/input fbelavenuto/syno-compiler:${TOOLKIT_VER} compile-module ${PLATFORM}
       mkdir -p "${OUT_PATH}/${P}/root/modules"
       mv "${TMP_PATH}/${1}-mods/"*.ko "${OUT_PATH}/${P}/root/modules/"

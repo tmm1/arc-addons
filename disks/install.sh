@@ -58,7 +58,7 @@ function _check_rootraidstatus() {
 function getNum0Bits() {
   local VALUE=$1
   local NUM=0
-  while [ $((${VALUE}%2)) -eq 0 -a ${VALUE} -ne 0 ]; do
+  while [ $((${VALUE}%2)) -eq 0 ] && [ ${VALUE} -ne 0 ]; do
     NUM=$((${NUM}+1))
     VALUE=$((${VALUE}/2))
   done
@@ -177,7 +177,7 @@ function dtModel() {
       echo "        protocol_type = \"sata\";"                      >>${DEST}
       echo "        ahci {"                                         >>${DEST}
       echo "            pcie_root = \"${PCIEPATH}\";"               >>${DEST}
-      echo "            ata_port = <0x`printf '%02X' ${ATAPORT}`>;" >>${DEST}
+      echo "            ata_port = <0x$(printf '%02X' ${ATAPORT})>;" >>${DEST}
       echo "        };"                                             >>${DEST}
       echo "    };"                                                 >>${DEST}
       I=$((${I}+1))

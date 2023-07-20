@@ -7,7 +7,7 @@
 
 name: Update Eudev
 
-on:  
+on:
   workflow_dispatch:
     inputs:
       push:
@@ -40,8 +40,8 @@ jobs:
         run: |
           git config --global user.email "info@auxxxilium.tech"
           git config --global user.name "AuxXxilium"
-          sudo timedatectl set-timezone "Europe/Berlin" 
-        
+          sudo timedatectl set-timezone "Europe/Berlin"
+
       - name: Get EnvDeploy
         run: |
           ROOT_PATH=${{ github.workspace }}
@@ -78,7 +78,7 @@ jobs:
             [ -f "/env64.mak" ] && echo "CCVER=${CCVER}" >> /env64.mak
           fi
           EOF
-          
+
           [ -f ${ENV_PATH}/env64.mak ] && ENV_FILE=${ENV_PATH}/env64.mak || ([ -f ${ENV_PATH}/env32.mak ] && ENV_FILE=${ENV_PATH}/env32.mak)
           if [ -n "${ENV_FILE}" ]; then
             KVER=$(grep 'KVER=' ${ENV_FILE} | awk -F'=' '{print $2}')
