@@ -1,6 +1,6 @@
 #!/usr/bin/env ash
 
-scriptver="23.7.1"
+scriptver="23.7.3"
 script=NVMeEnable
 repo="AuxXxilium/arc-addons"
 
@@ -98,15 +98,17 @@ fi
 
 
 # Check script is running as root
-if [ "$( whoami )" != "root" ]; then
+if [[ $( whoami ) != "root" ]]; then
     ding
     echo -e "${Error}ERROR${Off} This script must be run as root or sudo!"
     exit 1
 fi
 
+# Get DSM full version
+. /etc.defaults/VERSION
+
 # Get DSM major version
-dsm=$(get_key_value /etc.defaults/VERSION majorversion)
-if [ "${dsm}" -lt "7" ]; then
+if [[ $majorversion -lt "7" ]]; then
     ding
     echo "This script only works for DSM 7."
     exit 1
@@ -121,13 +123,11 @@ fi
 
 
 # Show script version
+#echo -e "$script $scriptver\ngithub.com/$repo\n"
 echo "$script $scriptver"
 
 # Get NAS model
 model=$(cat /proc/sys/kernel/syno_hw_version)
-
-# Get DSM full version
-. /etc.defaults/VERSION
 
 # Show options used
 echo "Using options: $args"
@@ -138,7 +138,7 @@ echo "Using options: $args"
 
 file="/usr/lib/libhwcontrol.so.1"
 
-if [ ! -f "${file}" ]; then
+if [[ ! -f ${file} ]]; then
     ding
     echo -e "${Error}ERROR ${Off} File not found!"
     exit 1
@@ -148,13 +148,13 @@ fi
 #----------------------------------------------------------
 # Restore from backup file
 
-if [ "${restore}" == "yes" ]; then
-    if [ -f ${file}.bak ]; then
+if [[ $restore == "yes" ]]; then
+    if [[ -f ${file}.bak ]]; then
 
         # Check if backup size matches file size
         filesize=$(wc -c "${file}" | awk '{print $1}')
         filebaksize=$(wc -c "${file}.bak" | awk '{print $1}')
-        if [ "${filesize}" -ne "${filebaksize}" ]]; then
+        if [[ ! $filesize -eq "$filebaksize" ]]; then
             echo -e "${Yellow}WARNING Backup file size is different to file!${Off}"
             echo "Do you want to restore this backup? [yes/no]:"
             read -r answer
@@ -184,7 +184,7 @@ fi
 #----------------------------------------------------------
 # Backup file
 
-if [ ! -f ${file}.bak ]; then
+if [[ ! -f ${file}.bak ]]; then
     if cp "$file" "$file".bak ; then
         echo "Backup successful."
     else
@@ -196,7 +196,7 @@ else
     # Check if backup size matches file size
     filesize=$(wc -c "${file}" | awk '{print $1}')
     filebaksize=$(wc -c "${file}.bak" | awk '{print $1}')
-    if [ "${filesize}" -ne "${filebaksize}" ]]; then
+    if [[ ! $filesize -eq "$filebaksize" ]]; then
         echo -e "${Yellow}WARNING Backup file size is different to file!${Off}"
         echo "Maybe you've updated DSM since last running this script?"
         echo "Renaming file.bak to file.bak.old"
@@ -229,9 +229,9 @@ findbytes(){
 
     # Convert decimal position of matching hex string to hex
     array=("$match")
-    if [ "${#array[@]}" -gt "1" ]; then
+    if [[ ${#array[@]} -gt "1" ]]; then
         num="0"
-        while [ "${num}" -lt "${#array[@]}" ]; do
+        while [[ $num -lt "${#array[@]}" ]]; do
             poshex=$(printf "%x" "${array[$num]}")
             echo "${array[$num]} = $poshex"  # debug
 
@@ -244,7 +244,7 @@ findbytes(){
 
             num=$((num +1))
         done
-    elif [ -n ${match} ]; then
+    elif [[ -n $match ]]; then
         poshex=$(printf "%x" "$match")
         echo "$match = $poshex"  # debug
 
@@ -261,19 +261,19 @@ findbytes(){
 
 
 # Check value in file and backup file
-if [ "${check}" == "yes" ]; then
+if [[ $check == "yes" ]]; then
     err=0
 
     # Check value in file
     echo -e "\nChecking value in file."
     hexstring="80 3E 00 B8 01 00 00 00 90 90 48 8B"
     findbytes "$file"
-    if [ "${bytes}" == "9090" ]; then
+    if [[ $bytes == "9090" ]]; then
         echo -e "\n${Cyan}File already edited.${Off}"
     else
         hexstring="80 3E 00 B8 01 00 00 00 75 2. 48 8B"
         findbytes "$file"
-        if [ "${bytes}" =~ "752"[0-9] ]; then
+        if [[ $bytes =~ "752"[0-9] ]]; then
             echo -e "\n${Cyan}File is unedited.${Off}"
         else
             echo -e "\n${Red}hex string not found!${Off}"
@@ -286,12 +286,12 @@ if [ "${check}" == "yes" ]; then
         echo -e "\nChecking value in backup file."
         hexstring="80 3E 00 B8 01 00 00 00 75 2. 48 8B"
         findbytes "${file}.bak"
-        if [ "${bytes}" =~ "752"[0-9] ]; then
+        if [[ $bytes =~ "752"[0-9] ]]; then
             echo -e "\n${Cyan}Backup file is unedited.${Off}"
         else
             hexstring="80 3E 00 B8 01 00 00 00 90 90 48 8B"
             findbytes "${file}.bak"
-            if [ "${bytes}" == "9090" ]; then
+            if [[ $bytes == "9090" ]]; then
                 echo -e "\n${Red}Backup file has been edited!${Off}"
             else
                 echo -e "\n${Red}hex string not found!${Off}"
@@ -312,7 +312,7 @@ echo -e "\nChecking file."
 # Check if the file is already edited
 hexstring="80 3E 00 B8 01 00 00 00 90 90 48 8B"
 findbytes "$file"
-if [ "${bytes}" == "9090" ]; then
+if [[ $bytes == "9090" ]]; then
     echo -e "\n${Cyan}File already edited.${Off}"
     exit
 else
@@ -320,7 +320,7 @@ else
     # Check if the file is okay for editing
     hexstring="80 3E 00 B8 01 00 00 00 75 2. 48 8B"
     findbytes "$file"
-    if [ "${bytes}" =~ "752"[0-9] ]; then
+    if [[ $bytes =~ "752"[0-9] ]]; then
         echo -e "\nEditing file."
     else
         ding
@@ -345,7 +345,7 @@ fi
 echo -e "\nChecking if file was successfully edited."
 hexstring="80 3E 00 B8 01 00 00 00 90 90 48 8B"
 findbytes "$file"
-if [ "${bytes}" == "9090" ]; then
+if [[ $bytes == "9090" ]]; then
     echo -e "File successfully edited."
     echo -e "\n${Cyan}You can now create your M.2 storage"\
         "pool in Storage Manager.${Off}"
@@ -360,46 +360,51 @@ fi
 # Enable m2 volume support - DSM 7.1 and later only
 
 # Backup synoinfo.conf if needed
-synoinfo="/etc.defaults/synoinfo.conf"
-if [ ! -f ${synoinfo}.bak ]; then
-    if cp "$synoinfo" "$synoinfo.bak"; then
-        echo -e "\nBacked up $(basename -- "$synoinfo")" >&2
-    else
-        ding
-        echo -e "\n${Error}ERROR 5${Off} Failed to backup $(basename -- "$synoinfo")!"
-        exit 1
+#if [[ $dsm72 == "yes" ]]; then
+#if [[ $dsm71 == "yes" ]]; then
+    synoinfo="/etc.defaults/synoinfo.conf"
+    if [[ ! -f ${synoinfo}.bak ]]; then
+        if cp "$synoinfo" "$synoinfo.bak"; then
+            echo -e "\nBacked up $(basename -- "$synoinfo")" >&2
+        else
+            ding
+            echo -e "\n${Error}ERROR 5${Off} Failed to backup $(basename -- "$synoinfo")!"
+            exit 1
+        fi
     fi
-fi
+#fi
 
 # Check if m2 volume support is enabled
-smp=support_m2_pool
-setting="$(get_key_value "$synoinfo" "$smp")"
-enabled=""
-if [ ! "${setting}" ]; then
-    # Add support_m2_pool="yes"
-    echo 'support_m2_pool="yes"' >> "$synoinfo"
-    enabled="yes"
-elif [ "${setting}" == "no" ]; then
-    # Change support_m2_pool="no" to "yes"
-    #sed -i "s/${smp}=\"no\"/${smp}=\"yes\"/" "$synoinfo"
-    synosetkeyvalue "$synoinfo" "$smp" "yes"
-    enabled="yes"
-elif [ "${setting}" == "yes" ]; then
-    echo -e "\nM.2 volume support already enabled."
-fi
-
-# Check if we enabled m2 volume support
-setting="$(get_key_value "$synoinfo" "$smp")"
-if [ "${enabled}" == "yes" ]; then
-    if [ "${setting}" == "yes" ]; then
-        echo -e "\nEnabled M.2 volume support."
-    else
-        echo -e "\n${Error}ERROR${Off} Failed to enable m2 volume support!"
+#if [[ $dsm72 == "yes" ]]; then
+#if [[ $dsm71 == "yes" ]]; then
+    smp=support_m2_pool
+    setting="$(get_key_value "$synoinfo" "$smp")"
+    enabled=""
+    if [[ ! $setting ]]; then
+        # Add support_m2_pool="yes"
+        echo 'support_m2_pool="yes"' >> "$synoinfo"
+        enabled="yes"
+    elif [[ $setting == "no" ]]; then
+        # Change support_m2_pool="no" to "yes"
+        #sed -i "s/${smp}=\"no\"/${smp}=\"yes\"/" "$synoinfo"
+        synosetkeyvalue "$synoinfo" "$smp" "yes"
+        enabled="yes"
+    elif [[ $setting == "yes" ]]; then
+        echo -e "\nM.2 volume support already enabled."
     fi
-fi
+
+    # Check if we enabled m2 volume support
+    setting="$(get_key_value "$synoinfo" "$smp")"
+    if [[ $enabled == "yes" ]]; then
+        if [[ $setting == "yes" ]]; then
+            echo -e "\nEnabled M.2 volume support."
+        else
+            echo -e "\n${Error}ERROR${Off} Failed to enable m2 volume support!"
+        fi
+    fi
+#fi
 
 # Enable creating M.2 storage pool and volume in Storage Manager
-# for currently installed NVMe drives
 for nvme in /run/synostorage/disks/nvme*; do
     echo 1 > /run/synostorage/disks/"$(basename -- "$nvme")"/m2_pool_support
 done

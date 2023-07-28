@@ -26,20 +26,20 @@ fi
 # Show script version
 echo "$script $scriptver"
 
-# Get NAS model
-model=$(cat /proc/sys/kernel/syno_hw_version)
-
 # Get DSM full version
 . /etc.defaults/VERSION
 
 # Get DSM major and minor versions
-if [ "${buildphase}" -gt "6" ] && [ "${buildnumber}" -gt "1" ]; then
+if [[ $majorversion -gt "6" ]] && [[ $minorversion -gt "1" ]]; then
     dsm72="yes"
-elif [ "${buildphase}" -gt "6" ] && [ "${buildnumber}" -gt "0" ]; then
+elif [[ $majorversion -gt "6" ]] && [[ $minorversion -gt "0" ]]; then
     dsm71="yes"
 else
     exit
 fi
+
+# Get NAS model
+model=$(cat /proc/sys/kernel/syno_hw_version)
 
 # Get script location
 source=${BASH_SOURCE[0]}
@@ -331,7 +331,7 @@ fi
 #--------------------------------------------------------------------
 # Create Synology partitions on selected M.2 drives
 
-if [[ $dsm == "7" ]]; then
+if [[ $majorversion == "7" ]]; then
     synopartindex=13  # Syno partition index for NVMe drives can be 12 or 13 or ?
 else
     synopartindex=12  # Syno partition index for NVMe drives can be 12 or 13 or ?
@@ -425,7 +425,7 @@ fi
 # Create Physical Volume and Volume Group with LVM - DSM 7 only
 
 # Create a physical volume (PV) on the partition
-if [[ $dsm -gt "6" ]]; then
+if [[ majorversion -gt "6" ]]; then
     echo -e "\nCreating a physical volume (PV) on md$nextmd partition"
     if ! pvcreate -ff /dev/md$nextmd ; then
         echo -e "\n${Error}ERROR 5${Off} Failed to create physical volume!"
@@ -434,7 +434,7 @@ if [[ $dsm -gt "6" ]]; then
 fi
 
 # Create a volume group (VG)
-if [[ $dsm -gt "6" ]]; then
+if [[ majorversion -gt "6" ]]; then
     echo -e "\nCreating a volume group (VG) on md$nextmd partition"
     if ! vgcreate vg$nextmd /dev/md$nextmd ; then
         echo -e "\n${Error}ERROR 5${Off} Failed to create volume group!"
