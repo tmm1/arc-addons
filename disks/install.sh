@@ -1,18 +1,15 @@
-#!/bin/sh
-
-set -x
 
 PCI_ER="^[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]{1}"
 
 # Get values in synoinfo.conf K=V file
 # 1 - key
-_get_conf_kv() {
+function _get_conf_kv() {
   grep "${1}=" /etc/synoinfo.conf | sed "s|^${1}=\"\(.*\)\"$|\1|g"
 }
 
 # Replace/add values in synoinfo.conf K=V file
 # Args: $1 rd|hd, $2 key, $3 val
-_set_conf_kv() {
+function _set_conf_kv() {
   local ROOT
   local FILE
   [ "$1" = "rd" ] && ROOT="" || ROOT="/tmpRoot"
@@ -30,7 +27,7 @@ _set_conf_kv() {
 
 # Check if the user has customized the key
 # Args: $1 rd|hd, $2 key
-_check_post_k() {
+function _check_post_k() {
   local ROOT
   [ "$1" = "rd" ] && ROOT="" || ROOT="/tmpRoot"
   if grep -q -r "^_set_conf_kv.*${2}.*" "${ROOT}/sbin/init.post"; then
@@ -41,7 +38,7 @@ _check_post_k() {
 }
 
 # Check if the raid has been completed currently
-_check_rootraidstatus() {
+function _check_rootraidstatus() {
   if [ "$(_get_conf_kv supportraid)" != "yes" ]; then
     return 0
   fi
@@ -58,7 +55,7 @@ _check_rootraidstatus() {
 }
 
 # Calculate # 0 bits
-getNum0Bits() {
+function getNum0Bits() {
   local VALUE=$1
   local NUM=0
   while [ $((${VALUE}%2)) -eq 0 ] && [ ${VALUE} -ne 0 ]; do
@@ -69,7 +66,7 @@ getNum0Bits() {
 }
 
 # USB ports
-getUsbPorts() {
+function getUsbPorts() {
   for I in $(ls -d /sys/bus/usb/devices/usb*); do
     # ROOT
     DCLASS=$(cat ${I}/bDeviceClass)
@@ -104,7 +101,7 @@ getUsbPorts() {
 
 # SATA ports
 # 1 - is DT model
-getSataPorts() {
+function getSataPorts() {
   local SATA_PORTS=$(ls /sys/class/ata_port | wc -w)
   local OUTPUT=""
   for I in $(seq 1 ${SATA_PORTS}); do
@@ -137,7 +134,7 @@ getSataPorts() {
 
 # NVME ports
 # 1 - is DT model
-nvmePorts() {
+function nvmePorts() {
   local NVME_PORTS=$(ls /sys/class/nvme | wc -w)
   for I in $(seq 0 $((${NVME_PORTS}-1))); do
     _PATH=$(readlink /sys/class/nvme/nvme${I} | sed 's|^.*\(pci.*\)|\1|' | cut -d'/' -f2-)
@@ -162,7 +159,7 @@ nvmePorts() {
 }
 
 #
-dtModel() {
+function dtModel() {
   DEST="/addons/model.dts"
   if [ ! -f "${DEST}" ]; then  # Users can put their own dts.
     echo "/dts-v1/;"                                                 >${DEST}
@@ -254,7 +251,7 @@ dtModel() {
 }
 
 #
-nondtModel() {
+function nondtModel() {
   local SATA_PORTS=0
   local SAS_PORTS=0
   local SCSI_PORTS=0
