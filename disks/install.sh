@@ -6,13 +6,13 @@ PCI_ER="^[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]{1}"
 
 # Get values in synoinfo.conf K=V file
 # 1 - key
-function _get_conf_kv() {
+_get_conf_kv() {
   grep "${1}=" /etc/synoinfo.conf | sed "s|^${1}=\"\(.*\)\"$|\1|g"
 }
 
 # Replace/add values in synoinfo.conf K=V file
 # Args: $1 rd|hd, $2 key, $3 val
-function _set_conf_kv() {
+_set_conf_kv() {
   local ROOT
   local FILE
   [ "$1" = "rd" ] && ROOT="" || ROOT="/tmpRoot"
@@ -30,7 +30,7 @@ function _set_conf_kv() {
 
 # Check if the user has customized the key
 # Args: $1 rd|hd, $2 key
-function _check_post_k() {
+_check_post_k() {
   local ROOT
   [ "$1" = "rd" ] && ROOT="" || ROOT="/tmpRoot"
   if grep -q -r "^_set_conf_kv.*${2}.*" "${ROOT}/sbin/init.post"; then
@@ -41,7 +41,7 @@ function _check_post_k() {
 }
 
 # Check if the raid has been completed currently
-function _check_rootraidstatus() {
+_check_rootraidstatus() {
   if [ "$(_get_conf_kv supportraid)" != "yes" ]; then
     return 0
   fi
@@ -58,7 +58,7 @@ function _check_rootraidstatus() {
 }
 
 # Calculate # 0 bits
-function getNum0Bits() {
+getNum0Bits() {
   local VALUE=$1
   local NUM=0
   while [ $((${VALUE}%2)) -eq 0 ] && [ ${VALUE} -ne 0 ]; do
@@ -69,7 +69,7 @@ function getNum0Bits() {
 }
 
 # USB ports
-function getUsbPorts() {
+getUsbPorts() {
   for I in $(ls -d /sys/bus/usb/devices/usb*); do
     # ROOT
     DCLASS=$(cat ${I}/bDeviceClass)
@@ -104,11 +104,11 @@ function getUsbPorts() {
 
 # SATA ports
 # 1 - is DT model
-function getSataPorts() {
+getSataPorts() {
   local SATA_PORTS=$(ls /sys/class/ata_port | wc -w)
   local OUTPUT=""
   for I in $(seq 1 ${SATA_PORTS}); do
-    DUMMY=$((1-`cat /sys/class/ata_port/ata${I}/device/host*/scsi_host/host*/syno_port_thaw`))
+    DUMMY=$((1-$(cat /sys/class/ata_port/ata${I}/device/host*/scsi_host/host*/syno_port_thaw)))
     # Is DT
     if [ "${1}" = "true" ]; then
       [ ${DUMMY} -eq 1 ] && continue
@@ -137,7 +137,7 @@ function getSataPorts() {
 
 # NVME ports
 # 1 - is DT model
-function nvmePorts() {
+nvmePorts() {
   local NVME_PORTS=$(ls /sys/class/nvme | wc -w)
   for I in $(seq 0 $((${NVME_PORTS}-1))); do
     _PATH=$(readlink /sys/class/nvme/nvme${I} | sed 's|^.*\(pci.*\)|\1|' | cut -d'/' -f2-)
@@ -162,7 +162,7 @@ function nvmePorts() {
 }
 
 #
-function dtModel() {
+dtModel() {
   DEST="/addons/model.dts"
   if [ ! -f "${DEST}" ]; then  # Users can put their own dts.
     echo "/dts-v1/;"                                                 >${DEST}
@@ -254,17 +254,17 @@ function dtModel() {
 }
 
 #
-function nondtModel() {
+nondtModel() {
   local SATA_PORTS=0
   local SAS_PORTS=0
   local SCSI_PORTS=0
   local NUMPORTS=0
-  local ESATAPORTCFG=$((`_get_conf_kv esataportcfg`))
-  local INTPORTCFG=$((`_get_conf_kv internalportcfg`))
-  local USBPORTCFG=$((`_get_conf_kv usbportcfg`))
+  local ESATAPORTCFG=$(_get_conf_kv esataportcfg)
+  local INTPORTCFG=$(_get_conf_kv internalportcfg)
+  local USBPORTCFG=$(_get_conf_kv usbportcfg)
   local COUNT=1
   if _check_post_k "rd" "maxdisks"; then
-    NUMPORTS=$((`_get_conf_kv maxdisks`))
+    NUMPORTS=$(_get_conf_kv maxdisks)
     echo "get maxdisks=${NUMPORTS}"
   else
     # sysfs is populated here

@@ -6,7 +6,7 @@ function use() {
 }
 
 # Sanity checks
-if [ ${USER} != "root" ]; then
+if [ "${USER}" != "root" ]; then
   exec sudo $0 $@
 fi
 [ -z "${1}" ] && use
@@ -16,9 +16,9 @@ echo 1 > /proc/sys/kernel/syno_install_flag
 mount /dev/synoboot1 /mnt
 GRUBPATH="$(dirname $(find /mnt/ -name grub.cfg | head -1))"
 ENVFILE="${GRUBPATH}/grubenv"
-[ ! -f "${ENVFILE}" ] && grub-editenv ${ENVFILE} create
+[ ! -f "${ENVFILE}" ] && grub-editenv "${ENVFILE}" create
 
-grub-editenv ${ENVFILE} set next_entry="${1}"
+grub-editenv "${ENVFILE}" set next_entry="${1}"
 umount /mnt
 [ -x /usr/syno/sbin/synopoweroff ] && \
   /usr/syno/sbin/synopoweroff -r ||

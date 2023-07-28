@@ -26,30 +26,20 @@ fi
 # Show script version
 echo "$script $scriptver"
 
-# Get DSM major and minor versions
-dsm=$(get_key_value /etc.defaults/VERSION majorversion)
-dsminor=$(get_key_value /etc.defaults/VERSION minorversion)
-if [[ $dsm -gt "6" ]] && [[ $dsminor -gt "1" ]]; then
-    dsm72="yes"
-elif [[ $dsm -gt "6" ]] && [[ $dsminor -gt "0" ]]; then
-    dsm71="yes"
-else
-    exit
-fi
-
 # Get NAS model
 model=$(cat /proc/sys/kernel/syno_hw_version)
 
 # Get DSM full version
-productversion=$(get_key_value /etc.defaults/VERSION productversion)
-buildphase=$(get_key_value /etc.defaults/VERSION buildphase)
-buildnumber=$(get_key_value /etc.defaults/VERSION buildnumber)
-smallfixnumber=$(get_key_value /etc.defaults/VERSION smallfixnumber)
+. /etc.defaults/VERSION
 
-# Show DSM full version and model
-if [[ $buildphase == GM ]]; then buildphase=""; fi
-if [[ $smallfixnumber -gt "0" ]]; then smallfix="-$smallfixnumber"; fi
-echo -e "$model DSM $productversion-$buildnumber$smallfix $buildphase\n"
+# Get DSM major and minor versions
+if [ "${buildphase}" -gt "6" ] && [ "${buildnumber}" -gt "1" ]; then
+    dsm72="yes"
+elif [ "${buildphase}" -gt "6" ] && [ "${buildnumber}" -gt "0" ]; then
+    dsm71="yes"
+else
+    exit
+fi
 
 # Get script location
 source=${BASH_SOURCE[0]}
