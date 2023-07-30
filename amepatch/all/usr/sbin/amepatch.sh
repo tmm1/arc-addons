@@ -1,6 +1,6 @@
 #!/usr/bin/env ash
 
-scriptver="23.7.1"
+scriptver="23.7.2"
 script=AmePatch
 repo="AuxXxilium/arc-addons"
 
@@ -45,6 +45,18 @@ if [ -d "/var/packages/CodecPack" ]; then
     mkdir -p "$(dirname "${lic}")"
     echo "${content}" >"${lic}"
 
+    if [ -f /tmpRoot/volume1/@appstore/CodecPack/apparmor ]; then
+        apparmor=/tmpRoot/volume1/@appstore/CodecPack/apparmor
+    else
+        apparmor=/volume1/@appstore/CodecPack/apparmor
+    fi
+    /usr/syno/etc/rc.sysv/apparmor.sh remove_packages_profile 0 CodecPack
+    # disable apparmor check for AME
+    mv -f "${apparmor}" "${apparmor}.bak"
+    if [ -e "${apparmor}" ]; then
+        mv -f "${apparmor}" "${apparmor}.bak"
+    fi
+
 	if "${cp_usr_path}/bin/synoame-bin-check-license"; then
         ${cp_usr_path}/bin/synoame-bin-auto-install-needed-codec
         echo -e "AME Patch: Successful!"
@@ -53,6 +65,6 @@ if [ -d "/var/packages/CodecPack" ]; then
         exit 1
    	fi
 
-    sleep 5
+    sleep 3
     /usr/syno/bin/synopkg start CodecPack
 fi
