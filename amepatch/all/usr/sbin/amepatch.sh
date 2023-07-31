@@ -1,4 +1,4 @@
-#!/usr/bin/env ash
+#!/bin/ash
 
 scriptver="23.7.2"
 script=AmePatch
