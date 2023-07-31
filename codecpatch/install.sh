@@ -13,7 +13,7 @@ if [ "${1}" = "late" ]; then
   echo "[Service]"                           >>${DEST}
   echo "Type=oneshot"                        >>${DEST}
   echo "RemainAfterExit=true"                >>${DEST}
-  echo "ExecStart=/usr/bin/codecpatch.sh"    >>${DEST}
+  echo "ExecStart=/usr/sbin/codecpatch.sh"   >>${DEST}
   echo                                       >>${DEST}
   echo "[Install]"                           >>${DEST}
   echo "WantedBy=multi-user.target"          >>${DEST}
