@@ -178,6 +178,11 @@ function dtModel() {
       echo "    power_limit = \"${POWER_LIMIT}\";"                  >>${DEST}
     fi
 
+    if [ ${NVME_PORTS} -gt 0 ]; then
+      _set_conf_kv rd "supportnvme" "yes"
+      _set_conf_kv rd "support_m2_pool" "yes"
+    fi
+
     # SATA ports
     I=1
     idx=0
@@ -313,6 +318,10 @@ function nondtModel() {
     echo "pci${COUNT}=\"${P}\"" >>/etc/extensionPorts
     COUNT=$((${COUNT}+1))
   done
+  if [ $(ls /sys/class/nvme | wc -w) -gt 0 ]; then
+    _set_conf_kv rd "supportnvme" "yes"
+    _set_conf_kv rd "support_m2_pool" "yes"
+  fi
 }
 
 #
@@ -351,4 +360,8 @@ elif [ "${1}" = "late" ]; then
     cp -vf /etc/extensionPorts /tmpRoot/etc/extensionPorts
     cp -vf /etc/extensionPorts /tmpRoot/etc.defaults/extensionPorts
   fi
+  SUPPORTNVME=$(_get_conf_kv supportnvme)
+  SUPPORT_M2_POOL=$(_get_conf_kv support_m2_pool)
+  _set_conf_kv hd "supportnvme" "${SUPPORTNVME}"
+  _set_conf_kv hd "support_m2_pool" "${SUPPORT_M2_POOL}"
 fi
