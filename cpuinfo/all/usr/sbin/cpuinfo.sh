@@ -1,8 +1,4 @@
-#!/usr/bin/env ash
-
-scriptver="23.7.1"
-script=CPUInfo
-repo="AuxXxilium/arc-addons"
+#!/bin/bash
 
 # ==============================================================================
 # Location Check
@@ -417,8 +413,6 @@ MWORK_DIR="/usr/syno/synoman/mobile/ui"
 BKUP_DIR="/root/Xpenology_backup"
 VER_DIR="/etc.defaults"
  
-cecho c "DSM CPU Information Change Tool ver. \033[0;31m${scriptver}\033[00m\n"
-
 if [ -d "$VER_DIR" ]
 then
     VER_FIL="$VER_DIR/VERSION"
