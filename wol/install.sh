@@ -3,7 +3,7 @@
 if [ "${1}" = "jrExit" ]; then
   /usr/sbin/ethtool -s eth0 wol g 2>/dev/null
 elif [ "${1}" = "late" ]; then
-  echo "Creating service to exec ethtool"
+  echo "WOL: Creating service to exec ethtool"
   cp -vf /usr/sbin/ethtool /tmpRoot/usr/sbin/ethtool
   
   DEST="/tmpRoot/lib/systemd/system/ethtool.service"
@@ -18,6 +18,6 @@ elif [ "${1}" = "late" ]; then
   echo "[Install]"                                                            >>${DEST}
   echo "WantedBy=multi-user.target"                                           >>${DEST}
 
-  mkdir -p /tmpRoot/lib/systemd/system/multi-user.target.wants
-  ln -sf /lib/systemd/system/ethtool.service /tmpRoot/lib/systemd/system/multi-user.target.wants/ethtool.service
+  mkdir -vp /tmpRoot/lib/systemd/system/multi-user.target.wants
+  ln -vsf /lib/systemd/system/ethtool.service /tmpRoot/lib/systemd/system/multi-user.target.wants/ethtool.service
 fi

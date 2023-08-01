@@ -2,12 +2,12 @@
 
 # External incoming required ${MLINK} and ${MCHECKSUM}
 if [ -z "${MLINK}" ] || [ -z "${MCHECKSUM}" ]; then
-  echo "MLINK or MCHECKSUM is not set"
+  echo "LocalRSS: MLINK or MCHECKSUM is not set"
   return
 fi
 
 if [ "${1}" = "modules" ]; then
-echo "make localrss - modules"
+echo "LocalRSS: Build Feed - modules"
 
 # MajorVersion=`/bin/get_key_value /etc.defaults/VERSION majorversion`
 # MinorVersion=`/bin/get_key_value /etc.defaults/VERSION minorversion`

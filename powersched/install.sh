@@ -3,7 +3,7 @@
 SED_PATH='/tmpRoot/usr/bin/sed'
 
 if [ "${1}" = "late" ]; then
-  echo "Installing powersched tools"
+  echo "Powersched: Installing powersched tools"
   cp -vf /usr/sbin/powersched /tmpRoot/usr/sbin/powersched
   chmod 755 /tmpRoot/usr/sbin/powersched
   # Clean old entries

@@ -23,6 +23,6 @@ if [ "${1}" = "late" ]; then
   echo "[Install]"                                                            >>${DEST}
   echo "WantedBy=multi-user.target"                                           >>${DEST}
 
-  mkdir -p /tmpRoot/lib/systemd/system/multi-user.target.wants
-  ln -sf /lib/systemd/system/cpufreqscaling.service /tmpRoot/lib/systemd/system/multi-user.target.wants/cpufreqscaling.service
+  mkdir -vp /tmpRoot/lib/systemd/system/multi-user.target.wants
+  ln -vsf /lib/systemd/system/cpufreqscaling.service /tmpRoot/lib/systemd/system/multi-user.target.wants/cpufreqscaling.service
 fi

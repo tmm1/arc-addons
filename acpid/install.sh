@@ -3,9 +3,9 @@
 if [ "${1}" = "late" ]; then
   echo "Installing daemon for ACPI button"
   mkdir -p /tmpRoot/etc/acpi/events/
-  cp -v /etc/acpi/events/power /tmpRoot/etc/acpi/events/power
-  cp -v /usr/sbin/acpid /tmpRoot/usr/sbin/acpid
-  cp -v /etc/acpi/power.sh /tmpRoot/etc/acpi/power.sh
+  cp -vf /etc/acpi/events/power /tmpRoot/etc/acpi/events/power
+  cp -vf /usr/sbin/acpid /tmpRoot/usr/sbin/acpid
+  cp -vf /etc/acpi/power.sh /tmpRoot/etc/acpi/power.sh
 
   DEST=/tmpRoot/usr/lib/systemd/system/acpid.service
   echo "[Unit]"                               >${DEST}

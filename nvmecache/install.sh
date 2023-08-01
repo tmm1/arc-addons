@@ -1,7 +1,7 @@
 #!/usr/bin/env ash
 
 if [ "${1}" = "late" ]; then
-  echo "Installing daemon for nvmecache"
+  echo "NVMeCache: Installing daemon for nvmecache"
   cp -v /usr/sbin/nvmecache.sh /tmpRoot/usr/sbin/nvmecache.sh
 
   DEST="/tmpRoot/lib/systemd/system/nvmecache.service"

@@ -5,7 +5,7 @@ XXD_PATH='/tmpRoot/usr/bin/xxd'
 LSPCI_PATH='/tmpRoot/usr/bin/lspci'
 
 if [ "${1}" = "late" ]; then
-  echo "Script for fixing missing HW features dependencies and another functions"
+  echo "Misc: Script for fixing missing HW features dependencies and another functions"
 
   # Copy utilities to dsm partition
   cp -vf /usr/bin/arpl-reboot.sh /tmpRoot/usr/bin

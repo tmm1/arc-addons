@@ -1,12 +1,12 @@
 #!/usr/bin/env ash
 
 if [ "${1}" = "modules" ]; then
-  echo "Starting eudev daemon"
+  echo "Eudev: Starting Eudev Daemon"
   [ -e /proc/sys/kernel/hotplug ] && printf '\000\000\000\000' > /proc/sys/kernel/hotplug
   chmod 755 /usr/sbin/udevd /usr/bin/kmod /usr/bin/udevadm /usr/lib/udev/*
   /usr/sbin/depmod -a
   /usr/sbin/udevd -d || { echo "FAIL"; exit 1; }
-  echo "Triggering add events to udev"
+  echo "Eudev: Triggering add events to udev"
   udevadm trigger --type=subsystems --action=add
   udevadm trigger --type=devices --action=add
   udevadm trigger --type=devices --action=change
@@ -16,12 +16,12 @@ if [ "${1}" = "modules" ]; then
   # Remove from memory to not conflict with RAID mount scripts
   /usr/bin/killall udevd
 elif [ "${1}" = "late" ]; then
-  echo "copy modules"
+  echo "Eudev: Copy Modules"
   export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib; /tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
   export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib; /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
   /usr/sbin/depmod -a -b /tmpRoot/
   # Copy rules
-  echo "copy rules"
+  echo "Eudev: Copy Rules"
   cp -vf /etc/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
   echo "[Unit]"                                                                  >${DEST}
