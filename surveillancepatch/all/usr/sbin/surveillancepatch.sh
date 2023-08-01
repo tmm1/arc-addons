@@ -1,8 +1,5 @@
-#!/usr/bin/env ash
+#!/usr/bin/env bash
 
-scriptver="23.7.17"
-script=SurveillancePatch
-repo="AuxXxilium/arc-addons"
 SSPATH="/var/packages/SurveillanceStation"
 
 if [ -d "${SSPATH}" ]; then
