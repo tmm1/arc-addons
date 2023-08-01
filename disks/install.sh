@@ -20,7 +20,7 @@ function _set_conf_kv() {
       sed -i ${FILE} -e "s\"^$2=.*\"$2=\\\"$3\\\"\""
     else
       # Add if doesn't exist
-      echo "$2=\"$3\"" >>${FILE}
+      echo "$2=\"$3\"" >> ${FILE}
     fi
   done
 }
@@ -39,7 +39,7 @@ function _check_post_k() {
 
 # Check if the raid has been completed currently
 function _check_rootraidstatus() {
-  if [ "$(_get_conf_kv supportraid)" != "yes" ]; then
+  if [ "`_get_conf_kv supportraid`" != "yes" ]; then
     return 0
   fi
   State=$(cat /sys/block/md0/md/array_state) 2>/dev/null
@@ -58,7 +58,7 @@ function _check_rootraidstatus() {
 function getNum0Bits() {
   local VALUE=$1
   local NUM=0
-  while [ $((${VALUE}%2)) -eq 0 ] && [ ${VALUE} -ne 0 ]; do
+  while [ $((${VALUE}%2)) -eq 0 -a ${VALUE} -ne 0 ]; do
     NUM=$((${NUM}+1))
     VALUE=$((${VALUE}/2))
   done
@@ -67,31 +67,31 @@ function getNum0Bits() {
 
 # USB ports
 function getUsbPorts() {
-  for I in $(ls -d /sys/bus/usb/devices/usb*); do
+  for I in `ls -d /sys/bus/usb/devices/usb*`; do
     # ROOT
-    DCLASS=$(cat ${I}/bDeviceClass)
+    DCLASS=`cat ${I}/bDeviceClass`
     [ "${DCLASS}" != "09" ] && continue
-    SPEED=$(cat ${I}/speed)
+    SPEED=`cat ${I}/speed`
     [ ${SPEED} -lt 480 ] && continue
-    RBUS=$(cat ${I}/busnum)
-    RCHILDS=$(cat ${I}/maxchild)
+    RBUS=`cat ${I}/busnum`
+    RCHILDS=`cat ${I}/maxchild`
     HAVE_CHILD=0
-    for C in $(seq 1 ${RCHILDS}); do
+    for C in `seq 1 ${RCHILDS}`; do
       SUB="${RBUS}-${C}"
       if [ -d "${I}/${SUB}" ]; then
-        DCLASS=$(cat ${I}/${SUB}/bDeviceClass)
+        DCLASS=`cat ${I}/${SUB}/bDeviceClass`
         [ "${DCLASS}" != "09" ] && continue
-        SPEED=$(cat ${I}/${SUB}/speed)
+        SPEED=`cat ${I}/${SUB}/speed`
         [ ${SPEED} -lt 480 ] && continue
-        CHILDS=$(cat ${I}/${SUB}/maxchild)
+        CHILDS=`cat ${I}/${SUB}/maxchild`
         HAVE_CHILD=1
-        for N in $(seq 1 ${CHILDS}); do
+        for N in `seq 1 ${CHILDS}`; do
           echo -n "${RBUS}-${C}.${N} "
         done
       fi
     done
     if [ ${HAVE_CHILD} -eq 0 ]; then
-      for N in $(seq 1 ${RCHILDS}); do
+      for N in `seq 1 ${RCHILDS}`; do
         echo -n "${RBUS}-${N} "
       done
     fi
@@ -102,23 +102,23 @@ function getUsbPorts() {
 # SATA ports
 # 1 - is DT model
 function getSataPorts() {
-  local SATA_PORTS=$(ls /sys/class/ata_port | wc -w)
+  local SATA_PORTS=`ls /sys/class/ata_port | wc -w`
   local OUTPUT=""
-  for I in $(seq 1 ${SATA_PORTS}); do
-    DUMMY=$((1-$(cat /sys/class/ata_port/ata${I}/device/host*/scsi_host/host*/syno_port_thaw)))
+  for I in `seq 1 ${SATA_PORTS}`; do
+    DUMMY=$((1-`cat /sys/class/ata_port/ata${I}/device/host*/scsi_host/host*/syno_port_thaw`))
     # Is DT
     if [ "${1}" = "true" ]; then
       [ ${DUMMY} -eq 1 ] && continue
-      PORTNO=$(cat /sys/class/ata_port/ata${I}/port_no)
-      _PATH=$(readlink /sys/class/ata_port/ata${I} | sed 's|^.*\(pci.*\)|\1|' | cut -d'/' -f2-)
+      PORTNO=`cat /sys/class/ata_port/ata${I}/port_no`
+      _PATH=`readlink /sys/class/ata_port/ata${I} | sed 's|^.*\(pci.*\)|\1|' | cut -d'/' -f2-`
       DSMPATH=""
       while true; do
-        FIRST=$(echo "${_PATH}" | cut -d'/' -f1)
+        FIRST=`echo "${_PATH}" | cut -d'/' -f1`
         echo "${FIRST}" | grep -qE "${PCI_ER}" || break
         [ -z "${DSMPATH}" ] && \
-          DSMPATH="$(echo "${FIRST}" | cut -d':' -f2-)" || \
-          DSMPATH="${DSMPATH},$(echo "${FIRST}" | cut -d':' -f3)"
-        _PATH=$(echo ${_PATH} | cut -d'/' -f2-)
+          DSMPATH="`echo "${FIRST}" | cut -d':' -f2-`" || \
+          DSMPATH="${DSMPATH},`echo "${FIRST}" | cut -d':' -f3`"
+        _PATH=`echo ${_PATH} | cut -d'/' -f2-`
       done
       echo -n "${DSMPATH}:${PORTNO} "
     else
@@ -135,23 +135,23 @@ function getSataPorts() {
 # NVME ports
 # 1 - is DT model
 function nvmePorts() {
-  local NVME_PORTS=$(ls /sys/class/nvme | wc -w)
-  for I in $(seq 0 $((${NVME_PORTS}-1))); do
-    _PATH=$(readlink /sys/class/nvme/nvme${I} | sed 's|^.*\(pci.*\)|\1|' | cut -d'/' -f2-)
+  local NVME_PORTS=`ls /sys/class/nvme | wc -w`
+  for I in `seq 0 $((${NVME_PORTS}-1))`; do
+    _PATH=`readlink /sys/class/nvme/nvme${I} | sed 's|^.*\(pci.*\)|\1|' | cut -d'/' -f2-`
     if [ "${1}" = "true" ]; then
       # Device-tree: assemble complete path in DSM format
       DSMPATH=""
       while true; do
-        FIRST=$(echo "${_PATH}" | cut -d'/' -f1)
+        FIRST=`echo "${_PATH}" | cut -d'/' -f1`
         echo "${FIRST}" | grep -qE "${PCI_ER}" || break
         [ -z "${DSMPATH}" ] && \
-          DSMPATH="$(echo "${FIRST}" | cut -d':' -f2-)" || \
-          DSMPATH="${DSMPATH},$(echo "${FIRST}" | cut -d':' -f3)"
-        _PATH=$(echo ${_PATH} | cut -d'/' -f2-)
+          DSMPATH="`echo "${FIRST}" | cut -d':' -f2-`" || \
+          DSMPATH="${DSMPATH},`echo "${FIRST}" | cut -d':' -f3`"
+        _PATH=`echo ${_PATH} | cut -d'/' -f2-`
       done
     else
       # Non-dt: just get PCI ID
-      DSMPATH=$(echo "${_PATH}" | cut -d'/' -f1)
+      DSMPATH=`echo "${_PATH}" | cut -d'/' -f1`
     fi
     echo -n "${DSMPATH} "
   done
@@ -162,57 +162,38 @@ function nvmePorts() {
 function dtModel() {
   DEST="/addons/model.dts"
   if [ ! -f "${DEST}" ]; then  # Users can put their own dts.
-    echo "/dts-v1/;"                                                 >${DEST}
-    echo "/ {"                                                      >>${DEST}
-    echo "    compatible = \"Synology\";"                           >>${DEST}
-    echo "    model = \"${1}\";"                                    >>${DEST}
-    echo "    version = <0x01>;"                                    >>${DEST}
+    echo "/dts-v1/;"                                                 > ${DEST}
+    echo "/ {"                                                      >> ${DEST}
+    echo "    compatible = \"Synology\";"                           >> ${DEST}
+    echo "    model = \"${1}\";"                                    >> ${DEST}
+    echo "    version = <0x01>;"                                    >> ${DEST}
 
     # NVME power_limit
     POWER_LIMIT=""
-    NVME_PORTS=$(ls /sys/class/nvme | wc -w)
-    for I in $(seq 0 $((${NVME_PORTS}-1))); do 
+    NVME_PORTS=`ls /sys/class/nvme | wc -w`
+    for I in `seq 0 $((${NVME_PORTS}-1))`; do 
       [ ${I} -eq 0 ] && POWER_LIMIT="100" || POWER_LIMIT="${POWER_LIMIT},100"
     done
     if [ -n "${POWER_LIMIT}" ]; then
-      echo "    power_limit = \"${POWER_LIMIT}\";"                  >>${DEST}
+      echo "    power_limit = \"${POWER_LIMIT}\";"                  >> ${DEST}
     fi
-
     if [ ${NVME_PORTS} -gt 0 ]; then
       _set_conf_kv rd "supportnvme" "yes"
       _set_conf_kv rd "support_m2_pool" "yes"
     fi
-
     # SATA ports
     I=1
-    idx=0
     while true; do
-      if [ ! -d /sys/block/sata${I} ]; then
-        if [ "$I" -eq 1 ]; then
-          # for fake sata synoboot, if redpill lkm is loaded after init
-          # sata1 is been relocated to synoboot
-          I=$((${I}+1))
-          bias=1
-          continue
-        else
-          break
-        fi
-      fi
-
-      idx=$((${idx}+1))
-      echo "Add sata internal_slot@${idx}"
-      
-      PCIEPATH=$(grep 'pciepath' /sys/block/sata${I}/device/syno_block_info | cut -d'=' -f2)
-      ATAPORT=$(grep 'ata_port_no' /sys/block/sata${I}/device/syno_block_info | cut -d'=' -f2)
-
-      echo "    internal_slot@${idx} {"                             >>${DEST}
-      echo "        protocol_type = \"sata\";"                      >>${DEST}
-      echo "        ahci {"                                         >>${DEST}
-      echo "            pcie_root = \"${PCIEPATH}\";"               >>${DEST}
-      echo "            ata_port = <0x$(printf '%02X' ${ATAPORT})>;" >>${DEST}
-      echo "        };"                                             >>${DEST}
-      echo "    };"                                                 >>${DEST}
-
+      [ ! -d /sys/block/sata${I} ] && break
+      PCIEPATH=`grep 'pciepath' /sys/block/sata${I}/device/syno_block_info | cut -d'=' -f2`
+      ATAPORT=`grep 'ata_port_no' /sys/block/sata${I}/device/syno_block_info | cut -d'=' -f2`
+      echo "    internal_slot@${I} {"                               >> ${DEST}
+      echo "        protocol_type = \"sata\";"                      >> ${DEST}
+      echo "        ahci {"                                         >> ${DEST}
+      echo "            pcie_root = \"${PCIEPATH}\";"               >> ${DEST}
+      echo "            ata_port = <0x`printf '%02X' ${ATAPORT}`>;" >> ${DEST}
+      echo "        };"                                             >> ${DEST}
+      echo "    };"                                                 >> ${DEST}
       I=$((${I}+1))
     done
     NUMPORTS=$((${I}-1))
@@ -226,42 +207,30 @@ function dtModel() {
 
     # NVME ports
     COUNT=1
-    for P in $(nvmePorts true); do
-      echo "Add nvme_slot@${COUNT}"
-
-      echo "    nvme_slot@${COUNT} {"                               >>${DEST}
-      echo "        pcie_root = \"${P}\";"                          >>${DEST}
-      echo "        port_type = \"ssdcache\";"                      >>${DEST}
-      echo "    };"                                                 >>${DEST}
+    for P in `nvmePorts true`; do
+      echo "    nvme_slot@${COUNT} {"                               >> ${DEST}
+      echo "        pcie_root = \"${P}\";"                          >> ${DEST}
+      echo "        port_type = \"ssdcache\";"                      >> ${DEST}
+      echo "    };"                                                 >> ${DEST}
       COUNT=$((${COUNT}+1))
     done
-    
-    # for there are only NVME disks in system
-    if [ $NUMPORTS -eq 0 ]; then
-      MAXDISKS=$((${COUNT}-1))
-      _set_conf_kv rd "maxdisks" "${MAXDISKS}"
-      echo "in NVMe only mode"
-      echo "maxdisks=${MAXDISKS}"
-    fi
 
     # USB ports
     COUNT=1
-    for I in $(getUsbPorts); do
-      echo "Add usb_slot@${COUNT}"
-
-      echo "    usb_slot@${COUNT} {"                                >>${DEST}
-      echo "      usb2 {"                                           >>${DEST}
-      echo "        usb_port =\"${I}\";"                            >>${DEST}
-      echo "      };"                                               >>${DEST}
-      echo "      usb3 {"                                           >>${DEST}
-      echo "        usb_port =\"${I}\";"                            >>${DEST}
-      echo "      };"                                               >>${DEST}
-      echo "    };"                                                 >>${DEST}
+    for I in `getUsbPorts`; do
+      echo "    usb_slot@${COUNT} {"                                >> ${DEST}
+      echo "      usb2 {"                                           >> ${DEST}
+      echo "        usb_port =\"${I}\";"                            >> ${DEST}
+      echo "      };"                                               >> ${DEST}
+      echo "      usb3 {"                                           >> ${DEST}
+      echo "        usb_port =\"${I}\";"                            >> ${DEST}
+      echo "      };"                                               >> ${DEST}
+      echo "    };"                                                 >> ${DEST}
       COUNT=$((${COUNT}+1))
     done
-    echo "};"                                                       >>${DEST}
+    echo "};"                                                       >> ${DEST}
   fi
-  dtc -I dts -O dtb ${DEST} >/etc/model.dtb
+  dtc -I dts -O dtb ${DEST} > /etc/model.dtb
   cp -fv /etc/model.dtb /run/model.dtb
   /usr/syno/bin/syno_slot_mapping
 }
@@ -273,19 +242,19 @@ function nondtModel() {
   local SCSI_PORTS=0
   local NVME_PORTS=0
   local NUMPORTS=0
-  local ESATAPORTCFG=$(_get_conf_kv esataportcfg)
-  local INTPORTCFG=$(_get_conf_kv internalportcfg)
-  local USBPORTCFG=$(_get_conf_kv usbportcfg)
+  local ESATAPORTCFG=$((`_get_conf_kv esataportcfg`))
+  local INTPORTCFG
+  local USBPORTCFG=$((`_get_conf_kv usbportcfg`))
   local COUNT=1
   if _check_post_k "rd" "maxdisks"; then
-    NUMPORTS=$(_get_conf_kv maxdisks)
+    NUMPORTS=$((`_get_conf_kv maxdisks`))
     echo "get maxdisks=${NUMPORTS}"
   else
     # sysfs is populated here
-    SATA_PORTS=$(ls /sys/class/ata_port | wc -w)
-    [ -d '/sys/class/sas_phy' ] && SAS_PORTS=$(ls /sys/class/sas_phy | wc -w)
-    [ -d '/sys/class/scsi_disk' ] && SCSI_PORTS=$(ls /sys/class/scsi_disk | wc -w)
-    [ -d '/sys/class/nvme' ] && NVME_PORTS=$(ls /sys/class/nvme | wc -w)
+    SATA_PORTS=`ls /sys/class/ata_port | wc -w`
+    [ -d '/sys/class/sas_phy' ] && SAS_PORTS=`ls /sys/class/sas_phy | wc -w`
+    [ -d '/sys/class/scsi_disk' ] && SCSI_PORTS=`ls /sys/class/scsi_disk | wc -w`
+    [ -d '/sys/class/nvme' ] && NVME_PORTS=`ls /sys/class/nvme | wc -w`
     NUMPORTS=$((${SATA_PORTS}+${SAS_PORTS}+${SCSI_PORTS}+${NVME_PORTS}))
     # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
     if ! _check_rootraidstatus && [ ${NUMPORTS} -gt 26 ]; then
@@ -297,28 +266,28 @@ function nondtModel() {
     fi
   fi
   if ! _check_post_k "rd" "internalportcfg"; then
-    INTPORTCFG="0x$(printf "%x" $((2**${NUMPORTS}-1-${ESATAPORTCFG})))"
+    INTPORTCFG="0x`printf "%x" $((2**${NUMPORTS}-1-${ESATAPORTCFG}))`"
     _set_conf_kv rd "internalportcfg" "${INTPORTCFG}"
     echo "set internalportcfg=${INTPORTCFG}"
     echo "get esataportcfg=${ESATAPORTCFG}"
   fi
   if ! _check_post_k "rd" "usbportcfg"; then
     # USB ports static, always 4 ports
-    USBPORT_IDX=$(getNum0Bits ${USBPORTCFG})
+    USBPORT_IDX=`getNum0Bits ${USBPORTCFG}`
     [ ${USBPORT_IDX} -lt ${NUMPORTS} ] && USBPORT_IDX=${NUMPORTS}
-    USBPORTCFG="0x$(printf '%x' $((15*2**${USBPORT_IDX})))"
+    USBPORTCFG="0x`printf '%x' $((15*2**${USBPORT_IDX}))`"
     _set_conf_kv rd "usbportcfg" "${USBPORTCFG}"
     echo "set usbportcfg=${USBPORTCFG}"
   fi
   # NVME
   rm -f /etc/extensionPorts
-  echo "[pci]" >/etc/extensionPorts
+  echo "[pci]" > /etc/extensionPorts
   chmod 755 /etc/extensionPorts
-  for P in $(nvmePorts false); do
-    echo "pci${COUNT}=\"${P}\"" >>/etc/extensionPorts
+  for P in `nvmePorts false`; do
+    echo "pci${COUNT}=\"${P}\"" >> /etc/extensionPorts
     COUNT=$((${COUNT}+1))
   done
-  if [ $(ls /sys/class/nvme | wc -w) -gt 0 ]; then
+  if [ `ls /sys/class/nvme | wc -w` -gt 0 ]; then
     _set_conf_kv rd "supportnvme" "yes"
     _set_conf_kv rd "support_m2_pool" "yes"
   fi
@@ -327,16 +296,8 @@ function nondtModel() {
 #
 if [ "${1}" = "patches" ]; then
   echo "Adjust disks related configs automatically - patches"
-  if [ "${2}" = "true" ]; then
-    # device tree model
-    dtModel ${3}
-  elif [ "${2}" = "false" ]; then
-    # none device tree model
-    nondtModel
-  else
-    echo "wrong dt argument: ${2}"
-    exit 1
-  fi
+  [ "${2}" = "true" ] && dtModel ${3} || nondtModel
+
 elif [ "${1}" = "late" ]; then
   echo "Adjust disks related configs automatically - late"
   if [ "${2}" = "true" ]; then
@@ -345,11 +306,11 @@ elif [ "${1}" = "late" ]; then
     cp -vf /etc/model.dtb /tmpRoot/etc/model.dtb
     cp -vf /etc/model.dtb /tmpRoot/etc.defaults/model.dtb
   else
-    echo "Adjust maxdisks, internalportcfg and usbportcfg automatically"
+    echo "Adjust maxdisks and internalportcfg automatically"
     # sysfs is unpopulated here, get the values from junior synoinfo.conf
-    NUMPORTS=$(_get_conf_kv maxdisks)
-    INTPORTCFG=$(_get_conf_kv internalportcfg)
-    USBPORTCFG=$(_get_conf_kv usbportcfg)
+    NUMPORTS=`_get_conf_kv maxdisks`
+    INTPORTCFG=`_get_conf_kv internalportcfg`
+    USBPORTCFG=`_get_conf_kv usbportcfg`
     _set_conf_kv hd "maxdisks" "${NUMPORTS}"
     _set_conf_kv hd "internalportcfg" "${INTPORTCFG}"
     _set_conf_kv hd "usbportcfg" "${USBPORTCFG}"
@@ -360,8 +321,9 @@ elif [ "${1}" = "late" ]; then
     cp -vf /etc/extensionPorts /tmpRoot/etc/extensionPorts
     cp -vf /etc/extensionPorts /tmpRoot/etc.defaults/extensionPorts
   fi
-  SUPPORTNVME=$(_get_conf_kv supportnvme)
-  SUPPORT_M2_POOL=$(_get_conf_kv support_m2_pool)
+
+  SUPPORTNVME=`_get_conf_kv supportnvme`
+  SUPPORT_M2_POOL=`_get_conf_kv support_m2_pool`
   _set_conf_kv hd "supportnvme" "${SUPPORTNVME}"
   _set_conf_kv hd "support_m2_pool" "${SUPPORT_M2_POOL}"
 fi
