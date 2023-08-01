@@ -1,10 +1,5 @@
-#!/usr/bin/env ash
+#!/usr/bin/env bash
 # shellcheck disable=SC1083,SC2054,SC2121,SC2207
-
-scriptver="23.6.2"
-script=DiskDBPatch
-repo="AuxXxilium/arc-addons"
-
 
 # Check BASH variable is bash
 if [ ! "$(basename "$BASH")" = bash ]; then
@@ -33,7 +28,6 @@ ding(){
 
 usage(){
     cat <<EOF
-$script $scriptver
 
 Usage: $(basename "$0") [options]
 
@@ -52,22 +46,10 @@ Options:
                           AGE is how many days old a release must be before
                           auto-updating. AGE must be a number: 0 or greater
   -h, --help            Show this help message
-  -v, --version         Show the script version
 
 EOF
     exit 0
 }
-
-
-scriptversion(){
-    cat <<EOF
-$script $scriptver
-
-See https://github.com/$repo
-EOF
-    exit 0
-}
-
 
 # Save options used
 args=("$@")
@@ -105,20 +87,8 @@ if options="$(getopt -o abcdefghijklmnopqrstuvwxyz0123456789 -l \
             -w|--wdda)          # Disable "support_memory_compatibility"
                 wdda=no
                 ;;
-            --autoupdate)       # Auto update script
-                autoupdate=yes
-                if [[ $2 =~ ^[0-9]+$ ]]; then
-                    delay="$2"
-                    shift
-                else
-                    delay="0"
-                fi
-                ;;
             -h|--help)          # Show usage options
                 usage
-                ;;
-            -v|--version)       # Show script version
-                scriptversion
                 ;;
             -d|--debug)         # Show and log debug info
                 debug=yes
@@ -167,11 +137,6 @@ fi
 
 model=$(cat /proc/sys/kernel/syno_hw_version)
 modelname="$model"
-
-
-# Show script version
-#echo -e "$script $scriptver\ngithub.com/$repo\n"
-echo "$script $scriptver"
 
 # Get DSM full version
 productversion=$(get_key_value /etc.defaults/VERSION productversion)
