@@ -267,6 +267,7 @@ fixdrivemodel(){
         hdmodel=${hdmodel#"SAMSUNG "}   # Remove "SAMSUNG " from start of model name
         hdmodel=${hdmodel#"FUJISTU "}   # Remove "FUJISTU " from start of model name
         hdmodel=${hdmodel#"APPLE HDD "} # Remove "APPLE HDD " from start of model name
+        hdmodel=${hdmodel#"VMware "} # Remove "VMware " from start of model name
     fi
 }
 
