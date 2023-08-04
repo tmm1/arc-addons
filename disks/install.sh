@@ -271,7 +271,7 @@ function nondtModel() {
     echo "set internalportcfg=${INTPORTCFG}"
     echo "get esataportcfg=${ESATAPORTCFG}"
   fi
-  if ! _check_post_k "rd" "usbportcfg"; then
+  if ! _check_post_k "rd" "internalportcfg"; then
     # USB ports static, always 4 ports
     USBPORT_IDX=`getNum0Bits ${USBPORTCFG}`
     [ ${USBPORT_IDX} -lt ${NUMPORTS} ] && USBPORT_IDX=${NUMPORTS}
