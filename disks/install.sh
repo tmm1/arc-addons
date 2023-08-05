@@ -242,7 +242,7 @@ function nondtModel() {
   local NVME_PORTS=0
   local NUMPORTS=0
   local ESATAPORTCFG=$(($(_get_conf_kv esataportcfg)))
-  local INTPORTCFG
+  local INTPORTCFG=$(($(_get_conf_kv internalportcfg)))
   local USBPORTCFG=$(($(_get_conf_kv usbportcfg)))
   local COUNT=1
   if _check_post_k "rd" "maxdisks"; then
@@ -270,7 +270,7 @@ function nondtModel() {
     echo "set internalportcfg=${INTPORTCFG}"
     echo "get esataportcfg=${ESATAPORTCFG}"
   fi
-  if ! _check_post_k "rd" "internalportcfg"; then
+  if ! _check_post_k "rd" "usbportcfg"; then
     # USB ports static, always 4 ports
     USBPORT_IDX=$(getNum0Bits ${USBPORTCFG})
     [ ${USBPORT_IDX} -lt ${NUMPORTS} ] && USBPORT_IDX=${NUMPORTS}
