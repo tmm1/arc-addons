@@ -1,11 +1,11 @@
 #!/usr/bin/env ash
 
-SED_PATH='/tmpRoot/usr/bin/sed'
-XXD_PATH='/tmpRoot/usr/bin/xxd'
-LSPCI_PATH='/tmpRoot/usr/bin/lspci'
-
 if [ "${1}" = "late" ]; then
   echo "Misc: Script for fixing missing HW features dependencies and another functions"
+
+  SED_PATH='/tmpRoot/usr/bin/sed'
+  XXD_PATH='/tmpRoot/usr/bin/xxd'
+  LSPCI_PATH='/tmpRoot/usr/bin/lspci'
 
   # Copy utilities to dsm partition
   cp -vf /usr/bin/arpl-reboot.sh /tmpRoot/usr/bin

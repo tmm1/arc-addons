@@ -1,7 +1,5 @@
 #!/usr/bin/env ash
 
-SED_PATH='/tmpRoot/usr/bin/sed'
-
 if [ "${1}" = "modules" ]; then
   echo "Loading FB and console modules..."
   if [ -n "${2}" ]; then
@@ -13,32 +11,34 @@ if [ "${1}" = "modules" ]; then
     done
   fi
   /usr/sbin/modprobe fbcon
-  echo "Arc console - wait..." > /dev/tty1
+  echo "Arc console - wait..." >/dev/tty1
   # Workaround for DVA1622
   if [ "${MODEL}" = "DVA1622" ]; then
-    echo > /dev/tty2
+    echo >/dev/tty2
     /usr/sbin/ioctl /dev/tty0 22022 -v 2
     /usr/sbin/ioctl /dev/tty0 22022 -v 1
   fi
 elif [ "${1}" = "rcExit" ]; then
   # Run only in junior mode (DSM not installed)
-  echo -e "Junior mode\n" > /etc/issue
+  echo -e "Junior mode\n" >/etc/issue
   echo "Starting getty..."
   /usr/sbin/getty -L 0 tty1 &
   /usr/sbin/loadkeys /usr/share/keymaps/i386/qwertz/de.map.gz
   # Workaround for DVA1622
   if [ "${MODEL}" = "DVA1622" ]; then
-    echo > /dev/tty2
+    echo >/dev/tty2
     /usr/sbin/ioctl /dev/tty0 22022 -v 2
     /usr/sbin/ioctl /dev/tty0 22022 -v 1
   fi
 elif [ "${1}" = "late" ]; then
+  echo "Installing addon console"
+  SED_PATH='/tmpRoot/usr/bin/sed'
   # run when boot installed DSM
   cp -vf /tmpRoot/lib/systemd/system/serial-getty\@.service /tmpRoot/lib/systemd/system/getty\@.service
   ${SED_PATH} -i 's|^ExecStart=.*|ExecStart=-/sbin/agetty %I 115200 linux|' /tmpRoot/lib/systemd/system/getty\@.service
   mkdir -vp /tmpRoot/lib/systemd/system/getty.target.wants
   ln -vsf /lib/systemd/system/getty\@.service /tmpRoot/lib/systemd/system/getty.target.wants/getty\@tty1.service
-  echo -e "DSM mode\n" > /tmpRoot/etc/issue
+  echo -e "DSM mode\n" >/tmpRoot/etc/issue
   cp -fRv /usr/share/keymaps /tmpRoot/usr/share/
   cp -vf /usr/sbin/loadkeys /tmpRoot/usr/sbin/
   cp -vf /usr/sbin/setleds /tmpRoot/usr/sbin/
@@ -60,7 +60,7 @@ elif [ "${1}" = "late" ]; then
   ln -vsf /lib/systemd/system/keymap.service /tmpRoot/lib/systemd/system/multi-user.target.wants/keymap.service
   # Workaround for DVA1622
   if [ "${MODEL}" = "DVA1622" ]; then
-    echo > /dev/tty2
+    echo >/dev/tty2
     /usr/bin/ioctl /dev/tty0 22022 -v 2
     /usr/bin/ioctl /dev/tty0 22022 -v 1
   fi

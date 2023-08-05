@@ -5,7 +5,7 @@ XXD_PATH='/tmpRoot/usr/bin/xxd'
 LSPCI_PATH='/tmpRoot/usr/bin/lspci'
 
 if [ "${1}" = "late" ]; then
-  
+  echo "Installing daemon for i915"
   # Intel GPU
   if [ -f /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf ] && [ -f /tmpRoot/usr/lib/modules/i915.ko ]; then
     export LD_LIBRARY_PATH=/tmpRoot/usr/bin:/tmpRoot/usr/lib:${LD_LIBRARY_PATH}
@@ -29,7 +29,7 @@ if [ "${1}" = "late" ]; then
           fi
           ${SED_PATH} -i "s/${GPU_DEF}/${GPU_BIN}/; s/308201f706092a86.*70656e6465647e0a//" /tmpRoot/root/i915.ko.hex
           if [ -n "$(cat /tmpRoot/root/i915.ko.hex)" ]; then
-            ${XXD_PATH} -r -p /tmpRoot/root/i915.ko.hex > /tmpRoot/usr/lib/modules/i915.ko
+            ${XXD_PATH} -r -p /tmpRoot/root/i915.ko.hex >/tmpRoot/usr/lib/modules/i915.k
             rm -f /tmpRoot/root/i915.ko.hex
           else
             echo "Intel GPU is detected (${GPU}), replace i915.ko error"
