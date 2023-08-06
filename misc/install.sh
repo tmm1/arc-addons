@@ -1,21 +1,14 @@
 #!/usr/bin/env ash
 
-if [ "${1}" = "late" ]; then
-  echo "Misc: Script for fixing missing HW features dependencies and another functions"
+PLATFORM="$(uname -u | cut -d '_' -f2)"
 
-  SED_PATH='/tmpRoot/usr/bin/sed'
-  XXD_PATH='/tmpRoot/usr/bin/xxd'
-  LSPCI_PATH='/tmpRoot/usr/bin/lspci'
-
-  # Copy utilities to dsm partition
-  cp -vf /usr/bin/arpl-reboot.sh /tmpRoot/usr/bin
-  cp -vf /usr/bin/arc-reboot.sh /tmpRoot/usr/bin
-  cp -vf /usr/bin/grub-editenv /tmpRoot/usr/bin
-  cp -vf /usr/bin/i915ids /tmpRoot/usr/bin
-
-  mount -t sysfs sysfs /sys
-  modprobe acpi-cpufreq
+fixcpufreq() {
   # CPU performance scaling
+  if [ $(mount 2>/dev/null | grep sysfs | wc -l) -eq 0 ]; then
+    mount -t sysfs sysfs /sys
+    [ -f /usr/lib/modules/processor.ko ] && insmod /tmpRoot/usr/lib/modules/processor.ko
+    [ -f /usr/lib/modules/acpi-cpufreq.ko ] && insmod /tmpRoot/usr/lib/modules/acpi-cpufreq.ko
+  fi
   if [ -f /tmpRoot/usr/lib/modules-load.d/70-cpufreq-kernel.conf ]; then
     CPUFREQ=$(ls -ltr /sys/devices/system/cpu/cpufreq/* 2>/dev/null | wc -l)
     if [ ${CPUFREQ} -eq 0 ]; then
@@ -28,7 +21,9 @@ if [ "${1}" = "late" ]; then
     fi
   fi
   umount /sys
+}
 
+fixcrypto() {
   # crc32c-intel
   if [ -f /tmpRoot/usr/lib/modules-load.d/70-crypto-kernel.conf ]; then
     CPUFLAGS=$(cat /proc/cpuinfo | grep flags | grep sse4_2 | wc -l)
@@ -51,7 +46,9 @@ if [ "${1}" = "late" ]; then
       ${SED_PATH} -i 's/^aesni-intel/# aesni-intel/g' /tmpRoot/usr/lib/modules-load.d/70-crypto-kernel.conf
     fi
   fi
+}
 
+fixnvidia() {
   # Nvidia GPU
   if [ -f /tmpRoot/usr/lib/modules-load.d/70-syno-nvidia-gpu.conf ]; then
     NVIDIADEV=$(cat /proc/bus/pci/devices | grep -i 10de | wc -l)
@@ -63,4 +60,80 @@ if [ "${1}" = "late" ]; then
       echo "NVIDIA GPU is detected, nothing to do"
     fi
   fi
+}
+
+fixintelgpu() {
+  # Intel GPU
+  GPU="$(LD_LIBRARY_PATH=/tmpRoot/lib64 /tmpRoot/bin/lspci -n | grep 0300 | cut -d " " -f 3 | sed -e 's/://g')"
+  if [ -f /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf ]; then
+      INTELGPU=$(grep -i ${GPU} /usr/bin/pciids | wc -l)
+      if [ $INTELGPU -eq 0 ]; then
+          echo "Intel GPU is not detected ($GPU), disabling "
+          ${SED_PATH} -i 's/^i915/# i915/g' /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf
+      else
+          echo "Intel GPU is detected ($GPU), nothing to do"
+      fi
+  fi
+}
+
+fixacpibutton() {
+  # ACPI Button
+  if [ ! -d /proc/acpi ]; then
+      echo "NO ACPI status is available, disabling button.ko"
+      ${SED_PATH} -i 's/^button/# button/g' /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf
+  fi
+}
+
+if [ "${1}" = "late" ]; then
+  echo "Misc: Script for fixing missing HW features dependencies and another functions"
+
+  chmod +x /tmpRoot/usr/bin/sed
+  SED_PATH='/tmpRoot/usr/bin/sed'
+
+  # Copy utilities to dsm partition
+  cp -vf /usr/bin/arpl-reboot.sh /tmpRoot/usr/bin
+  cp -vf /usr/bin/arc-reboot.sh /tmpRoot/usr/bin
+  cp -vf /usr/bin/grub-editenv /tmpRoot/usr/bin
+
+  case "${PLATFORM}" in
+
+  apollolake)
+      fixcpufreq
+      fixcrypto
+      ;;
+  broadwell)
+      fixcpufreq
+      fixcrypto
+      ;;
+  broadwellnk)
+      fixcpufreq
+      fixcrypto
+      ;;
+  v1000)
+      fixcpufreq
+      fixcrypto
+      ;;
+  r1000)
+      fixcpufreq
+      fixcrypto
+      ;;
+  denverton)
+      fixcpufreq
+      fixcrypto
+      fixnvidia
+      ;;
+  geminilake)
+      fixcpufreq
+      fixcrypto
+      fixintelgpu
+      fixacpibutton
+      ;;
+
+  *)
+      fixcpufreq
+      fixcrypto
+      ;;
+
+  esac
+
 fi
