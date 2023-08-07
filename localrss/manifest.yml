@@ -5,7 +5,7 @@ system: true
 beta: false
 all:
   install-script: "install.sh"
-  copy: ""
+  copy: "all"
 available-for:
   apollolake-4.4.180:
   broadwell-4.4.180:
