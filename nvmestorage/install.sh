@@ -2,7 +2,8 @@
 
 if [ "${1}" = "late" ]; then
   echo "NVMeStorage: Installing daemon for nvmestorage"
-  cp -v /usr/sbin/nvmevolume.sh /tmpRoot/usr/sbin/nvmevolume.sh
+  cp -fv /usr/bin/bc /tmpRoot/usr/bin/bc
+  cp -fv /usr/sbin/nvmevolume.sh /tmpRoot/usr/sbin/nvmevolume.sh
 
   DEST="/tmpRoot/lib/systemd/system/nvmevolume.service"
   echo "[Unit]"                                    >${DEST}

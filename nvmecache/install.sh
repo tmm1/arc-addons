@@ -2,7 +2,7 @@
 
 if [ "${1}" = "late" ]; then
   echo "NVMeCache: Installing daemon for nvmecache"
-  cp -v /usr/sbin/nvmecache.sh /tmpRoot/usr/sbin/nvmecache.sh
+  cp -fv /usr/sbin/nvmecache.sh /tmpRoot/usr/sbin/nvmecache.sh
 
   DEST="/tmpRoot/lib/systemd/system/nvmecache.service"
   echo "[Unit]"                                    >${DEST}
