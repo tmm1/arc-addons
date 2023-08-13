@@ -242,8 +242,8 @@ function nondtModel() {
   local NVME_PORTS=0
   local NUMPORTS=0
   local ESATAPORTCFG=$(($(_get_conf_kv esataportcfg)))
-  local INTPORTCFG=$(($(_get_conf_kv internalportcfg)))
-  local USBPORTCFG=$(($(_get_conf_kv usbportcfg)))
+  local INTPORTCFG
+  local USBPORTCFG
   local COUNT=1
   if _check_post_k "rd" "maxdisks"; then
     NUMPORTS=$(($(_get_conf_kv maxdisks)))
@@ -253,7 +253,7 @@ function nondtModel() {
     SATA_PORTS=$(ls /sys/class/ata_port | wc -w)
     [ -d '/sys/class/sas_phy' ] && SAS_PORTS=$(ls /sys/class/sas_phy | wc -w)
     [ -d '/sys/class/scsi_disk' ] && SCSI_PORTS=$(ls /sys/class/scsi_disk | wc -w)
-    [ -d '/sys/class/nvme' ] && NVME_PORTS=`ls /sys/class/nvme | wc -w`
+    [ -d '/sys/class/nvme' ] && NVME_PORTS=$(ls /sys/class/nvme | wc -w)
     NUMPORTS=$((${SATA_PORTS} + ${SAS_PORTS} + ${SCSI_PORTS} + ${NVME_PORTS}))
     # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
     if ! _check_rootraidstatus && [ ${NUMPORTS} -gt 26 ]; then
