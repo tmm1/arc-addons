@@ -1,7 +1,3 @@
-#!/bin/sh
-
-set -x
-
 PCI_ER="^[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]{1}"
 
 # Get values in synoinfo.conf K=V file
@@ -28,11 +24,40 @@ function _set_conf_kv() {
   done
 }
 
+# Check if the user has customized the key
+# Args: $1 rd|hd, $2 key
+function _check_post_k() {
+  local ROOT
+  [ "$1" = "rd" ] && ROOT="" || ROOT="/tmpRoot"
+  if grep -q -r "^_set_conf_kv.*${2}.*" "${ROOT}/sbin/init.post"; then
+    return 0 # true
+  else
+    return 1 # false
+  fi
+}
+
+# Check if the raid has been completed currently
+function _check_rootraidstatus() {
+  if [ "$(_get_conf_kv supportraid)" != "yes" ]; then
+    return 0
+  fi
+  State=$(cat /sys/block/md0/md/array_state) 2>/dev/null
+  if [ $? != 0 ]; then
+    return 1
+  fi
+  case ${State} in
+  "clear" | "inactive" | "suspended " | "readonly" | "read-auto")
+    return 1
+    ;;
+  esac
+  return 0
+}
+
 # Calculate # 0 bits
 function getNum0Bits() {
   local VALUE=$1
   local NUM=0
-  while [ $((${VALUE}%2)) -eq 0 ] && [ ${VALUE} -ne 0 ]; do
+  while [ $((${VALUE} % 2)) -eq 0 -a ${VALUE} -ne 0 ]; do
     NUM=$((${NUM} + 1))
     VALUE=$((${VALUE} / 2))
   done
@@ -89,8 +114,8 @@ function getSataPorts() {
       while true; do
         FIRST=$(echo "${_PATH}" | cut -d'/' -f1)
         echo "${FIRST}" | grep -qE "${PCI_ER}" || break
-        [ -z "${DSMPATH}" ] && \
-          DSMPATH="$(echo "${FIRST}" | cut -d':' -f2-)" || \
+        [ -z "${DSMPATH}" ] &&
+          DSMPATH="$(echo "${FIRST}" | cut -d':' -f2-)" ||
           DSMPATH="${DSMPATH},$(echo "${FIRST}" | cut -d':' -f3)"
         _PATH=$(echo ${_PATH} | cut -d'/' -f2-)
       done
@@ -118,8 +143,8 @@ function nvmePorts() {
       while true; do
         FIRST=$(echo "${_PATH}" | cut -d'/' -f1)
         echo "${FIRST}" | grep -qE "${PCI_ER}" || break
-        [ -z "${DSMPATH}" ] && \
-          DSMPATH="$(echo "${FIRST}" | cut -d':' -f2-)" || \
+        [ -z "${DSMPATH}" ] &&
+          DSMPATH="$(echo "${FIRST}" | cut -d':' -f2-)" ||
           DSMPATH="${DSMPATH},$(echo "${FIRST}" | cut -d':' -f3)"
         _PATH=$(echo ${_PATH} | cut -d'/' -f2-)
       done
@@ -132,7 +157,7 @@ function nvmePorts() {
   echo
 }
 
-# DT Model
+#
 function dtModel() {
   DEST="/addons/model.dts"
   if [ ! -f "${DEST}" ]; then # Users can put their own dts.
@@ -157,24 +182,11 @@ function dtModel() {
     fi
     # SATA ports
     I=1
-    idx=0
     while true; do
-      if [ ! -d /sys/block/sata${I} ]; then
-        if [ "$I" -eq 1 ]; then
-          # for fake sata synoboot, if redpill lkm is loaded after init
-          # sata1 is been relocated to synoboot
-          I=$((${I} + 1))
-          bias=1
-          continue
-        else
-          break
-        fi
-      fi
-      idx=$((${idx} + 1))
-      echo "Add sata internal_slot@${idx}"
+      [ ! -d /sys/block/sata${I} ] && break
       PCIEPATH=$(grep 'pciepath' /sys/block/sata${I}/device/syno_block_info | cut -d'=' -f2)
       ATAPORT=$(grep 'ata_port_no' /sys/block/sata${I}/device/syno_block_info | cut -d'=' -f2)
-      echo "    internal_slot@${idx} {"                               >>${DEST}
+      echo "    internal_slot@${I} {"                                 >>${DEST}
       echo "        protocol_type = \"sata\";"                        >>${DEST}
       echo "        ahci {"                                           >>${DEST}
       echo "            pcie_root = \"${PCIEPATH}\";"                 >>${DEST}
@@ -186,7 +198,7 @@ function dtModel() {
     NUMPORTS=$((${I} - 1))
     if [ $NUMPORTS -eq 1 ]; then
       # fix isSingleBay issue:
-      # if maxdisks is 1, there is no create button in the storage panel
+      #   if maxdisks is 1, there is no create button in the storage panel
       NUMPORTS=2
     fi
     _set_conf_kv rd "maxdisks" "${NUMPORTS}"
@@ -195,8 +207,6 @@ function dtModel() {
     # NVME ports
     COUNT=1
     for P in $(nvmePorts true); do
-      echo "Add nvme_slot@${COUNT}"
-
       echo "    nvme_slot@${COUNT} {"                                 >>${DEST}
       echo "        pcie_root = \"${P}\";"                            >>${DEST}
       echo "        port_type = \"ssdcache\";"                        >>${DEST}
@@ -204,19 +214,9 @@ function dtModel() {
       COUNT=$((${COUNT} + 1))
     done
 
-    # for there are only NVME disks in system
-    if [ $NUMPORTS -eq 0 ]; then
-      MAXDISKS=$((${COUNT} - 1))
-      _set_conf_kv rd "maxdisks" "${MAXDISKS}"
-      echo "in NVMe only mode"
-      echo "maxdisks=${MAXDISKS}"
-    fi
-
     # USB ports
     COUNT=1
     for I in $(getUsbPorts); do
-      echo "Add usb_slot@${COUNT}"
-
       echo "    usb_slot@${COUNT} {"                                  >>${DEST}
       echo "      usb2 {"                                             >>${DEST}
       echo "        usb_port =\"${I}\";"                              >>${DEST}
@@ -234,7 +234,7 @@ function dtModel() {
   /usr/syno/bin/syno_slot_mapping
 }
 
-# nonDT Model
+#
 function nondtModel() {
   local SATA_PORTS=0
   local SAS_PORTS=0
@@ -242,7 +242,7 @@ function nondtModel() {
   local NVME_PORTS=0
   local NUMPORTS=0
   local ESATAPORTCFG=$(($(_get_conf_kv esataportcfg)))
-  local INTPORTCFG
+  local INTPORTCFG=$(($(_get_conf_kv internalportcfg)))
   local USBPORTCFG=$(($(_get_conf_kv usbportcfg)))
   local COUNT=1
   if _check_post_k "rd" "maxdisks"; then
@@ -253,7 +253,7 @@ function nondtModel() {
     SATA_PORTS=$(ls /sys/class/ata_port | wc -w)
     [ -d '/sys/class/sas_phy' ] && SAS_PORTS=$(ls /sys/class/sas_phy | wc -w)
     [ -d '/sys/class/scsi_disk' ] && SCSI_PORTS=$(ls /sys/class/scsi_disk | wc -w)
-    [ -d '/sys/class/nvme' ] && NVME_PORTS=$(ls /sys/class/nvme | wc -w)
+    [ -d '/sys/class/nvme' ] && NVME_PORTS=`ls /sys/class/nvme | wc -w`
     NUMPORTS=$((${SATA_PORTS} + ${SAS_PORTS} + ${SCSI_PORTS} + ${NVME_PORTS}))
     # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
     if ! _check_rootraidstatus && [ ${NUMPORTS} -gt 26 ]; then
@@ -270,7 +270,7 @@ function nondtModel() {
     echo "set internalportcfg=${INTPORTCFG}"
     echo "get esataportcfg=${ESATAPORTCFG}"
   fi
-  if ! _check_post_k "rd" "internalportcfg"; then
+  if ! _check_post_k "rd" "usbportcfg"; then
     # USB ports static, always 4 ports
     USBPORT_IDX=$(getNum0Bits ${USBPORTCFG})
     [ ${USBPORT_IDX} -lt ${NUMPORTS} ] && USBPORT_IDX=${NUMPORTS}
@@ -292,7 +292,7 @@ function nondtModel() {
   fi
 }
 
-# Patches
+#
 if [ "${1}" = "patches" ]; then
   echo "Adjust disks related configs automatically - patches"
   [ "${2}" = "true" ] && dtModel ${3} || nondtModel
