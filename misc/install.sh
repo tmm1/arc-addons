@@ -8,8 +8,9 @@ if [ "${1}" = "late" ]; then
   LSPCI_PATH='/tmpRoot/usr/bin/lspci'
 
   # Copy utilities to dsm partition
-  cp -vf /usr/bin/arpl-reboot.sh /tmpRoot/usr/bin
-  cp -vf /usr/bin/grub-editenv /tmpRoot/usr/bin
+  cp -vf /usr/sbin/arpl-reboot.sh /tmpRoot/usr/sbin
+  cp -vf /usr/sbin/arc-reboot.sh /tmpRoot/usr/sbin
+  cp -vf /usr/sbin/grub-editenv /tmpRoot/usr/sbin
 
   mount -t sysfs sysfs /sys
   modprobe acpi-cpufreq
