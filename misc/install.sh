@@ -8,9 +8,9 @@ if [ "${1}" = "late" ]; then
   LSPCI_PATH='/tmpRoot/usr/bin/lspci'
 
   # Copy utilities to dsm partition
-  cp -vf /usr/sbin/arpl-reboot.sh /tmpRoot/usr/sbin
-  cp -vf /usr/sbin/arc-reboot.sh /tmpRoot/usr/sbin
-  cp -vf /usr/sbin/grub-editenv /tmpRoot/usr/sbin
+  cp -vf "/usr/sbin/arpl-reboot.sh" "/tmpRoot/usr/sbin/arpl-reboot.sh"
+  cp -vf "/usr/sbin/arc-reboot.sh" "/tmpRoot/usr/sbin/arc-reboot.sh"
+  cp -vf "/usr/sbin/grub-editenv" "/tmpRoot/usr/sbin/grub-editenv"
 
   mount -t sysfs sysfs /sys
   modprobe acpi-cpufreq
@@ -23,7 +23,7 @@ if [ "${1}" = "late" ]; then
     else
       echo "CPU supports CPU Performance Scaling, enabling"
       ${SED_PATH} -i 's/^# acpi-cpufreq/acpi-cpufreq/g' /tmpRoot/usr/lib/modules-load.d/70-cpufreq-kernel.conf
-      cp -vf /usr/lib/modules/cpufreq_* /tmpRoot/usr/lib/modules/
+      cp -vf "/usr/lib/modules/cpufreq_*" "/tmpRoot/usr/lib/modules/"
     fi
   fi
   umount /sys
