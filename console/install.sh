@@ -39,10 +39,9 @@ elif [ "${1}" = "late" ]; then
   mkdir -vp /tmpRoot/lib/systemd/system/getty.target.wants
   ln -vsf /lib/systemd/system/getty\@.service /tmpRoot/lib/systemd/system/getty.target.wants/getty\@tty1.service
   echo -e "DSM mode\n" >/tmpRoot/etc/issue
-  cp -fRv /usr/share/keymaps /tmpRoot/usr/share/
+  cp -Rvf /usr/share/keymaps /tmpRoot/usr/share/
   cp -vf /usr/sbin/loadkeys /tmpRoot/usr/sbin/
   cp -vf /usr/sbin/setleds /tmpRoot/usr/sbin/
-  
   DEST="/tmpRoot/lib/systemd/system/keymap.service"
   echo "[Unit]"                                                                >${DEST}
   echo "Description=Configure keymap"                                         >>${DEST}

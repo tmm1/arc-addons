@@ -30,7 +30,6 @@ if [ "${1}" = "late" ]; then
           ${SED_PATH} -i "s/${GPU_DEF}/${GPU_BIN}/; s/308201f706092a86.*70656e6465647e0a//" /tmpRoot/root/i915.ko.hex
           if [ -n "$(cat /tmpRoot/root/i915.ko.hex)" ]; then
             ${XXD_PATH} -r -p /tmpRoot/root/i915.ko.hex >/tmpRoot/usr/lib/modules/i915.ko
-            ${XXD_PATH} -r -p /tmpRoot/root/i915.ko.hex >/usr/lib/modules/i915.ko
             rm -f /tmpRoot/root/i915.ko.hex
             rmmod i915
             insmod /tmpRoot/usr/lib/modules/i915.ko
