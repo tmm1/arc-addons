@@ -9,13 +9,13 @@ echo "MajorVersion:${MajorVersion} MinorVersion:${MinorVersion}"
 
 if [ "${1}" = "modules" ]; then
   echo "Starting eudev daemon - modules"
-  if [ "${MinorVersion}" -ge "2" ]; then # < 2
-    tar zxf /addons/eudev-7.2.tgz -C /
-  else
+  if [ "${MinorVersion}" -lt "2" ]; then # < 2
     tar zxf /addons/eudev-7.1.tgz -C /
+  else
+    tar zxf /addons/eudev-7.2.tgz -C /
   fi
   [ -e /proc/sys/kernel/hotplug ] && printf '\000\000\000\000' >/proc/sys/kernel/hotplug
-  chmod 755 "/usr/sbin/udevd" "/usr/bin/kmod" "/usr/bin/udevadm" "/usr/lib/udev/*"
+  chmod 755 /usr/sbin/udevd" "/usr/bin/kmod" "/usr/bin/udevadm" "/usr/lib/udev/*
   /usr/sbin/depmod -a
   /usr/sbin/udevd -d || {
     echo "FAIL"
