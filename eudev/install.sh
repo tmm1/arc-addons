@@ -3,7 +3,6 @@
 # DSM version
 MajorVersion=$(/bin/get_key_value /etc.defaults/VERSION majorversion)
 MinorVersion=$(/bin/get_key_value /etc.defaults/VERSION minorversion)
-ModuleUnique=$(/bin/get_key_value /etc.defaults/VERSION unique) # Avoid confusion with global variables
 
 echo "MajorVersion:${MajorVersion} MinorVersion:${MinorVersion}"
 
