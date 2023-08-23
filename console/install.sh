@@ -43,17 +43,17 @@ elif [ "${1}" = "late" ]; then
   cp -vf /usr/sbin/loadkeys /tmpRoot/usr/sbin/
   cp -vf /usr/sbin/setleds /tmpRoot/usr/sbin/
   DEST="/tmpRoot/lib/systemd/system/keymap.service"
-  echo "[Unit]"                                                                >${DEST}
-  echo "Description=Configure keymap"                                         >>${DEST}
-  echo "After=getty.target"                                                   >>${DEST}
-  echo                                                                        >>${DEST}
-  echo "[Service]"                                                            >>${DEST}
-  echo "Type=oneshot"                                                         >>${DEST}
-  echo "RemainAfterExit=true"                                                 >>${DEST}
-  echo "ExecStart=/usr/sbin/loadkeys /usr/share/keymaps/i386/qwertz/de.map.gz" >>${DEST}
-  echo                                                                        >>${DEST}
-  echo "[Install]"                                                            >>${DEST}
-  echo "WantedBy=multi-user.target"                                           >>${DEST}
+  echo "[Unit]"                                                                                      >${DEST}
+  echo "Description=Configure keymap"                                                               >>${DEST}
+  echo "After=getty.target"                                                                         >>${DEST}
+  echo                                                                                              >>${DEST}
+  echo "[Service]"                                                                                  >>${DEST}
+  echo "Type=oneshot"                                                                               >>${DEST}
+  echo "RemainAfterExit=true"                                                                       >>${DEST}
+  echo "ExecStart=/usr/bin/loadkeys /usr/share/keymaps/i386/${LAYOUT:-qwertz}/${KEYMAP:-de}.map.gz" >>${DEST}
+  echo                                                                                              >>${DEST}
+  echo "[Install]"                                                                                  >>${DEST}
+  echo "WantedBy=multi-user.target"                                                                 >>${DEST}
 
   mkdir -vp /tmpRoot/lib/systemd/system/multi-user.target.wants
   ln -vsf /lib/systemd/system/keymap.service /tmpRoot/lib/systemd/system/multi-user.target.wants/keymap.service
