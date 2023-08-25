@@ -2,7 +2,6 @@
 
 if [ "${1}" = "modules" ]; then
   echo "Loading FB and console modules..."
-  chmod 755 /usr/bin/kmod
   if [ -n "${2}" ]; then
     /usr/sbin/modprobe ${2}
   else
