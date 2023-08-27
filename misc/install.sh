@@ -2,15 +2,15 @@
 
 if [ "${1}" = "late" ]; then
   echo "Script for fixing missing HW features dependencies and another functions"
-
   SED_PATH='/tmpRoot/usr/bin/sed'
   XXD_PATH='/tmpRoot/usr/bin/xxd'
   LSPCI_PATH='/tmpRoot/usr/bin/lspci'
 
   # Copy utilities to dsm partition
-  cp -vf "/usr/sbin/arpl-reboot.sh" "/tmpRoot/usr/sbin/arpl-reboot.sh"
-  cp -vf "/usr/sbin/arc-reboot.sh" "/tmpRoot/usr/sbin/arc-reboot.sh"
-  cp -vf "/usr/sbin/grub-editenv" "/tmpRoot/usr/sbin/grub-editenv"
+  cp -vf "/usr/bin/arpl-reboot.sh" "/tmpRoot/usr/bin/arpl-reboot.sh"
+  cp -vf "/usr/bin/arc-reboot.sh" "/tmpRoot/usr/bin/arc-reboot.sh"
+  cp -vf "/usr/bin/grub-editenv" "/tmpRoot/usr/bin/grub-editenv"
+  cp -vf "/usr/bin/sed" "/tmpRoot/usr/bin/sed"
 
   mount -t sysfs sysfs /sys
   modprobe acpi-cpufreq
