@@ -1,5 +1,6 @@
 version: 1
 name: acpid
+system: true
 beta: false
 description: "Flexible and extensible daemon for delivering ACPI events"
 all:
