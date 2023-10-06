@@ -1,6 +1,5 @@
 version: 1
 name: wol
-system: true
 beta: false
 description: "Force enable the Wake-on-lan on first ethernet device"
 all:
