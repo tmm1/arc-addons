@@ -1,19 +1,22 @@
 #!/usr/bin/env ash
 
 if [ "${1}" = "jrExit" ]; then
-  /usr/sbin/ethtool -s eth0 wol g 2>/dev/null
+  for N in $(ls /sys/class/net/ | grep eth); do
+    /usr/bin/ethtool -s ${N} wol g 2>/dev/null
+  done
 elif [ "${1}" = "late" ]; then
-  echo "WOL: Creating service to exec ethtool"
+  echo "Creating service to exec ethtool"
   cp -vf /usr/bin/ethtool /tmpRoot/usr/bin/ethtool
+  cp -vf /usr/bin/wol.sh /tmpRoot/usr/bin/wol.sh
+
   DEST="/tmpRoot/lib/systemd/system/ethtool.service"
-  echo "[Unit]"                                                                >${DEST}
-  echo "Description=ARC force WoL on eth0"                                    >>${DEST}
+  echo "[Unit]"                                                               > ${DEST}
+  echo "Description=ARC force WoL on ethN"                                    >>${DEST}
   echo                                                                        >>${DEST}
   echo "[Service]"                                                            >>${DEST}
   echo "Type=oneshot"                                                         >>${DEST}
   echo "RemainAfterExit=true"                                                 >>${DEST}
-  echo "ExecStart=/usr/bin/ethtool -s eth0 wol g"                             >>${DEST}
-  echo "ExecStop=/usr/bin/ethtool -s eth0 wol g"                              >>${DEST}
+  echo "ExecStart=/usr/bin/wol.sh"                                            >>${DEST}
   echo                                                                        >>${DEST}
   echo "[Install]"                                                            >>${DEST}
   echo "WantedBy=multi-user.target"                                           >>${DEST}
