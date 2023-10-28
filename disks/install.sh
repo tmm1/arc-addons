@@ -111,7 +111,17 @@ function getUsbPorts() {
 function nvmePorts() {
   local PCI_ER="^[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]{1}"
   local NVME_PORTS=$(ls /sys/class/nvme | wc -w)
+  BOOTDISK=$(blkid -L RR3 | sed 's/\/dev\///; s/p3//')
   for I in $(seq 0 $((${NVME_PORTS} - 1))); do
+    if [ -d "/sys/class/nvme/nvme${I}/${BOOTDISK}" ]; then
+      [ ! -b /dev/synoboot -a -d /sys/block/${BOOTDISK} ] &&
+        /bin/mknod /dev/synoboot b $(cat /sys/block/${BOOTDISK}/dev | sed 's/:/ /') >/dev/null 2>&1
+      [ ! -b /dev/synoboot1 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}p1 ] &&
+        /bin/mknod /dev/synoboot1 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p1/dev | sed 's/:/ /') >/dev/null 2>&1
+      [ ! -b /dev/synoboot2 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}p2 ] &&
+        /bin/mknod /dev/synoboot2 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p2/dev | sed 's/:/ /') >/dev/null 2>&1
+      continue
+    fi
     _PATH=$(readlink /sys/class/nvme/nvme${I} | sed 's|^.*\(pci.*\)|\1|' | cut -d'/' -f2-)
     if [ "${1}" = "true" ]; then
       # Device-tree: assemble complete path in DSM format
@@ -159,19 +169,29 @@ function dtModel() {
     # SATA ports
     I=1
     J=1
+    BOOTDISK=$(blkid -L RR3 | sed 's/\/dev\///; s/p3//')
     while true; do
       [ ! -d /sys/block/sata${J} ] && break
-      PCIEPATH=$(grep 'pciepath' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
-      ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
-      if [ -n "${PCIEPATH}" -a -n "${ATAPORT}" ]; then
-        echo "    internal_slot@${I} {" >>${DEST}
-        echo "        protocol_type = \"sata\";" >>${DEST}
-        echo "        ahci {" >>${DEST}
-        echo "            pcie_root = \"${PCIEPATH}\";" >>${DEST}
-        echo "            ata_port = <0x$(printf '%02X' ${ATAPORT})>;" >>${DEST}
-        echo "        };" >>${DEST}
-        echo "    };" >>${DEST}
-        I=$((${I} + 1))
+      if [ "sata${J}" = "${BOOTDISK}" ]; then
+        [ ! -b /dev/synoboot -a -d /sys/block/sata${J} ] &&
+          /bin/mknod /dev/synoboot b $(cat /sys/block/sata${J}/dev | sed 's/:/ /') >/dev/null 2>&1
+        [ ! -b /dev/synoboot1 -a -d /sys/block/sata${J}/sata${J}p1 ] &&
+          /bin/mknod /dev/synoboot1 b $(cat /sys/block/sata${J}/sata${J}p1/dev | sed 's/:/ /') >/dev/null 2>&1
+        [ ! -b /dev/synoboot2 -a -d /sys/block/sata${J}/sata${J}p2 ] &&
+          /bin/mknod /dev/synoboot2 b $(cat /sys/block/sata${J}/sata${J}p2/dev | sed 's/:/ /') >/dev/null 2>&1
+      else
+        PCIEPATH=$(grep 'pciepath' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
+        ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
+        if [ -n "${PCIEPATH}" -a -n "${ATAPORT}" ]; then
+          echo "    internal_slot@${I} {" >>${DEST}
+          echo "        protocol_type = \"sata\";" >>${DEST}
+          echo "        ahci {" >>${DEST}
+          echo "            pcie_root = \"${PCIEPATH}\";" >>${DEST}
+          echo "            ata_port = <0x$(printf '%02X' ${ATAPORT})>;" >>${DEST}
+          echo "        };" >>${DEST}
+          echo "    };" >>${DEST}
+          I=$((${I} + 1))
+        fi
       fi
       J=$((${J} + 1))
     done
@@ -209,7 +229,7 @@ function dtModel() {
     echo "};" >>${DEST}
   fi
   dtc -I dts -O dtb ${DEST} >/etc/model.dtb
-  cp -fv /etc/model.dtb /run/model.dtb
+  cp -vf /etc/model.dtb /run/model.dtb
   /usr/syno/bin/syno_slot_mapping
 }
 
