@@ -6,6 +6,9 @@ if [ "${1}" = "late" ]; then
   XXD_PATH='/tmpRoot/usr/bin/xxd'
   LSPCI_PATH='/tmpRoot/usr/bin/lspci'
 
+  cp -vf "/usr/sbin/loader-reboot.sh" "/tmpRoot/usr/sbin/loader-reboot.sh"
+  cp -vf "/usr/sbin/grub-editenv" "/tmpRoot/usr/sbin/grub-editenv"
+
   mount -t sysfs sysfs /sys
   modprobe acpi-cpufreq
   # CPU performance scaling
