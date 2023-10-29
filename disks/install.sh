@@ -161,11 +161,12 @@ function nvmePorts() {
 #
 function dtModel() {
   DEST="/addons/model.dts"
+  UNIQUE=$(_get_conf_kv unique)
   if [ ! -f "${DEST}" ]; then # Users can put their own dts.
     echo "/dts-v1/;" >${DEST}
     echo "/ {" >>${DEST}
     echo "    compatible = \"Synology\";" >>${DEST}
-    echo "    model = \"${1}\";" >>${DEST}
+    echo "    model = \"${UNIQUE}\";" >>${DEST}
     echo "    version = <0x01>;" >>${DEST}
 
     # NVME power_limit
@@ -312,7 +313,7 @@ function nondtModel() {
     _set_conf_kv rd "support_m2_pool" "yes"
   fi
 
-    checkSynoboot
+  checkSynoboot
 
   if [ "${1}" = "true" ]; then
     echo "TODO: no-DT's sort!!!"
@@ -322,11 +323,10 @@ function nondtModel() {
 #
 if [ "${1}" = "patches" ]; then
   echo "Adjust disks related configs automatically - patches"
-  [ "$(_get_conf_kv supportportmappingv2)" = "yes" ] && dtModel "${2}" || nondtModel "${2}"
-
+  [ "${2}" = "true" ] && dtModel "${UNIQUE}" || nondtModel
 elif [ "${1}" = "late" ]; then
   echo "Adjust disks related configs automatically - late"
-  if [ "$(_get_conf_kv supportportmappingv2)" = "yes" ]; then
+   if [ "${2}" = "true" ]; then
     echo "Copying /etc.defaults/model.dtb"
     # copy file
     cp -vf /etc/model.dtb /tmpRoot/etc/model.dtb
