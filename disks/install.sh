@@ -341,20 +341,16 @@ function nondtModel() {
   fi
 
   checkSynoboot
-
-  if [ "${1}" = "true" ]; then
-    echo "TODO: no-DT's sort!!!"
-  fi
 }
 
 #
 if [ "${1}" = "patches" ]; then
   echo "Adjust disks related configs automatically - patches"
-  [ "$(_get_conf_kv supportportmappingv2)" = "yes" ] && dtModel "${2}" || nondtModel "${2}"
-
+  UNIQUE=$(_get_conf_kv unique)
+  [ "${2}" = "true" ] && dtModel "${UNIQUE}" || nondtModel "${UNIQUE}"
 elif [ "${1}" = "late" ]; then
   echo "Adjust disks related configs automatically - late"
-  if [ "$(_get_conf_kv supportportmappingv2)" = "yes" ]; then
+   if [ "${2}" = "true" ]; then
     echo "Copying /etc.defaults/model.dtb"
     # copy file
     cp -vf /etc/model.dtb /tmpRoot/etc/model.dtb
