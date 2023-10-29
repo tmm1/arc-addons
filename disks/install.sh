@@ -236,6 +236,8 @@ function dtModel() {
     if [ $NUMPORTS -le 2 ]; then
       # fix isSingleBay issue: if maxdisks is 1, there is no create button in the storage panel
       NUMPORTS=4
+    elif [ ${NUMPORTS} -gt 26 ]; then
+      NUMPORTS=26
     fi
     _set_conf_kv rd "maxdisks" "${NUMPORTS}"
     echo "maxdisks=${NUMPORTS}"
