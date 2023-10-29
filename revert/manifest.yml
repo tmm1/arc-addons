@@ -1,6 +1,7 @@
 version: 1
 name: revert
 description: "Revert all Modifications"
+system: true
 all:
   install-script: "install.sh"
   copy: all
