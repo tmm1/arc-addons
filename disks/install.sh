@@ -111,7 +111,7 @@ function getUsbPorts() {
 function nvmePorts() {
   local PCI_ER="^[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]{1}"
   local NVME_PORTS=$(ls /sys/class/nvme | wc -w)
-  BOOTDISK=$(blkid -L RR3 | sed 's/\/dev\///; s/p3//')
+  BOOTDISK=$(blkid -L ARC3 | sed 's/\/dev\///; s/p3//')
   for I in $(seq 0 $((${NVME_PORTS} - 1))); do
     if [ -d "/sys/class/nvme/nvme${I}/${BOOTDISK}" ]; then
       [ ! -b /dev/synoboot -a -d /sys/block/${BOOTDISK} ] &&
@@ -169,7 +169,7 @@ function dtModel() {
     # SATA ports
     I=1
     J=1
-    BOOTDISK=$(blkid -L RR3 | sed 's/\/dev\///; s/p3//')
+    BOOTDISK=$(blkid -L ARC3 | sed 's/\/dev\///; s/p3//')
     while true; do
       [ ! -d /sys/block/sata${J} ] && break
       if [ "sata${J}" = "${BOOTDISK}" ]; then
