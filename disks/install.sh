@@ -161,12 +161,11 @@ function nvmePorts() {
 #
 function dtModel() {
   DEST="/addons/model.dts"
-  UNIQUE=$(_get_conf_kv unique)
   if [ ! -f "${DEST}" ]; then # Users can put their own dts.
     echo "/dts-v1/;" >${DEST}
     echo "/ {" >>${DEST}
     echo "    compatible = \"Synology\";" >>${DEST}
-    echo "    model = \"${UNIQUE}\";" >>${DEST}
+    echo "    model = \"${1}\";" >>${DEST}
     echo "    version = <0x01>;" >>${DEST}
 
     # NVME power_limit
@@ -183,61 +182,32 @@ function dtModel() {
       _set_conf_kv rd "support_m2_pool" "yes"
     fi
     # SATA ports
-    if [ "${1}" = "true" ]; then
-      I=1
-      for P in $(lspci -d ::106 2>/dev/null | cut -d' ' -f1); do
-        HOSTNUM=$(ls -l /sys/class/scsi_host 2>/dev/null | grep ${P} | wc -l)
-        PCIPATH=""
-        for Q in $(ls -l /sys/class/scsi_host 2>/dev/null | grep ${P} | head -1 | grep -oE ":..\.."); do PCIPATH="${PCIPATH},${Q//:/}"; done
-        PCIPATH="00:${PCIPATH:1}"
-
-        for J in $(seq 1 ${HOSTNUM}); do
-          ATAPORT=""
-          if [ "sata${J}" = "${BOOTDISK}" ]; then
-            ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
-            checkSynoboot
-          fi
-          [ "${J}" = "${ATAPORT}" ] && continue
+    I=1
+    J=1
+    while true; do
+      [ ! -d /sys/block/sata${J} ] && break
+      if [ "sata${J}" = "${BOOTDISK}" ]; then
+        checkSynoboot
+      else
+        PCIEPATH=$(grep 'pciepath' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
+        ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
+        if [ -n "${PCIEPATH}" -a -n "${ATAPORT}" ]; then
           echo "    internal_slot@${I} {" >>${DEST}
           echo "        protocol_type = \"sata\";" >>${DEST}
           echo "        ahci {" >>${DEST}
-          echo "            pcie_root = \"${PCIPATH}\";" >>${DEST}
-          echo "            ata_port = <0x$(printf '%02X' ${J})>;" >>${DEST}
+          echo "            pcie_root = \"${PCIEPATH}\";" >>${DEST}
+          echo "            ata_port = <0x$(printf '%02X' ${ATAPORT})>;" >>${DEST}
           echo "        };" >>${DEST}
           echo "    };" >>${DEST}
           I=$((${I} + 1))
-        done
-      done
-    else
-      I=1
-      J=1
-      while true; do
-        [ ! -d /sys/block/sata${J} ] && break
-        if [ "sata${J}" = "${BOOTDISK}" ]; then
-          checkSynoboot
-        else
-          PCIEPATH=$(grep 'pciepath' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
-          ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
-          if [ -n "${PCIEPATH}" -a -n "${ATAPORT}" ]; then
-            echo "    internal_slot@${I} {" >>${DEST}
-            echo "        protocol_type = \"sata\";" >>${DEST}
-            echo "        ahci {" >>${DEST}
-            echo "            pcie_root = \"${PCIEPATH}\";" >>${DEST}
-            echo "            ata_port = <0x$(printf '%02X' ${ATAPORT})>;" >>${DEST}
-            echo "        };" >>${DEST}
-            echo "    };" >>${DEST}
-            I=$((${I} + 1))
-          fi
         fi
-        J=$((${J} + 1))
-      done
-    fi
+      fi
+      J=$((${J} + 1))
+    done
     NUMPORTS=$((${I} - 1))
     if [ $NUMPORTS -le 2 ]; then
       # fix isSingleBay issue: if maxdisks is 1, there is no create button in the storage panel
       NUMPORTS=4
-    elif [ ${NUMPORTS} -gt 26 ]; then
-      NUMPORTS=26
     fi
     _set_conf_kv rd "maxdisks" "${NUMPORTS}"
     echo "maxdisks=${NUMPORTS}"
@@ -342,7 +312,7 @@ function nondtModel() {
     _set_conf_kv rd "support_m2_pool" "yes"
   fi
 
-  checkSynoboot
+    checkSynoboot
 
   if [ "${1}" = "true" ]; then
     echo "TODO: no-DT's sort!!!"
