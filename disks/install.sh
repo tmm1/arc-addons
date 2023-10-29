@@ -72,6 +72,26 @@ function _atoi() {
   echo $((${NUM} - 1))
 }
 
+BOOTDISK=$(blkid -L ARC3 | sed 's/\/dev\///; s/p3//')
+
+# synoboot
+function checkSynoboot() {
+  if [ -n "${BOOTDISK}" ]; then
+    [ ! -b /dev/synoboot -a -d /sys/block/${BOOTDISK} ] &&
+      /bin/mknod /dev/synoboot b $(cat /sys/block/${BOOTDISK}/dev | sed 's/:/ /') >/dev/null 2>&1
+    # sataN, nvmeN
+    [ ! -b /dev/synoboot1 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}p1 ] &&
+      /bin/mknod /dev/synoboot1 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p1/dev | sed 's/:/ /') >/dev/null 2>&1
+    [ ! -b /dev/synoboot2 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}p2 ] &&
+      /bin/mknod /dev/synoboot2 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p2/dev | sed 's/:/ /') >/dev/null 2>&1
+    # sdN
+    [ ! -b /dev/synoboot1 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}1 ] &&
+      /bin/mknod /dev/synoboot1 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}1/dev | sed 's/:/ /') >/dev/null 2>&1
+    [ ! -b /dev/synoboot2 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}2 ] &&
+      /bin/mknod /dev/synoboot2 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}2/dev | sed 's/:/ /') >/dev/null 2>&1
+  fi
+}
+
 # USB ports
 function getUsbPorts() {
   for I in $(ls -d /sys/bus/usb/devices/usb*); do
@@ -111,15 +131,10 @@ function getUsbPorts() {
 function nvmePorts() {
   local PCI_ER="^[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]{1}"
   local NVME_PORTS=$(ls /sys/class/nvme | wc -w)
-  BOOTDISK=$(blkid -L ARC3 | sed 's/\/dev\///; s/p3//')
+
   for I in $(seq 0 $((${NVME_PORTS} - 1))); do
-    if [ -d "/sys/class/nvme/nvme${I}/${BOOTDISK}" ]; then
-      [ ! -b /dev/synoboot -a -d /sys/block/${BOOTDISK} ] &&
-        /bin/mknod /dev/synoboot b $(cat /sys/block/${BOOTDISK}/dev | sed 's/:/ /') >/dev/null 2>&1
-      [ ! -b /dev/synoboot1 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}p1 ] &&
-        /bin/mknod /dev/synoboot1 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p1/dev | sed 's/:/ /') >/dev/null 2>&1
-      [ ! -b /dev/synoboot2 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}p2 ] &&
-        /bin/mknod /dev/synoboot2 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p2/dev | sed 's/:/ /') >/dev/null 2>&1
+    if [ -n "${BOOTDISK}" -a -d "/sys/class/nvme/nvme${I}/${BOOTDISK}" ]; then
+      checkSynoboot
       continue
     fi
     _PATH=$(readlink /sys/class/nvme/nvme${I} | sed 's|^.*\(pci.*\)|\1|' | cut -d'/' -f2-)
@@ -146,11 +161,12 @@ function nvmePorts() {
 #
 function dtModel() {
   DEST="/addons/model.dts"
+  UNIQUE=$(_get_conf_kv unique)
   if [ ! -f "${DEST}" ]; then # Users can put their own dts.
     echo "/dts-v1/;" >${DEST}
     echo "/ {" >>${DEST}
     echo "    compatible = \"Synology\";" >>${DEST}
-    echo "    model = \"${1}\";" >>${DEST}
+    echo "    model = \"${UNIQUE}\";" >>${DEST}
     echo "    version = <0x01>;" >>${DEST}
 
     # NVME power_limit
@@ -167,34 +183,55 @@ function dtModel() {
       _set_conf_kv rd "support_m2_pool" "yes"
     fi
     # SATA ports
-    I=1
-    J=1
-    BOOTDISK=$(blkid -L ARC3 | sed 's/\/dev\///; s/p3//')
-    while true; do
-      [ ! -d /sys/block/sata${J} ] && break
-      if [ "sata${J}" = "${BOOTDISK}" ]; then
-        [ ! -b /dev/synoboot -a -d /sys/block/sata${J} ] &&
-          /bin/mknod /dev/synoboot b $(cat /sys/block/sata${J}/dev | sed 's/:/ /') >/dev/null 2>&1
-        [ ! -b /dev/synoboot1 -a -d /sys/block/sata${J}/sata${J}p1 ] &&
-          /bin/mknod /dev/synoboot1 b $(cat /sys/block/sata${J}/sata${J}p1/dev | sed 's/:/ /') >/dev/null 2>&1
-        [ ! -b /dev/synoboot2 -a -d /sys/block/sata${J}/sata${J}p2 ] &&
-          /bin/mknod /dev/synoboot2 b $(cat /sys/block/sata${J}/sata${J}p2/dev | sed 's/:/ /') >/dev/null 2>&1
-      else
-        PCIEPATH=$(grep 'pciepath' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
-        ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
-        if [ -n "${PCIEPATH}" -a -n "${ATAPORT}" ]; then
+    if [ "${1}" = "true" ]; then
+      I=1
+      for P in $(lspci -d ::106 2>/dev/null | cut -d' ' -f1); do
+        HOSTNUM=$(ls -l /sys/class/scsi_host 2>/dev/null | grep ${P} | wc -l)
+        PCIPATH=""
+        for Q in $(ls -l /sys/class/scsi_host 2>/dev/null | grep ${P} | head -1 | grep -oE ":..\.."); do PCIPATH="${PCIPATH},${Q//:/}"; done
+        PCIPATH="00:${PCIPATH:1}"
+
+        for J in $(seq 1 ${HOSTNUM}); do
+          ATAPORT=""
+          if [ "sata${J}" = "${BOOTDISK}" ]; then
+            ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
+            checkSynoboot
+          fi
+          [ "${J}" = "${ATAPORT}" ] && continue
           echo "    internal_slot@${I} {" >>${DEST}
           echo "        protocol_type = \"sata\";" >>${DEST}
           echo "        ahci {" >>${DEST}
-          echo "            pcie_root = \"${PCIEPATH}\";" >>${DEST}
-          echo "            ata_port = <0x$(printf '%02X' ${ATAPORT})>;" >>${DEST}
+          echo "            pcie_root = \"${PCIPATH}\";" >>${DEST}
+          echo "            ata_port = <0x$(printf '%02X' ${J})>;" >>${DEST}
           echo "        };" >>${DEST}
           echo "    };" >>${DEST}
           I=$((${I} + 1))
+        done
+      done
+    else
+      I=1
+      J=1
+      while true; do
+        [ ! -d /sys/block/sata${J} ] && break
+        if [ "sata${J}" = "${BOOTDISK}" ]; then
+          checkSynoboot
+        else
+          PCIEPATH=$(grep 'pciepath' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
+          ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
+          if [ -n "${PCIEPATH}" -a -n "${ATAPORT}" ]; then
+            echo "    internal_slot@${I} {" >>${DEST}
+            echo "        protocol_type = \"sata\";" >>${DEST}
+            echo "        ahci {" >>${DEST}
+            echo "            pcie_root = \"${PCIEPATH}\";" >>${DEST}
+            echo "            ata_port = <0x$(printf '%02X' ${ATAPORT})>;" >>${DEST}
+            echo "        };" >>${DEST}
+            echo "    };" >>${DEST}
+            I=$((${I} + 1))
+          fi
         fi
-      fi
-      J=$((${J} + 1))
-    done
+        J=$((${J} + 1))
+      done
+    fi
     NUMPORTS=$((${I} - 1))
     if [ $NUMPORTS -le 2 ]; then
       # fix isSingleBay issue: if maxdisks is 1, there is no create button in the storage panel
@@ -302,16 +339,22 @@ function nondtModel() {
     _set_conf_kv rd "supportnvme" "yes"
     _set_conf_kv rd "support_m2_pool" "yes"
   fi
+
+  checkSynoboot
+
+  if [ "${1}" = "true" ]; then
+    echo "TODO: no-DT's sort!!!"
+  fi
 }
 
 #
 if [ "${1}" = "patches" ]; then
   echo "Adjust disks related configs automatically - patches"
-  [ "${2}" = "true" ] && dtModel ${3} || nondtModel
+  [ "$(_get_conf_kv supportportmappingv2)" = "yes" ] && dtModel "${2}" || nondtModel "${2}"
 
 elif [ "${1}" = "late" ]; then
   echo "Adjust disks related configs automatically - late"
-  if [ "${2}" = "true" ]; then
+  if [ "$(_get_conf_kv supportportmappingv2)" = "yes" ]; then
     echo "Copying /etc.defaults/model.dtb"
     # copy file
     cp -vf /etc/model.dtb /tmpRoot/etc/model.dtb
