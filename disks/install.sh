@@ -44,11 +44,11 @@ function _check_post_k() {
 
 # Check if the raid has been completed currently
 function _check_rootraidstatus() {
-  if [ "$(_get_conf_kv supportraid)" != "yes" ]; then
+  if [ ! "$(_get_conf_kv supportraid)" = "yes" ]; then
     return 0
   fi
   STATE=$(cat /sys/block/md0/md/array_state 2>/dev/null)
-  if [ $? != 0 ]; then
+  if [ $? -ne 0 ]; then
     return 1
   fi
   case ${STATE} in
@@ -72,24 +72,25 @@ function _atoi() {
   echo $((${NUM} - 1))
 }
 
-BOOTDISK=$(blkid -L ARC3 | sed 's/\/dev\///; s/p3//')
+BOOTDISK=$(blkid -L ARC3 | sed 's/\/dev\///; s/p3//; s/3//')
 
 # synoboot
 function checkSynoboot() {
-  if [ -n "${BOOTDISK}" ]; then
-    [ ! -b /dev/synoboot -a -d /sys/block/${BOOTDISK} ] &&
-      /bin/mknod /dev/synoboot b $(cat /sys/block/${BOOTDISK}/dev | sed 's/:/ /') >/dev/null 2>&1
-    # sataN, nvmeN
-    [ ! -b /dev/synoboot1 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}p1 ] &&
-      /bin/mknod /dev/synoboot1 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p1/dev | sed 's/:/ /') >/dev/null 2>&1
-    [ ! -b /dev/synoboot2 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}p2 ] &&
-      /bin/mknod /dev/synoboot2 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p2/dev | sed 's/:/ /') >/dev/null 2>&1
-    # sdN
-    [ ! -b /dev/synoboot1 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}1 ] &&
-      /bin/mknod /dev/synoboot1 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}1/dev | sed 's/:/ /') >/dev/null 2>&1
-    [ ! -b /dev/synoboot2 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}2 ] &&
-      /bin/mknod /dev/synoboot2 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}2/dev | sed 's/:/ /') >/dev/null 2>&1
-  fi
+  [ -b /dev/synoboot -a -b /dev/synoboot1 -a -b /dev/synoboot2 ] && return
+  [ -z "${BOOTDISK}" ] && return
+
+  [ ! -b /dev/synoboot -a -d /sys/block/${BOOTDISK} ] &&
+    /bin/mknod /dev/synoboot b $(cat /sys/block/${BOOTDISK}/dev | sed 's/:/ /') >/dev/null 2>&1
+  # sataN, nvmeN
+  [ ! -b /dev/synoboot1 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}p1 ] &&
+    /bin/mknod /dev/synoboot1 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p1/dev | sed 's/:/ /') >/dev/null 2>&1
+  [ ! -b /dev/synoboot2 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}p2 ] &&
+    /bin/mknod /dev/synoboot2 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p2/dev | sed 's/:/ /') >/dev/null 2>&1
+  # sdN
+  [ ! -b /dev/synoboot1 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}1 ] &&
+    /bin/mknod /dev/synoboot1 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}1/dev | sed 's/:/ /') >/dev/null 2>&1
+  [ ! -b /dev/synoboot2 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}2 ] &&
+    /bin/mknod /dev/synoboot2 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}2/dev | sed 's/:/ /') >/dev/null 2>&1
 }
 
 # USB ports
@@ -97,7 +98,7 @@ function getUsbPorts() {
   for I in $(ls -d /sys/bus/usb/devices/usb*); do
     # ROOT
     DCLASS=$(cat ${I}/bDeviceClass)
-    [ "${DCLASS}" != "09" ] && continue
+    [ ! "${DCLASS}" = "09" ] && continue
     SPEED=$(cat ${I}/speed)
     [ ${SPEED} -lt 480 ] && continue
     RBUS=$(cat ${I}/busnum)
@@ -107,7 +108,7 @@ function getUsbPorts() {
       SUB="${RBUS}-${C}"
       if [ -d "${I}/${SUB}" ]; then
         DCLASS=$(cat ${I}/${SUB}/bDeviceClass)
-        [ "${DCLASS}" != "09" ] && continue
+        [ ! "${DCLASS}" = "09" ] && continue
         SPEED=$(cat ${I}/${SUB}/speed)
         [ ${SPEED} -lt 480 ] && continue
         CHILDS=$(cat ${I}/${SUB}/maxchild)
