@@ -72,6 +72,26 @@ function _atoi() {
   echo $((${NUM} - 1))
 }
 
+function _kernelVersionCode()
+{
+	[ $# -eq 1 ] || return
+
+	local _version_string _major_version _minor_version _revision
+	_version_string="$(echo "$1" | /usr/bin/cut -d'_' -f1)."
+	_major_version=$(echo "${_version_string}" | /usr/bin/cut -d'.' -f1)
+	_minor_version=$(echo "${_version_string}" | /usr/bin/cut -d'.' -f2)
+	_revision=$(echo "${_version_string}" | /usr/bin/cut -d'.' -f3)
+
+	/bin/echo $((${_major_version:-0} * 65536 + ${_minor_version:-0} * 256 + ${_revision:-0}))
+}
+
+function _kernelVersion()
+{
+	local _release
+	_release=$(/bin/uname -r)
+	/bin/echo ${_release%%[-+]*} | /usr/bin/cut -d'.' -f1-3
+}
+
 BOOTDISK=$(blkid -L ARC3 | sed 's/\/dev\///; s/p3//; s/3//')
 
 # synoboot
@@ -190,9 +210,14 @@ function dtModel() {
         HOSTNUM=$(ls -l /sys/class/scsi_host 2>/dev/null | grep ${P} | wc -l)
         PCIPATH=""
         for Q in $(ls -l /sys/class/scsi_host 2>/dev/null | grep ${P} | head -1 | grep -oE ":..\.."); do PCIPATH="${PCIPATH},${Q//:/}"; done
-        PCIPATH="00:${PCIPATH:1}"
+        [ -z "${PCIPATH}" ] && continue
+        if [ "$(_kernelVersionCode "$(_kernelVersion)")" -ge "$(_kernelVersionCode "5.10")" ]; then
+          PCIPATH="0000:00:${PCIPATH:1}"  # 5.10+ kernel  TODO: check 0000
+        else
+          PCIPATH="00:${PCIPATH:1}"       # 5.10- kernel
+        fi
 
-        for J in $(seq 1 ${HOSTNUM}); do
+        for J in $(seq 0 $((${HOSTNUM} - 1))); do
           ATAPORT=""
           if [ "sata${J}" = "${BOOTDISK}" ]; then
             ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
