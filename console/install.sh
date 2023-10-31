@@ -1,7 +1,7 @@
 #!/usr/bin/env ash
 
 if [ "${1}" = "modules" ]; then
-  echo "Loading FB and Console modules..."
+  echo "Loading FB and console modules..."
   if [ -n "${2}" ]; then
     /usr/sbin/modprobe ${2}
   else
@@ -11,7 +11,7 @@ if [ "${1}" = "modules" ]; then
     done
   fi
   /usr/sbin/modprobe fbcon
-  echo "Arc Console - wait..." >/dev/tty1
+  echo "Arc console - wait..." >/dev/tty1
   # Workaround for DVA1622
   if [ "${MODEL}" = "DVA1622" ]; then
     echo >/dev/tty2
@@ -31,16 +31,15 @@ elif [ "${1}" = "rcExit" ]; then
     /usr/bin/ioctl /dev/tty0 22022 -v 1
   fi
 elif [ "${1}" = "late" ]; then
-  echo "Installing Addon Console"
+  echo "Installing addon console"
   SED_PATH='/tmpRoot/usr/bin/sed'
-  cp -vf "/usr/bin/sed" "/tmpRoot/usr/bin/sed"
   # run when boot installed DSM
   cp -fv /tmpRoot/lib/systemd/system/serial-getty\@.service /tmpRoot/lib/systemd/system/getty\@.service
   ${SED_PATH} -i 's|^ExecStart=.*|ExecStart=-/sbin/agetty %I 115200 linux|' /tmpRoot/lib/systemd/system/getty\@.service
   mkdir -vp /tmpRoot/lib/systemd/system/getty.target.wants
-  ln -sfv /lib/systemd/system/getty\@.service /tmpRoot/lib/systemd/system/getty.target.wants/getty\@tty1.service
+  ln -vsf /lib/systemd/system/getty\@.service /tmpRoot/lib/systemd/system/getty.target.wants/getty\@tty1.service
   echo -e "DSM mode\n" >/tmpRoot/etc/issue
-  cp -fRv /usr/share/keymaps /tmpRoot/usr/share/
+  cp -vfR /usr/share/keymaps /tmpRoot/usr/share/
   cp -fv /usr/bin/loadkeys /tmpRoot/usr/bin/
   cp -fv /usr/bin/setleds /tmpRoot/usr/bin/
   DEST="/tmpRoot/lib/systemd/system/keymap.service"
