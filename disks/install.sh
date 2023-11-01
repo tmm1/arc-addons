@@ -217,12 +217,15 @@ function dtModel() {
           PCIPATH="00:${PCIPATH:1}"       # 5.10- kernel
         fi
 
-        for J in $(seq 0 $((${HOSTNUM} - 1))); do
+       [ -n "${BOOTDISK}" ] && PHYSDEVPATH="$(cat /sys/block/${BOOTDISK}/uevent | grep 'PHYSDEVPATH'  | cut -d'=' -f2)" || PHYSDEVPATH=""
+        if echo "${PHYSDEVPATH}" | grep -q "${P}"; then 
+          ATAPORT=$(grep 'ata_port_no' /sys/block/${BOOTDISK}/device/syno_block_info | cut -d'=' -f2)
+          checkSynoboot
+        else
           ATAPORT=""
-          if [ "sata${J}" = "${BOOTDISK}" ]; then
-            ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
-            checkSynoboot
-          fi
+        fi
+
+        for J in $(seq 0 $((${HOSTNUM} - 1))); do
           [ "${J}" = "${ATAPORT}" ] && continue
           echo "    internal_slot@${I} {" >>${DEST}
           echo "        protocol_type = \"sata\";" >>${DEST}
