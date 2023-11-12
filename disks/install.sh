@@ -100,7 +100,10 @@ function _kernelVersion() {
   /bin/echo ${_release%%[-+]*} | /usr/bin/cut -d'.' -f1-3
 }
 
-BOOTDISK=$(blkid -L RR3 | sed 's/\/dev\///; s/p3//; s/3//')
+BOOTDISK=""
+BOOTDISK_PART3=$(blkid -L ARC3 | sed 's/\/dev\///')
+[ -n "${BOOTDISK_PART3}" ] && BOOTDISK=$(ls -d /sys/block/*/${BOOTDISK_PART3} | cut -d'/' -f4)
+echo "BOOTDISK=${BOOTDISK}"
 
 # synoboot
 function checkSynoboot() {
@@ -152,38 +155,6 @@ function getUsbPorts() {
         echo -n "${RBUS}-${N} "
       done
     fi
-  done
-  echo
-}
-
-# NVME ports
-# 1 - is DT model
-function nvmePorts() {
-  local PCI_ER="^[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]{1}"
-  local NVME_PORTS=$(ls /sys/class/nvme | wc -w)
-
-  for I in $(seq 0 $((${NVME_PORTS} - 1))); do
-    if [ -n "${BOOTDISK}" -a -d "/sys/class/nvme/nvme${I}/${BOOTDISK}" ]; then
-      checkSynoboot
-      continue
-    fi
-    _PATH=$(readlink /sys/class/nvme/nvme${I} | sed 's|^.*\(pci.*\)|\1|' | cut -d'/' -f2-)
-    if [ "${1}" = "true" ]; then
-      # Device-tree: assemble complete path in DSM format
-      DSMPATH=""
-      while true; do
-        FIRST=$(echo "${_PATH}" | cut -d'/' -f1)
-        echo "${FIRST}" | grep -qE "${PCI_ER}" || break
-        [ -z "${DSMPATH}" ] &&
-          DSMPATH="$(echo "${FIRST}" | cut -d':' -f2-)" ||
-          DSMPATH="${DSMPATH},$(echo "${FIRST}" | cut -d':' -f3)"
-        _PATH=$(echo ${_PATH} | cut -d'/' -f2-)
-      done
-    else
-      # Non-dt: just get PCI ID
-      DSMPATH=$(echo "${_PATH}" | cut -d'/' -f1)
-    fi
-    echo -n "${DSMPATH} "
   done
   echo
 }
@@ -250,12 +221,12 @@ function dtModel() {
         J=1
         while true; do
           [ ! -d /sys/block/sata${J} ] && break
-          if cat /sys/block/sata${J}/uevent | grep 'PHYSDEVPATH' | grep -q "${P}"; then 
+          if cat /sys/block/sata${J}/uevent | grep 'PHYSDEVPATH' | grep -q "${P}"; then
             if [ "sata${J}" = "${BOOTDISK}" ]; then
               checkSynoboot
             else
-              PCIEPATH=$(grep 'pciepath' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
-              ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
+              PCIEPATH=$(grep 'pciepath' /sys/block/sata${J}/device/syno_block_info 2>/dev/null | cut -d'=' -f2)
+              ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info 2>/dev/null | cut -d'=' -f2)
               if [ -n "${PCIEPATH}" -a -n "${ATAPORT}" ]; then
                 echo "    internal_slot@${I} {" >>${DEST}
                 echo "        protocol_type = \"sata\";" >>${DEST}
@@ -279,8 +250,8 @@ function dtModel() {
         if [ "sata${J}" = "${BOOTDISK}" ]; then
           checkSynoboot
         else
-          PCIEPATH=$(grep 'pciepath' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
-          ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info | cut -d'=' -f2)
+          PCIEPATH=$(grep 'pciepath' /sys/block/sata${J}/device/syno_block_info 2>/dev/null | cut -d'=' -f2)
+          ATAPORT=$(grep 'ata_port_no' /sys/block/sata${J}/device/syno_block_info 2>/dev/null | cut -d'=' -f2)
           if [ -n "${PCIEPATH}" -a -n "${ATAPORT}" ]; then
             echo "    internal_slot@${I} {" >>${DEST}
             echo "        protocol_type = \"sata\";" >>${DEST}
@@ -305,12 +276,19 @@ function dtModel() {
 
     # NVME ports
     COUNT=1
-    for P in $(nvmePorts true); do
-      echo "    nvme_slot@${COUNT} {" >>${DEST}
-      echo "        pcie_root = \"${P}\";" >>${DEST}
-      echo "        port_type = \"ssdcache\";" >>${DEST}
-      echo "    };" >>${DEST}
-      COUNT=$((${COUNT} + 1))
+    for P in $(ls -d /sys/block/nvme* 2>/dev/null); do
+      if [ "/sys/block/${BOOTDISK}" = "${P}" ]; then
+        checkSynoboot
+        continue
+      fi
+      PCIEPATH=$(grep 'pciepath' ${P}/device/syno_block_info 2>/dev/null | cut -d'=' -f2)
+      if [ -n "${PCIEPATH}" ]; then
+        echo "    nvme_slot@${COUNT} {" >>${DEST}
+        echo "        pcie_root = \"${PCIEPATH}\";" >>${DEST}
+        echo "        port_type = \"ssdcache\";" >>${DEST}
+        echo "    };" >>${DEST}
+        COUNT=$((${COUNT} + 1))
+      fi
     done
 
     # USB ports
@@ -389,25 +367,34 @@ function nondtModel() {
     echo "set maxdisks=${MAXDISKS}"
   fi
 
-  # NVME
-  COUNT=1
-  rm -f /etc/extensionPorts
-  echo "[pci]" >/etc/extensionPorts
-  chmod 755 /etc/extensionPorts
-  for P in $(nvmePorts false); do
-    echo "pci${COUNT}=\"${P}\"" >>/etc/extensionPorts
-    COUNT=$((${COUNT} + 1))
-  done
-  if [ $(ls /sys/class/nvme | wc -w) -gt 0 ]; then
-    _set_conf_kv rd "supportnvme" "yes"
-    _set_conf_kv rd "support_m2_pool" "yes"
-  fi
-
-  checkSynoboot
-
   if [ "${1}" = "true" ]; then
     echo "TODO: no-DT's sort!!!"
   fi
+  checkSynoboot
+
+  # NVME
+  COUNT=1
+  echo "[pci]" >/etc/extensionPorts
+  for P in $(ls -d /sys/block/nvme* 2>/dev/null); do
+    if [ "/sys/block/${BOOTDISK}" = "${P}" ]; then
+      checkSynoboot
+      continue
+    fi
+    PCIEPATH=$(cat ${P}/uevent 2>/dev/null | grep 'PHYSDEVPATH' | cut -d'/' -f4)
+    if [ -n "${PCIEPATH}" ]; then
+      # TODO: Need check?
+      # MULTIPATH=$(cat ${P}/uevent 2>/dev/null | grep 'PHYSDEVPATH' | cut -d'/' -f5)
+      # if [ -z "${MULTIPATH}" ]; then
+      #   echo "${PCIEPATH} does not support!"
+      #   continue
+      # fi
+      echo "pci${COUNT}=\"${PCIEPATH}\"" >>/etc/extensionPorts
+      COUNT=$((${COUNT} + 1))
+
+      _set_conf_kv rd "supportnvme" "yes"
+      _set_conf_kv rd "support_m2_pool" "yes"
+    fi
+  done
 }
 
 #
