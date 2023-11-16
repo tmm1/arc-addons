@@ -1,9 +1,9 @@
 version: 1
-name: sortnetif
-description: "Sort network interface name.(parameters: empty: sorted by busid; mac1,mac2,...: sorted by macs sequence)."
+name: rtcwake
+description: "rtcwake from util-linux"
 all:
   install-script: "install.sh"
-  copy: all
+  copy: "all"
 available-for:
   apollolake-4.4.180:
   broadwell-4.4.180:
