@@ -1,9 +1,9 @@
 version: 1
-name: sortnetif
-description: "Sort network interface name.(parameters: empty: sorted by busid; mac1,mac2,...: sorted by macs sequence)."
+name: nvmecache
+description: "Enable M2 as cache device (for non supported Models)"
 all:
   install-script: "install.sh"
-  copy: all
+  copy: "all"
 available-for:
   apollolake-4.4.180:
   broadwell-4.4.180:
