@@ -1,7 +1,7 @@
 version: 1
 name: codecpatch
 beta: true
-description: "Patch Synocodectool (Don't need this - We have Arc Patch)"
+description: "Patch Synocodectool (Don't use with Arc Patch)"
 all:
   install-script: "install.sh"
   copy: "all"
