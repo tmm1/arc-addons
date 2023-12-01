@@ -5,8 +5,14 @@ beta: false
 all:
   install-script: "install.sh"
   copy: "all"
-available-for:
-  apollolake-4.4.180:
-  apollolake-4.4.302:
-  geminilake-4.4.180:
-  geminilake-4.4.302:
+apollolake: true
+broadwell: false
+broadwellnk: false
+broadwellnkv2: false
+broadwellntbap: false
+denverton: false
+geminilake: true
+purley: false
+v1000: false
+r1000: false
+epyc7002: false
