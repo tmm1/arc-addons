@@ -1,5 +1,6 @@
 version: 1
-name: NVMeVolume
+name: NVMeStorage
+beta: false
 description: "Enable M2 as volume device (for non supported Models)"
 all:
   install-script: "install.sh"
@@ -25,3 +26,4 @@ available-for:
   purley-4.4.302:
   v1000-4.4.302:
   r1000-4.4.302:
+  epyc7002-5.10.55:

@@ -1,7 +1,7 @@
 version: 1
 name: setrootpw
+beta: false
 description: "Enable root permissions for ssh/sftp. Please modify PW=\"\" to the required password in the DSM scheduled task and execute it."
-# system: true
 all:
   install-script: "install.sh"
   copy: all
@@ -26,3 +26,4 @@ available-for:
   purley-4.4.302:
   v1000-4.4.302:
   r1000-4.4.302:
+  epyc7002-5.10.55:
