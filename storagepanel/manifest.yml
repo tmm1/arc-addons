@@ -1,5 +1,6 @@
 version: 1
 name: storagepanel
+beta: false
 description: "Modify storage panel (default: RACK_24_Bay 1X8)"
 all:
   install-script: "install.sh"
@@ -25,3 +26,4 @@ available-for:
   purley-4.4.302:
   v1000-4.4.302:
   r1000-4.4.302:
+  epyc7002-5.10.55:

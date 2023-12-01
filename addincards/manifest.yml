@@ -1,5 +1,6 @@
 version: 1
 name: addincards
+beta: false
 description: "Remove the Modelrestrictions on official Addin Cards."
 all:
   install-script: "install.sh"
@@ -25,3 +26,4 @@ available-for:
   purley-4.4.302:
   v1000-4.4.302:
   r1000-4.4.302:
+  epyc7002-5.10.55:
