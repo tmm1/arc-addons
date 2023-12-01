@@ -1,7 +1,7 @@
 version: 1
 name: multismb3
-beta: false
 description: "Adds Support for Multichannel SMB3"
+beta: false
 all:
   install-script: "install.sh"
   copy: "all"

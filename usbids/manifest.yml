@@ -1,7 +1,7 @@
 version: 1
 name: usbids
-beta: false
 description: "Update usb.map from latest Linux Source."
+beta: false
 all:
   install-script: "install.sh"
   copy: "all"

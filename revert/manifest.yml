@@ -1,8 +1,8 @@
 version: 1
 name: revert
-beta: false
 description: "Revert all Modifications"
 system: true
+beta: false
 all:
   install-script: "install.sh"
   copy: all

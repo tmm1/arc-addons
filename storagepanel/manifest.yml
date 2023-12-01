@@ -1,7 +1,7 @@
 version: 1
 name: storagepanel
-beta: false
 description: "Modify storage panel (default: RACK_24_Bay 1X8)"
+beta: false
 all:
   install-script: "install.sh"
   copy: "all"

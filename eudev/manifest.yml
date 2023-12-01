@@ -1,8 +1,8 @@
 version: 1
 name: eudev
-beta: false
-system: true
 description: "eudev + kmod will assist with auto module loading"
+system: true
+beta: false
 all:
   install-script: "install.sh"
   copy: "all"

@@ -1,8 +1,8 @@
 version: 1
 name: disks
+description: "Config disks related setting"
 system: true
 beta: false
-description: "Config disks related setting"
 all:
   install-script: "install.sh"
   copy: "all"
