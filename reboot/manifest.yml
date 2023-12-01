@@ -1,7 +1,7 @@
 version: 1
 name: reboot
-beta: false
 description: "Add ability to reboot to Loader from Inside DSM."
+beta: true
 all:
   install-script: "install.sh"
   copy: all

@@ -1,7 +1,7 @@
 version: 1
 name: powersched
-beta: false
 description: "Utility to configure RTC according to DSM power schedule"
+beta: false
 compile-script: compile.sh
 all:
   install-script: "install.sh"
