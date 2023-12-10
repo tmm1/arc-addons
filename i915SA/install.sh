@@ -2,8 +2,9 @@
 
 if [ "${1}" = "late" ]; then
   echo "Creating service to exec i915SA"
+  mkdir -p /usr/lib/firmware/i915
   cp -vf /usr/sbin/i915.sh /tmpRoot/usr/sbin/i915.sh
-  cp -Rvf /usr/lib/modules /tmproot/usr/lib/modules
+  cp -vf /usr/lib/modules/* /tmproot/usr/lib/modules/
   DEST="/tmpRoot/lib/systemd/system/i915.service"
   echo "[Unit]"                                                                >${DEST}
   echo "Description=Enable i915 for SA6400"                                   >>${DEST}
