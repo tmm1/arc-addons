@@ -1,7 +1,7 @@
 version: 1
 name: facepatch
 description: "Face Patch for Syno Photos"
-beta: true
+beta: false
 all:
   install-script: "install.sh"
   copy: "all"
