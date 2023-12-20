@@ -17,12 +17,12 @@ MD5SUM=${BIN_PREFIX}/md5sum
 patch_db=/addons/patches/db.yaml
 
 case "$1" in
-  early | jrExit | rcExit | patches | modules)
+  early | jrExit | patches | modules)
     echo "Patches: nothing to do"
     #exit 0
   ;;
   
-  arc)
+  rcExit)
     is_ramdisk=true
     patch_db=${RAMDISK_PATH}/addons/patches/db.yaml
     YQ=${RAMDISK_PATH}/usr/bin/yq
