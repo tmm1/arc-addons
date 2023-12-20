@@ -132,13 +132,3 @@ patches:
       0000e110: ffb8 0100 0000 6690 9048 85c0 0f84 ae01
       0000e130: 488b bd10 feff ffb8 0100 0000 84c0 0f84
       000135f0: 3030 3030 302d 3030 3030 2d30 3030 302d
-- id: 666
-  path: "/tmp/libhwcontrol.so.1"
-  ramdisk: true
-  description: |-
-    test patch, did not use
-  versions:
-  - hash: f67af15ca60d500b5578838f52265ef6
-    build: SA6400-64551
-    source: "000484a0: 0f95 c00f b6c0 488b 9424 0810 0000 6448"
-    target: "000484a0: 0f94 c00f b6c0 488b 9424 0810 0000 6448"

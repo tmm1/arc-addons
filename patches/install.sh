@@ -18,14 +18,15 @@ patch_db=/addons/patches/db.yaml
 
 case "$1" in
   early | jrExit | rcExit | patches | modules)
-    exit 0
+    echo "Patches: nothing to do"
+    #exit 0
   ;;
   
   arc)
     is_ramdisk=true
     patch_db=${RAMDISK_PATH}/addons/patches/db.yaml
     YQ=${RAMDISK_PATH}/usr/bin/yq
-    echo work in ramdisk
+    echo "Patches: work in ramdisk"
   ;;
   
   late)
@@ -33,12 +34,12 @@ case "$1" in
     cp -fv /addons/patches/db.yaml /tmpRoot/addons/patches
     cp -fv "$0" /tmpRoot/addons/patches
     cp -fv /usr/bin/yq /tmpRoot/usr/bin
-    echo work in late
+    echo "Patches: work in late"
   ;;
 
   dsm)
     is_dsm=true
-    echo work in dsm
+    echo "Patches: work in dsm"
   ;;
 
   *)
@@ -49,7 +50,7 @@ esac
 
 shift
 
-for id in $@; do
+for id in 1234; do
   # find patch by id
   patch=$(${YQ} ".patches | filter(.id == $id)" "$patch_db")
   if [ "$patch" = "[]" ]; then
