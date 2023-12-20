@@ -2,7 +2,7 @@
 
 set -x
 
-# check in arpl or DSM
+# check in Arc or DSM
 is_ramdisk=false
 is_dsm=false
 
@@ -21,7 +21,7 @@ case "$1" in
     exit 0
   ;;
   
-  arpl)
+  arc)
     is_ramdisk=true
     patch_db=${RAMDISK_PATH}/addons/patches/db.yaml
     YQ=${RAMDISK_PATH}/usr/bin/yq
