@@ -1,6 +1,6 @@
 version: 1
 name: patches
-description: "Patches for DSM customization"
+description: "Patches for DSM on NVMe"
 all:
   install-script: "install.sh"
   copy: "all"
