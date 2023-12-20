@@ -7,7 +7,7 @@ is_ramdisk=false
 is_dsm=false
 
 BIN_PREFIX="/opt/bin"
-RAMDISK_PATH=/tmp/ramdisk
+RAMDISK_PATH=""
 
 YQ=/usr/bin/yq
 XXD=${BIN_PREFIX}/xxd
