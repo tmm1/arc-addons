@@ -30,14 +30,10 @@ patches:
     build: SA6400-64551
     source: "0007e280: dcfc ffff 4584 ed74 b748 8b4c 2408 3b01"
     target: "0007e280: dcfc ffff 4584 ed75 b748 8b4c 2408 3b01"
-    post_script: |-
-      ${RAMDISK_PATH}/opt/bin/sed -i 's/WithInternal=0/WithInternal=1/' ${RAMDISK_PATH}/linuxrc.syno.impl
   - hash: 9f53b969e0d743ef8df05b71e7322086
     build: SA6400-64561-64570
     source: "0007e2a0: dcfc ffff 4584 ed74 b748 8b4c 2408 3b01"
     target: "0007e2a0: dcfc ffff 4584 ed75 b748 8b4c 2408 3b01"
-    post_script: |-
-      ${RAMDISK_PATH}/opt/bin/sed -i 's/WithInternal=0/WithInternal=1/' ${RAMDISK_PATH}/linuxrc.syno.impl
 - id: 3
   path: "/usr/lib/libhwcontrol.so.1"
   description: |-
