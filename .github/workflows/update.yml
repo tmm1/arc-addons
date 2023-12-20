@@ -114,7 +114,7 @@ jobs:
           make DESTDIR=/source/output install
           git clone -c http.sslVerify=false --single-branch https://github.com/eudev-project/eudev.git /tmp/eudev
           cd /tmp/eudev
-          git checkout master
+          git checkout 3.2.14
           ./autogen.sh
           ./configure CC=${CC} --host=${HOST} --prefix=/usr --sysconfdir=/etc --disable-manpages --disable-selinux --disable-mtd_probe --enable-kmod
           [ -z "$(grep 'env.mak' Makefile)" ] && sed -i '1 i include /env.mak' Makefile

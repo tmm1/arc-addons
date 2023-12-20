@@ -50,7 +50,7 @@ esac
 
 shift
 
-for id in 1234; do
+for id in $@; do
   # find patch by id
   patch=$(${YQ} ".patches | filter(.id == $id)" "$patch_db")
   if [ "$patch" = "[]" ]; then
