@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 insmod /usr/lib/modules/i2c-algo-bit.ko
 insmod /usr/lib/modules/backport-sa6400-export.ko
