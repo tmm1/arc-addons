@@ -369,9 +369,6 @@ function nondtModel() {
     echo "set maxdisks=${MAXDISKS}"
   fi
 
-  if [ "${1}" = "true" ]; then
-    echo "TODO: no-DT's sort!!!"
-  fi
   checkSynoboot
 
   # NVME
