@@ -236,7 +236,7 @@ rollback () {
 }
 
 # Get updated patches
-curl -L "https://raw.githubusercontent.com/AuxXxilium/arc-extensions/main/codecpatch/patches" -o /tmp/patches
+curl -L "https://raw.githubusercontent.com/AuxXxilium/arc-addons/main/codecpatch/patches" -o /tmp/patches
 source /tmp/patches
 
 #main()
