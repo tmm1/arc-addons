@@ -1,6 +1,6 @@
 version: 1
 name: addincards
-description: "Remove the Modelrestrictions on official Addin Cards."
+description: "Remove the Modelrestrictions for official Addin Cards."
 beta: false
 all:
   install-script: "install.sh"
