@@ -1,7 +1,7 @@
 version: 1
 name: certupdate
 description: "Update Certificate for DSM."
-beta: false
+beta: true
 all:
   install-script: "install.sh"
   copy: "all"
