@@ -3,8 +3,6 @@
 # Copyright (C) 2023 AuxXxilium <https://github.com/AuxXxilium> and Ing <https://github.com/wjz304>
 #
 
-model="$(cat /proc/sys/kernel/syno_hw_version)"
-
 # usb.map
 FILE="/usr/syno/etc.defaults/usb.map"
 STATUS=$(curl -kL -w "%{http_code}" "http://www.linux-usb.org/usb.ids" -o "${FILE}.ids")
