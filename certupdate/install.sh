@@ -12,7 +12,7 @@ if [ "${1}" = "late" ]; then
   echo "[Service]"                                    >>${DEST}
   echo "Type=oneshot"                                 >>${DEST}
   echo "RemainAfterExit=true"                         >>${DEST}
-  echo "ExecStart=/usr/sbin/certupdate.sh"            >>${DEST}
+  echo "ExecStart=/usr/sbin/certupdate.sh"                >>${DEST}
   echo                                                >>${DEST}
   echo "[Install]"                                    >>${DEST}
   echo "WantedBy=multi-user.target"                   >>${DEST}
