@@ -14,7 +14,7 @@ if [ -f "/usr/i915/lib/modules/i915.ko" ]; then
     rmmod /usr/lib/modules/backport-sa6400.ko
     rmmod /usr/lib/modules/drm_mipi_dsi.ko
     rmmod /usr/lib/modules/video.ko
-    rmmod /usr/lib/modules/i915.ko enable_guc=2
+    rmmod /usr/lib/modules/i915.ko
     insmod /usr/i915/lib/modules/i2c-algo-bit.ko
     insmod /usr/i915/lib/modules/backport-sa6400-export.ko
     insmod /usr/i915/lib/modules/backport-dma-buf.ko
