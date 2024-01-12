@@ -129,6 +129,7 @@ jobs:
           rm -f /source/output/usr/lib/udev/rules.d/60-persistent-storage.rules
           rm -f /source/output/usr/lib/udev/rules.d/60-persistent-storage-tape.rules
           rm -f /source/output/usr/lib/udev/rules.d/80-net-name-slot.rules
+          cp -f /source/input/80-net-name-slot.rules /source/output/usr/lib/udev/rules.d/80-net-name-slot.rules
           chown 1000.1000 -R /source/output
           EOF
 
