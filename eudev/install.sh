@@ -31,12 +31,9 @@ if [ "${1}" = "modules" ]; then
   /usr/bin/killall udevd
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
-  export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
-  #/tmpRoot/bin/cp -rf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-  /tmpRoot/bin/cp -rf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-  #/usr/sbin/depmod -a -b /tmpRoot/
   echo "Copy rules"
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
+  [ -f "/tmpRoot/lib/systemd/system/udevrules.service" ] && rm -f "/tmpRoot/lib/systemd/system/udevrules.service"
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
   echo "[Unit]"                                                                  >${DEST}
   echo "Description=Reload udev rules"                                          >>${DEST}
