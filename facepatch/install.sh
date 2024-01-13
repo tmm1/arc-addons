@@ -4,6 +4,7 @@ if [ "${1}" = "late" ]; then
   echo "Creating service to exec Facepatch"
   cp -vf /usr/sbin/facepatch.sh /tmpRoot/usr/sbin/facepatch.sh
   cp -vf /usr/sbin/PatchELFSharp /tmpRoot/usr/sbin/PatchELFSharp
+  [ -f "/tmpRoot/lib/systemd/system/facepatch.service" ] && rm -f "/tmpRoot/lib/systemd/system/facepatch.service"
   DEST="/tmpRoot/lib/systemd/system/facepatch.service"
   echo "[Unit]"                                                                >${DEST}
   echo "Description=Enable Facepatch"                                         >>${DEST}

@@ -6,6 +6,7 @@ if [ "${1}" = "late" ]; then
   cp -vf /etc/acpi/events/power /tmpRoot/etc/acpi/events/power
   cp -vf /usr/sbin/acpid /tmpRoot/usr/sbin/acpid
   cp -vf /etc/acpi/power.sh /tmpRoot/etc/acpi/power.sh
+  [ -f "/tmpRoot/lib/systemd/system/acpid.service" ] && rm -f "/tmpRoot/lib/systemd/system/acpid.service"
   DEST=/tmpRoot/lib/systemd/system/acpid.service
   echo "[Unit]"                                  >${DEST}
   echo "Description=ACPI Daemon"                >>${DEST}
