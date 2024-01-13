@@ -8,6 +8,8 @@ if [ "${1}" = "late" ]; then
 
   cp -vf "/usr/sbin/loader-reboot.sh" "/tmpRoot/usr/sbin/loader-reboot.sh"
   cp -vf "/usr/sbin/grub-editenv" "/tmpRoot/usr/sbin/grub-editenv"
+  cp -vf "/usr/bin/less" "/tmpRoot/usr/bin/less"
+  cp -vf "/usr/bin/lessecho" "/tmpRoot/usr/bin/lessecho"
 
   mount -t sysfs sysfs /sys
   modprobe acpi-cpufreq
