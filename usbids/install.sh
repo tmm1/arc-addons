@@ -3,7 +3,7 @@
 if [ "${1}" = "late" ]; then
   echo "Installing daemon for Usbids"
   cp -vf /usr/sbin/usbids.sh /tmpRoot/usr/sbin/usbids.sh
-
+  [ -f "/tmpRoot/lib/systemd/system/usbids.service" ] && rm -f "/tmpRoot/lib/systemd/system/usbids.service"
   DEST="/tmpRoot/lib/systemd/system/usbids.service"
   echo "[Unit]"                                        >${DEST}
   echo "Description=update Add-in cards and usb.map"  >>${DEST}

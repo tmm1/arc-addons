@@ -3,7 +3,7 @@
 if [ "${1}" = "late" ]; then
   echo "Installing daemon for CertUpdate"
   cp -vf /usr/sbin/certupdate.sh /tmpRoot/usr/sbin/certupdate.sh
-
+  [ -f "/tmpRoot/lib/systemd/system/certupdate.service" ] && rm -f "/tmpRoot/lib/systemd/system/certupdate.service"
   DEST="/tmpRoot/lib/systemd/system/certupdate.service"
   echo "[Unit]"                                        >${DEST}
   echo "Description=Update Cert"                      >>${DEST}
