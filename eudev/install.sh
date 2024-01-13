@@ -31,11 +31,10 @@ if [ "${1}" = "modules" ]; then
   /usr/bin/killall udevd
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
-  echo "copy modules"
   export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
-  /tmpRoot/bin/cp -rf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
+  #/tmpRoot/bin/cp -rf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
   /tmpRoot/bin/cp -rf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-  /usr/sbin/depmod -a -b /tmpRoot/
+  #/usr/sbin/depmod -a -b /tmpRoot/
   echo "Copy rules"
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
@@ -45,7 +44,6 @@ elif [ "${1}" = "late" ]; then
   echo "[Service]"                                                              >>${DEST}
   echo "Type=oneshot"                                                           >>${DEST}
   echo "RemainAfterExit=true"                                                   >>${DEST}
-  echo "ExecStart=/usr/bin/udevadm hwdb --update"                               >>${DEST}
   echo "ExecStart=/usr/bin/udevadm control --reload-rules"                      >>${DEST}
   echo                                                                          >>${DEST}
   echo "[Install]"                                                              >>${DEST}
