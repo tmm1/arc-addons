@@ -1,4 +1,10 @@
 #!/usr/bin/env ash
+if [ "${1}" = "early" ]; then
+  # Export dmesg to disk
+  mkdir -p "/usr/log"
+  [ -f "/usr/log/dmesg.txt" ] && rm -f "/usr/log/dmesg.txt"
+  dmesg > "/usr/log/dmesg.txt"
+fi
 
 if [ "${1}" = "late" ]; then
   echo "Script for fixing missing HW features dependencies and another functions"
