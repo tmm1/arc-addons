@@ -70,10 +70,15 @@ if [ "${1}" = "late" ]; then
     ${SED_PATH} -i 's/package/root/g' /var/packages/open-vm-tools/conf/privilege
   fi
 
+  # Export dmesg to disk
+  mkdir -p "/tmpRoot/usr/log"
+  [ -f "/tmpRoot/usr/log/dmesg.txt" ] && rm -f "/tmpRoot/usr/log/dmesg.txt"
+  dmesg > "/tmpRoot/usr/log/dmesg.txt"
+
   # Network
-  for I in `seq 0 7`; do
-    if [ -f "/etc/sysconfig/network-scripts/ifcfg-eth${I}" ] && [ ! -f "/tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}" ]; then
-      cp -vf "/etc/sysconfig/network-scripts/ifcfg-eth${I}" "/tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}"
-    fi
-  done
+  #for I in `seq 0 7`; do
+  #  if [ -f "/etc/sysconfig/network-scripts/ifcfg-eth${I}" ] && [ ! -f "/tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}" ]; then
+  #    cp -vf "/etc/sysconfig/network-scripts/ifcfg-eth${I}" "/tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}"
+  #  fi
+  #done
 fi
