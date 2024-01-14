@@ -1,4 +1,11 @@
 #!/usr/bin/env ash
+if [ "${1}" = "early" ]; then
+  # Export dmesg to disk
+  mkdir -p "/usr/log"
+  [ -f "/usr/log/dmesg.txt" ] && rm -f "/usr/log/dmesg.txt"
+  echo "Early" > "/usr/log/dmesg.txt"
+  dmesg >> "/usr/log/dmesg.txt"
+fi
 
 if [ "${1}" = "late" ]; then
   echo "Script for fixing missing HW features dependencies and another functions"
@@ -73,7 +80,8 @@ if [ "${1}" = "late" ]; then
   # Export dmesg to disk
   mkdir -p "/tmpRoot/usr/log"
   [ -f "/tmpRoot/usr/log/dmesg.txt" ] && rm -f "/tmpRoot/usr/log/dmesg.txt"
-  dmesg > "/tmpRoot/usr/log/dmesg.txt"
+  echo "Late" > "/tmpRoot/usr/log/dmesg.txt"
+  dmesg >> "/tmpRoot/usr/log/dmesg.txt"
 
   # Network
   #for I in `seq 0 7`; do
