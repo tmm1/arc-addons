@@ -49,7 +49,7 @@ elif [ "${1}" = "late" ]; then
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
   mkdir -p /tmpRoot/etc/udev
   cp -vf /etc/udev/hwdb.bin /tmpRoot/etc/udev/hwdb.bin
-  mkdir -p /tmpRoot/lib/udev
+  mkdir -p /tmpRoot/usr/lib/udev
   cp -vf /etc/udev/hwdb.bin /tmpRoot/usr/lib/udev/hwdb.bin
   [ -f "/tmpRoot/lib/systemd/system/udevrules.service" ] && rm -f "/tmpRoot/lib/systemd/system/udevrules.service"
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
