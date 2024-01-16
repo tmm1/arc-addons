@@ -112,9 +112,9 @@ jobs:
           make all
           make install
           make DESTDIR=/source/output install
-          git clone -c http.sslVerify=false --single-branch https://github.com/eudev-project/eudev.git /tmp/eudev
+          git clone -c http.sslVerify=false --single-branch https://github.com/AuxXxilium/eudev.git /tmp/eudev
           cd /tmp/eudev
-          git checkout 3.2.14
+          git checkout master
           ./autogen.sh
           ./configure CC=${CC} --host=${HOST} --prefix=/usr --sysconfdir=/etc --disable-manpages --disable-selinux --disable-mtd_probe --enable-kmod
           [ -z "$(grep 'env.mak' Makefile)" ] && sed -i '1 i include /env.mak' Makefile
@@ -129,7 +129,6 @@ jobs:
           rm -f /source/output/usr/lib/udev/rules.d/60-persistent-storage.rules
           rm -f /source/output/usr/lib/udev/rules.d/60-persistent-storage-tape.rules
           rm -f /source/output/usr/lib/udev/rules.d/80-net-name-slot.rules
-          cp -f /source/input/80-net-name-slot.rules /source/output/usr/lib/udev/rules.d/80-net-name-slot.rules
           chown 1000.1000 -R /source/output
           EOF
 
