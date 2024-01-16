@@ -3,9 +3,9 @@
 # DSM version
 MajorVersion=$(/bin/get_key_value /etc.defaults/VERSION majorversion)
 MinorVersion=$(/bin/get_key_value /etc.defaults/VERSION minorversion)
-ModuleUnique=$(/bin/get_key_value /etc.defaults/VERSION unique) # Avoid confusion with global variables
+#ModuleUnique=$(/bin/get_key_value /etc.defaults/VERSION unique) # Avoid confusion with global variables
 
-echo "eudev: MajorVersion:${MajorVersion} MinorVersion:${MinorVersion}"
+echo "MajorVersion:${MajorVersion} MinorVersion:${MinorVersion}"
 
 if [ "${1}" = "modules" ]; then
   echo "Starting eudev daemon - modules"
@@ -22,25 +22,41 @@ if [ "${1}" = "modules" ]; then
     exit 1
   }
   echo "Triggering add events to udev"
-  udevadm hwdb --update
   udevadm trigger --type=subsystems --action=add
-  udevadm trigger --type=subsystems --action=change
   udevadm trigger --type=devices --action=add
   udevadm trigger --type=devices --action=change
-  udevadm settle --timeout=30 || echo "eudev: udevadm settle failed"
+  udevadm settle --timeout=30 || echo "udevadm settle failed"
   # Give more time
   sleep 10
   # Remove from memory to not conflict with RAID mount scripts
   /usr/bin/killall udevd
+  # Remove kvm module
+  /usr/sbin/lsmod | grep -q ^kvm_intel && /usr/sbin/rmmod kvm_intel || true  # kvm-intel.ko
+  /usr/sbin/lsmod | grep -q ^kvm_amd && /usr/sbin/rmmod kvm_amd || true  # kvm-amd.ko
+  /usr/sbin/lsmod | grep -q ^kvm && /usr/sbin/rmmod kvm || true
+  /usr/sbin/lsmod | grep -q ^irqbypass && /usr/sbin/rmmod irqbypass || true
+
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
-  echo "eudev: copy Firmware"
+
+  #echo "eudev: copy HWDB"
+  #cp -vf /etc/udev/hwdb.d/* /tmpRoot/etc/udev/hwdb.d/
+  echo "eudev: copy modules"
   export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
   /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-  echo "eudev: copy Rules"
+  cat /addons/modulelist 2>/dev/null | /tmpRoot/bin/sed '/^\s*$/d' | while IFS=' ' read -r O M; do
+    [ "${O:0:1}" = "#" ] && continue
+    [ -z "${M}" -o -z "$(ls /usr/lib/modules/${M} 2>/dev/null)" ] && continue
+    if [ "${O}" = "F" ] || [ "${O}" = "f" ]; then
+      /tmpRoot/bin/cp -vrf /usr/lib/modules/${M} /tmpRoot/usr/lib/modules/
+    else
+      /tmpRoot/bin/cp -vrn /usr/lib/modules/${M} /tmpRoot/usr/lib/modules/
+    fi
+  done
+  /usr/sbin/depmod -a -b /tmpRoot/
+
+  echo "Copy rules"
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
-  echo "eudev: copy HWDB"
-  cp -vf /etc/udev/hwdb.d/* /tmpRoot/etc/udev/hwdb.d/
   [ -f "/tmpRoot/lib/systemd/system/udevrules.service" ] && rm -f "/tmpRoot/lib/systemd/system/udevrules.service"
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
   echo "[Unit]"                                                                  >${DEST}
@@ -51,7 +67,6 @@ elif [ "${1}" = "late" ]; then
   echo "RemainAfterExit=true"                                                   >>${DEST}
   echo "ExecStart=/usr/bin/udevadm hwdb --update"                               >>${DEST}
   echo "ExecStart=/usr/bin/udevadm control --reload-rules"                      >>${DEST}
-  echo "ExecStart=/usr/bin/udevadm trigger"                                     >>${DEST}
   echo                                                                          >>${DEST}
   echo "[Install]"                                                              >>${DEST}
   echo "WantedBy=multi-user.target"                                             >>${DEST}
