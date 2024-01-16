@@ -1,7 +1,7 @@
 version: 1
-name: certupdate
-description: "Update Certificate for DSM."
-beta: true
+name: expands
+description: "Expanded miscellaneous, updated usb.map, ca-certificates.crt, etc."
+system: true
 all:
   install-script: "install.sh"
   copy: "all"
