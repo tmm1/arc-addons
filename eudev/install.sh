@@ -22,30 +22,25 @@ if [ "${1}" = "modules" ]; then
     exit 1
   }
   echo "Triggering add events to udev"
+  udevadm hwdb --update
   udevadm trigger --type=subsystems --action=add
+  udevadm trigger --type=subsystems --action=change
   udevadm trigger --type=devices --action=add
   udevadm trigger --type=devices --action=change
-  udevadm settle --timeout=30 || echo "udevadm settle failed"
+  udevadm settle --timeout=30 || echo "eudev: udevadm settle failed"
   # Give more time
   sleep 10
   # Remove from memory to not conflict with RAID mount scripts
   /usr/bin/killall udevd
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
-  # The modules of SA6400 still have compatibility issues, temporarily canceling the copy. TODO: to be resolved
-  if [ ! "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
-    echo "eudev: copy firmware and modules"
-    export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
-    /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-    /tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-    /usr/sbin/depmod -a -b /tmpRoot/
-  else
-    echo "eudev: copy firmware"
-    export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
-    /tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-  fi
-  echo "eudev: Copy rules"
+  echo "eudev: copy Firmware"
+  export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
+  /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
+  echo "eudev: copy Rules"
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
+  echo "eudev: copy HWDB"
+  cp -vf /etc/udev/hwdb.d/* /tmpRoot/etc/udev/hwdb.d/
   [ -f "/tmpRoot/lib/systemd/system/udevrules.service" ] && rm -f "/tmpRoot/lib/systemd/system/udevrules.service"
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
   echo "[Unit]"                                                                  >${DEST}
@@ -54,7 +49,9 @@ elif [ "${1}" = "late" ]; then
   echo "[Service]"                                                              >>${DEST}
   echo "Type=oneshot"                                                           >>${DEST}
   echo "RemainAfterExit=true"                                                   >>${DEST}
+  echo "ExecStart=/usr/bin/udevadm hwdb --update"                               >>${DEST}
   echo "ExecStart=/usr/bin/udevadm control --reload-rules"                      >>${DEST}
+  echo "ExecStart=/usr/bin/udevadm trigger"                                     >>${DEST}
   echo                                                                          >>${DEST}
   echo "[Install]"                                                              >>${DEST}
   echo "WantedBy=multi-user.target"                                             >>${DEST}
