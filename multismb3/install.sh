@@ -3,7 +3,6 @@
 if [ "${1}" = "late" ]; then
   echo "Creating service to exec Multi-SMB3"
   cp -vf /usr/sbin/smb3-multi.sh /tmpRoot/usr/sbin/smb3-multi.sh
-  [ -f "/tmpRoot/lib/systemd/system/smb3-multi.service" ] && rm -f "/tmpRoot/lib/systemd/system/smb3-multi.service"
   DEST="/tmpRoot/lib/systemd/system/smb3-multi.service"
   echo "[Unit]"                                                                >${DEST}
   echo "Description=Enable Multi-SMB3"                                        >>${DEST}

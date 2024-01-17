@@ -62,7 +62,6 @@ elif [ "${1}" = "late" ]; then
   echo "eudev: copy HWDB"
   cp -vf /etc/udev/hwdb.d/* /tmpRoot/etc/udev/hwdb.d/
 
-  [ -f "/tmpRoot/lib/systemd/system/udevrules.service" ] && rm -f "/tmpRoot/lib/systemd/system/udevrules.service"
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
   echo "[Unit]"                                                                  >${DEST}
   echo "Description=Reload udev rules"                                          >>${DEST}
@@ -72,7 +71,6 @@ elif [ "${1}" = "late" ]; then
   echo "RemainAfterExit=true"                                                   >>${DEST}
   echo "ExecStart=/usr/bin/udevadm hwdb --update"                               >>${DEST}
   echo "ExecStart=/usr/bin/udevadm control --reload-rules"                      >>${DEST}
-  echo "ExecStart=/usr/bin/udevadm trigger"                                     >>${DEST}
   echo                                                                          >>${DEST}
   echo "[Install]"                                                              >>${DEST}
   echo "WantedBy=multi-user.target"                                             >>${DEST}

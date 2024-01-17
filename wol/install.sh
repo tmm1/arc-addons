@@ -8,7 +8,6 @@ elif [ "${1}" = "late" ]; then
   echo "Creating service to exec ethtool"
   cp -vf /usr/bin/ethtool /tmpRoot/usr/bin/ethtool
   cp -vf /usr/bin/wol.sh /tmpRoot/usr/bin/wol.sh
-  [ -f "/tmpRoot/lib/systemd/system/ethtool.service" ] && rm -f "/tmpRoot/lib/systemd/system/ethtool.service"
   DEST="/tmpRoot/lib/systemd/system/ethtool.service"
   echo "[Unit]"                                                               > ${DEST}
   echo "Description=ARC force WoL on ethN"                                    >>${DEST}
