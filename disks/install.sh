@@ -340,7 +340,7 @@ function nondtModel() {
     MAXDISKS=$(($(_get_conf_kv maxdisks)))
     echo "get maxdisks=${MAXDISKS}"
   else
-    #[ ${HBA_NUMBER} -gt 0 ] && MAXDISKS=26
+    [ ${HBA_NUMBER} -gt 0 ] && MAXDISKS=26
     [ ${MAXDISKS} -lt 26 ] && MAXDISKS=26
   fi
   if _check_post_k "rd" "usbportcfg"; then
