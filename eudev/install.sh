@@ -41,21 +41,27 @@ elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
 
   if [ ! "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
-    echo "eudev: copy firmware"
+    echo "eudev: copy firmware (non-epyc7002)"
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
     /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
     #/tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-    #/usr/sbin/depmod -a -b /tmpRoot/
+    /usr/sbin/depmod -a -b /tmpRoot/
   else
-    echo "eudev: copy firmware"
+    echo "eudev: copy firmware (epyc7002)"
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
     /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
+    #/tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
+    /usr/sbin/depmod -a -b /tmpRoot/
   fi
 
+  # Copy Rules and HWDB
   echo "eudev: copy Rules"
+  mkdir -p /tmpRoot/usr/lib/udev/rules.d
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
+  mkdir -p /tmpRoot/etc/udev/hwdb.d
   echo "eudev: copy HWDB"
   cp -vf /etc/udev/hwdb.d/* /tmpRoot/etc/udev/hwdb.d/
+
   [ -f "/tmpRoot/lib/systemd/system/udevrules.service" ] && rm -f "/tmpRoot/lib/systemd/system/udevrules.service"
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
   echo "[Unit]"                                                                  >${DEST}
