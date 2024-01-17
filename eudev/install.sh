@@ -22,8 +22,8 @@ if [ "${1}" = "modules" ]; then
     exit 1
   }
   echo "Triggering add events to udev"
+  udevadm hwdb --update
   udevadm trigger --type=subsystems --action=add
-  udevadm trigger --type=subsystems --action=change
   udevadm trigger --type=devices --action=add
   udevadm trigger --type=devices --action=change
   udevadm settle --timeout=30 || echo "eudev: udevadm settle failed"
@@ -35,7 +35,7 @@ if [ "${1}" = "modules" ]; then
   /usr/sbin/lsmod | grep -q ^kvm_intel && /usr/sbin/rmmod kvm_intel || true  # kvm-intel.ko
   /usr/sbin/lsmod | grep -q ^kvm_amd && /usr/sbin/rmmod kvm_amd || true  # kvm-amd.ko
   /usr/sbin/lsmod | grep -q ^kvm && /usr/sbin/rmmod kvm || true
-  #/usr/sbin/lsmod | grep -q ^irqbypass && /usr/sbin/rmmod irqbypass || true
+  # /usr/sbin/lsmod | grep -q ^irqbypass && /usr/sbin/rmmod irqbypass || true
 
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
@@ -45,11 +45,11 @@ elif [ "${1}" = "late" ]; then
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
     /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
     #/tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-    /usr/sbin/depmod -a -b /tmpRoot/
+    #/usr/sbin/depmod -a -b /tmpRoot/
   else
     echo "eudev: copy firmware"
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
-    /tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
+    /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
   fi
 
   echo "eudev: copy Rules"
