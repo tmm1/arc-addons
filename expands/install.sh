@@ -2,9 +2,9 @@
 
 if [ "${1}" = "late" ]; then
   echo "Installing daemon for expands"
-  cp -vf /usr/bin/expands.sh /tmpRoot/usr/bin/expands.sh
+  cp -vf /usr/sbin/expands.sh /tmpRoot/usr/sbin/expands.sh
 
-  DEST="/tmpRoot/usr/lib/systemd/system/expands.service"
+  DEST="/tmpRoot/lib/systemd/system/expands.service"
   echo "[Unit]"                                    >${DEST}
   echo "Description=Expanded miscellaneous"       >>${DEST}
   echo "After=multi-user.target"                  >>${DEST}
@@ -12,7 +12,7 @@ if [ "${1}" = "late" ]; then
   echo "[Service]"                                >>${DEST}
   echo "Type=oneshot"                             >>${DEST}
   echo "RemainAfterExit=true"                     >>${DEST}
-  echo "ExecStart=/usr/bin/expands.sh"            >>${DEST}
+  echo "ExecStart=/usr/sbin/expands.sh"           >>${DEST}
   echo                                            >>${DEST}
   echo "[Install]"                                >>${DEST}
   echo "WantedBy=multi-user.target"               >>${DEST}
