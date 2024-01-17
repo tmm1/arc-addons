@@ -4,10 +4,10 @@ if [ "${1}" = "late" ]; then
   echo "Script for fixing missing HW features dependencies and another functions"
 
   # Copy Utilities
-  cp -vf "/usr/sbin/loader-reboot.sh" "/tmpRoot/usr/sbin/loader-reboot.sh"
-  cp -vf "/usr/sbin/grub-editenv" "/tmpRoot/usr/sbin/grub-editenv"
-  cp -vf "/usr/bin/less" "/tmpRoot/usr/bin/less"
-  cp -vf "/usr/bin/lessecho" "/tmpRoot/usr/bin/lessecho"
+  cp -vf /usr/sbin/loader-reboot.sh /tmpRoot/usr/sbin/loader-reboot.sh
+  cp -vf /usr/sbin/grub-editenv /tmpRoot/usr/sbin/grub-editenv
+  cp -vf /usr/bin/less /tmpRoot/usr/bin/less
+  cp -vf /usr/bin/lessecho /tmpRoot/usr/bin/lessecho
 
   mount -t sysfs sysfs /sys
   modprobe acpi-cpufreq
@@ -69,8 +69,8 @@ if [ "${1}" = "late" ]; then
 
   # Network
   for I in $(seq 0 7); do
-    if [ -f "/etc/sysconfig/network-scripts/ifcfg-eth${I}" ] && [ ! -f "/tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}" ]; then
-      cp -vf "/etc/sysconfig/network-scripts/ifcfg-eth${I}" "/tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}"
+    if [ -f /etc/sysconfig/network-scripts/ifcfg-eth${I} ] && [ ! -f /tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I} ]; then
+      cp -vf /etc/sysconfig/network-scripts/ifcfg-eth${I} /tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}
     fi
   done
 
