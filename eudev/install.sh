@@ -23,7 +23,6 @@ if [ "${1}" = "modules" ]; then
   }
   echo "Triggering add events to udev"
   udevadm trigger --type=subsystems --action=add
-  udevadm trigger --type=subsystems --action=change
   udevadm trigger --type=devices --action=add
   udevadm trigger --type=devices --action=change
   udevadm settle --timeout=30 || echo "eudev: udevadm settle failed"
@@ -45,7 +44,7 @@ elif [ "${1}" = "late" ]; then
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
     /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
     #/tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-    /usr/sbin/depmod -a -b /tmpRoot/
+    #/usr/sbin/depmod -a -b /tmpRoot/
   else
     echo "eudev: copy firmware"
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
