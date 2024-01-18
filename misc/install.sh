@@ -73,8 +73,4 @@ if [ "${1}" = "late" ]; then
       cp -vf /etc/sysconfig/network-scripts/ifcfg-eth${I} /tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}
     fi
   done
-
-  # Hosts
-  echo "127.0.0.1   checkip.synology.com" >>/tmpRoot/etc/hosts
-  echo "::1   checkipv6.synology.com" >>/tmpRoot/etc/hosts
 fi
