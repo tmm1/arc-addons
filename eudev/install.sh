@@ -22,7 +22,6 @@ if [ "${1}" = "modules" ]; then
     exit 1
   }
   echo "Triggering add events to udev"
-  udevadm hwdb --update
   udevadm trigger --type=subsystems --action=add
   udevadm trigger --type=devices --action=add
   udevadm trigger --type=devices --action=change
