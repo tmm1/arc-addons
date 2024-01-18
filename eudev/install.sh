@@ -16,7 +16,11 @@ if [ "${1}" = "modules" ]; then
   fi
   [ -e /proc/sys/kernel/hotplug ] && printf '\000\000\000\000' >/proc/sys/kernel/hotplug
   chmod 755 /usr/sbin/udevd /usr/bin/kmod /usr/bin/udevadm /usr/lib/udev/*
-  /usr/sbin/depmod -a -b /usr/lib/modules/
+  for F in $(find /usr/lib/modules -name "*.ko"); do
+    F=$(basename ${F})
+    ln -sfn /usr/lib/modules/${F} /usr/lib/modules/4.4.302+/${F}
+  done
+  /usr/sbin/depmod -a
   /usr/sbin/udevd -d || {
     echo "FAIL"
     exit 1
@@ -45,13 +49,13 @@ elif [ "${1}" = "late" ]; then
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
     /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
     #/tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-    /usr/sbin/depmod -a -b /tmpRoot/usr/lib/modules/
+    /usr/sbin/depmod -a -b /tmpRoot/
   else
     echo "eudev: copy firmware (epyc7002)"
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
     /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
     #/tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-    /usr/sbin/depmod -a -b /tmpRoot/usr/lib/modules/
+    /usr/sbin/depmod -a -b /tmpRoot/
   fi
 
   # Copy Rules and HWDB
