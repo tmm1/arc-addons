@@ -43,13 +43,13 @@ elif [ "${1}" = "late" ]; then
     echo "eudev: copy firmware (non-epyc7002)"
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
     /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-    #/tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
+    # /tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
     /usr/sbin/depmod -a -b /tmpRoot/
   else
     echo "eudev: copy firmware (epyc7002)"
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
     /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-    #/tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
+    # /tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
     /usr/sbin/depmod -a -b /tmpRoot/
   fi
 
@@ -57,9 +57,9 @@ elif [ "${1}" = "late" ]; then
   echo "eudev: copy Rules"
   mkdir -p /tmpRoot/usr/lib/udev/rules.d
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
-  mkdir -p /tmpRoot/etc/udev/hwdb.d
-  echo "eudev: copy HWDB"
-  cp -vf /etc/udev/hwdb.d/* /tmpRoot/etc/udev/hwdb.d/
+  # echo "eudev: copy HWDB"
+  # mkdir -p /tmpRoot/etc/udev/hwdb.d
+  # cp -vf /etc/udev/hwdb.d/* /tmpRoot/etc/udev/hwdb.d/
 
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
   echo "[Unit]"                                                                  >${DEST}
