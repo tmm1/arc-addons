@@ -35,7 +35,7 @@ if [ "${1}" = "modules" ]; then
   /usr/sbin/lsmod | grep -q ^kvm_intel && /usr/sbin/rmmod kvm_intel || true  # kvm-intel.ko
   /usr/sbin/lsmod | grep -q ^kvm_amd && /usr/sbin/rmmod kvm_amd || true  # kvm-amd.ko
   /usr/sbin/lsmod | grep -q ^kvm && /usr/sbin/rmmod kvm || true
-  # /usr/sbin/lsmod | grep -q ^irqbypass && /usr/sbin/rmmod irqbypass || true
+  /usr/sbin/lsmod | grep -q ^irqbypass && /usr/sbin/rmmod irqbypass || true
 
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
