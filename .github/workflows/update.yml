@@ -94,6 +94,18 @@ jobs:
             [ -n "${CCVER}" ] && echo "CCVER=${CCVER}" >> $GITHUB_ENV
           fi
 
+      - name: Get Src
+        run: |
+          ROOT_PATH=${{ github.workspace }}
+
+          mkdir -p ${ROOT_PATH}/source/output
+
+          KVER=${{ env.KVER }}
+
+          sudo cp -a ${ROOT_PATH}/eudev/src ${ROOT_PATH}/source/input
+
+          sudo cp -a ${ROOT_PATH}/source ${ROOT_PATH}/build_env/ds.${{ matrix.platform }}-${{ matrix.version }}/
+
       - name: Make
         run: |
           ROOT_PATH=${{ github.workspace }}
