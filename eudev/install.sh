@@ -1,9 +1,6 @@
-#!/usr/bin/env ash
-
 # DSM version
 MajorVersion=$(/bin/get_key_value /etc.defaults/VERSION majorversion)
 MinorVersion=$(/bin/get_key_value /etc.defaults/VERSION minorversion)
-ModuleUnique=$(/bin/get_key_value /etc.defaults/VERSION unique) # Avoid confusion with global variables
 
 echo "eudev: MajorVersion:${MajorVersion} MinorVersion:${MinorVersion}"
 
@@ -21,7 +18,7 @@ if [ "${1}" = "modules" ]; then
     echo "FAIL"
     exit 1
   }
-  echo "Triggering add events to udev"
+  echo "eudev: Triggering add events to udev"
   udevadm trigger --type=subsystems --action=add
   udevadm trigger --type=devices --action=add
   udevadm trigger --type=devices --action=change
@@ -39,31 +36,27 @@ if [ "${1}" = "modules" ]; then
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
 
-  if [ ! "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
-    echo "eudev: copy firmware (non-epyc7002)"
-    export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
-    /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-    # /tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-    /usr/sbin/depmod -a -b /tmpRoot/
-  else
-    echo "eudev: copy firmware (epyc7002)"
-    export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
-    /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-    # /tmpRoot/bin/cp -rnf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-    /usr/sbin/depmod -a -b /tmpRoot/
-  fi
+  echo "eudev: copy Modules"
+  isChange=0
+  export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
+  /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
+  cat /addons/modulelist 2>/dev/null | /tmpRoot/bin/sed '/^\s*$/d' | while IFS=' ' read -r O M; do
+    [ "${O:0:1}" = "#" ] && continue
+    [ -z "${M}" -o -z "$(ls /usr/lib/modules/${M} 2>/dev/null)" ] && continue
+    if [ "${O}" = "F" ] || [ "${O}" = "f" ]; then
+      /tmpRoot/bin/cp -vrf /usr/lib/modules/${M} /tmpRoot/usr/lib/modules/
+    else
+      /tmpRoot/bin/cp -vrn /usr/lib/modules/${M} /tmpRoot/usr/lib/modules/
+    fi
+    isChange=1
+  done
+  [ "${isChange}" = "1" ] && /usr/sbin/depmod -a -b /tmpRoot/
 
-  # Copy Rules and HWDB
   echo "eudev: copy Rules"
-  mkdir -p /tmpRoot/usr/lib/udev/rules.d
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
-  # echo "eudev: copy HWDB"
-  # mkdir -p /tmpRoot/etc/udev/hwdb.d
-  # cp -vf /etc/udev/hwdb.d/* /tmpRoot/etc/udev/hwdb.d/
-
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
   echo "[Unit]"                                                                  >${DEST}
-  echo "Description=Reload udev rules"                                          >>${DEST}
+  echo "Description=Reload udev Rules"                                          >>${DEST}
   echo                                                                          >>${DEST}
   echo "[Service]"                                                              >>${DEST}
   echo "Type=oneshot"                                                           >>${DEST}
