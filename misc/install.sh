@@ -68,9 +68,10 @@ if [ "${1}" = "late" ]; then
   fi
 
   # Network
+  rm -vf /tmpRoot/usr/lib/modules-load.d/70-network*.conf
   for I in $(seq 0 7); do
-    if [ -f /etc/sysconfig/network-scripts/ifcfg-eth${I} ] && [ ! -f /tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I} ]; then
-      cp -vf /etc/sysconfig/network-scripts/ifcfg-eth${I} /tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}
+    if [ -f "/etc/sysconfig/network-scripts/ifcfg-eth${I}" ] && [ ! -f "/tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}" ]; then
+      cp -vf "/etc/sysconfig/network-scripts/ifcfg-eth${I}" "/tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}"
     fi
   done
 fi
