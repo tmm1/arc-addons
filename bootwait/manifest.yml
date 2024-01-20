@@ -1,11 +1,11 @@
 version: 1
 name: bootwait
 description: "This script-only extension ensures boot process waits until boot device (`/dev/synoboot`) is available before other processes start launching."
-system: true
+system: false
 beta: false
 all:
   install-script: "install.sh"
-  copy: ""
+  copy: "all"
 apollolake: true
 broadwell: true
 broadwellnk: true

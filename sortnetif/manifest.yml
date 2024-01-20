@@ -2,7 +2,8 @@ version: 1
 name: sortnetif
 description: "Sort network interface name."
 #parameters: empty: sorted by busid; mac1,mac2,...: sorted by macs sequence
-# system: true
+system: false
+beta: false
 all:
   install-script: "install.sh"
   copy: all

@@ -1,6 +1,7 @@
 version: 1
 name: cpuinfo
-description: "Adds correct CPU Info to DSM" #https://github.com/FOXBI/ch_cpuinfo
+description: "Adds correct CPU Info to DSM"
+system: false
 beta: false
 all:
   install-script: "install.sh"

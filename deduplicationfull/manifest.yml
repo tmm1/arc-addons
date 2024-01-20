@@ -1,6 +1,7 @@
 version: 1
 name: deduplicationfull
 description: "Force enable Deduplication (Full >16GB RAM) (Dangerous)"
+system: false
 beta: true
 all:
   install-script: "install.sh"

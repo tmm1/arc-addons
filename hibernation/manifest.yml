@@ -1,6 +1,7 @@
 version: 1
 name: hibernation
 description: "Disable IO logs to fix disk hibernation."
+system: false
 beta: false
 all:
   install-script: "install.sh"

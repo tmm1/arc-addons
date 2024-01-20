@@ -1,8 +1,8 @@
 version: 1
-name: amepatch
-description: "Dynamic Licensepatch for AME (Don't use with Arc Patch)"
+name: hostspatch
+description: "Prevent DSM from calling Home"
 system: false
-beta: false
+beta: true
 all:
   install-script: "install.sh"
   copy: "all"
