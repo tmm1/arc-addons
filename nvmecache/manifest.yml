@@ -1,6 +1,7 @@
 version: 1
 name: nvmecache
 description: "Enable M2 as cache device (for non supported Models)"
+system: false
 beta: false
 all:
   install-script: "install.sh"

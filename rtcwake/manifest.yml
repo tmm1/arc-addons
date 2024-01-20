@@ -1,6 +1,7 @@
 version: 1
 name: rtcwake
 description: "rtcwake from util-linux"
+system: false
 beta: false
 all:
   install-script: "install.sh"
