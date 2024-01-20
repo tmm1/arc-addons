@@ -7,13 +7,22 @@ if [ "${1}" = "late" ]; then
   # Loop over each entry
   for ENTRY in "${ENTRIES[@]}"
   do
-      # Check if the entry is already in the file
-      if grep -Fxq "$ENTRY" /tmpRoot/etc/hosts
-      then
-          echo "Entry $ENTRY already exists"
-      else
-          echo "Entry $ENTRY does not exist, adding now"
-          echo "$ENTRY" >> /tmpRoot/etc/hosts
-      fi
+    if [ -f /etc/hosts ]; then
+        # Check if the entry is already in the file
+        if grep -Fxq "$ENTRY" /etc/hosts; then
+            echo "Entry $ENTRY already exists"
+        else
+            echo "Entry $ENTRY does not exist, adding now"
+            echo "$ENTRY" >> /etc/hosts
+        fi
+    fi
+    if [ -f /tmpRoot/etc/hosts ]; then
+        if grep -Fxq "$ENTRY" /tmpRoot/etc/hosts; then
+            echo "Entry $ENTRY already exists"
+        else
+            echo "Entry $ENTRY does not exist, adding now"
+            echo "$ENTRY" >> /tmpRoot/etc/hosts
+        fi
+    fi
   done
 fi
