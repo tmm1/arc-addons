@@ -5,7 +5,7 @@ if [ "${1}" = "late" ]; then
   cp -vf /usr/sbin/hostspatch.sh /tmpRoot/usr/sbin/hostspatch.sh
   DEST="/tmpRoot/lib/systemd/system/hostspatch.service"
   echo "[Unit]"                                                                >${DEST}
-  echo "Description=Enable CPU Info"                                          >>${DEST}
+  echo "Description=Enable Hostspatch"                                        >>${DEST}
   echo                                                                        >>${DEST}
   echo "[Service]"                                                            >>${DEST}
   echo "Type=oneshot"                                                         >>${DEST}
