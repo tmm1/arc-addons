@@ -137,35 +137,38 @@ function checkSynoboot() {
 
 # USB ports
 function getUsbPorts() {
-  for I in $(ls -d /sys/bus/usb/devices/usb* 2>/dev/null); do
-    # ROOT
-    DCLASS=$(cat ${I}/bDeviceClass)
-    [ ! "${DCLASS}" = "09" ] && continue
-    SPEED=$(cat ${I}/speed)
-    [ ${SPEED} -lt 480 ] && continue
-    RBUS=$(cat ${I}/busnum)
-    RCHILDS=$(cat ${I}/maxchild)
-    HAVE_CHILD=0
-    for C in $(seq 1 ${RCHILDS}); do
-      SUB="${RBUS}-${C}"
-      if [ -d "${I}/${SUB}" ]; then
-        DCLASS=$(cat ${I}/${SUB}/bDeviceClass)
-        [ ! "${DCLASS}" = "09" ] && continue
-        SPEED=$(cat ${I}/${SUB}/speed)
-        [ ${SPEED} -lt 480 ] && continue
-        CHILDS=$(cat ${I}/${SUB}/maxchild)
-        HAVE_CHILD=1
-        for N in $(seq 1 ${CHILDS}); do
-          echo -n "${RBUS}-${C}.${N} "
+  ARCUSBMOUNT=$(_get_conf_kv arcusbmount)
+  if [ "${ARCUSBMOUNT}" = "yes" ]; then
+    for I in $(ls -d /sys/bus/usb/devices/usb* 2>/dev/null); do
+      # ROOT
+      DCLASS=$(cat ${I}/bDeviceClass)
+      [ ! "${DCLASS}" = "09" ] && continue
+      SPEED=$(cat ${I}/speed)
+      [ ${SPEED} -lt 480 ] && continue
+      RBUS=$(cat ${I}/busnum)
+      RCHILDS=$(cat ${I}/maxchild)
+      HAVE_CHILD=0
+      for C in $(seq 1 ${RCHILDS}); do
+        SUB="${RBUS}-${C}"
+        if [ -d "${I}/${SUB}" ]; then
+          DCLASS=$(cat ${I}/${SUB}/bDeviceClass)
+          [ ! "${DCLASS}" = "09" ] && continue
+          SPEED=$(cat ${I}/${SUB}/speed)
+          [ ${SPEED} -lt 480 ] && continue
+          CHILDS=$(cat ${I}/${SUB}/maxchild)
+          HAVE_CHILD=1
+          for N in $(seq 1 ${CHILDS}); do
+            echo -n "${RBUS}-${C}.${N} "
+          done
+        fi
+      done
+      if [ ${HAVE_CHILD} -eq 0 ]; then
+        for N in $(seq 1 ${RCHILDS}); do
+          echo -n "${RBUS}-${N} "
         done
       fi
     done
-    if [ ${HAVE_CHILD} -eq 0 ]; then
-      for N in $(seq 1 ${RCHILDS}); do
-        echo -n "${RBUS}-${N} "
-      done
-    fi
-  done
+  fi
   echo
 }
 
@@ -329,12 +332,15 @@ function nondtModel() {
   INTERNALPORTCFG=0
   HBA_NUMBER=$(($(lspci -d ::107 2>/dev/null | wc -l) + $(lspci -d ::104 2>/dev/null | wc -l) + $(lspci -d ::100 2>/dev/null | wc -l)))
 
-  for I in $(ls -d /sys/block/sd* 2>/dev/null); do
-    IDX=$(_atoi ${I/\/sys\/block\/sd/})
-    ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
-    [ -n "${ISUSB}" ] && USBPORTCFG=$((${USBPORTCFG} | $((1 << ${IDX}))))
-    [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
-  done
+  ARCUSBMOUNT=$(_get_conf_kv arcusbmount)
+  if [ "${ARCUSBMOUNT}" = "yes" ]; then
+    for I in $(ls -d /sys/block/sd* 2>/dev/null); do
+      IDX=$(_atoi ${I/\/sys\/block\/sd/})
+      ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
+      [ -n "${ISUSB}" ] && USBPORTCFG=$((${USBPORTCFG} | $((1 << ${IDX}))))
+      [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
+    done
+  fi
 
   if _check_post_k "rd" "maxdisks"; then
     MAXDISKS=$(($(_get_conf_kv maxdisks)))
