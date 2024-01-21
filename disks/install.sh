@@ -137,38 +137,35 @@ function checkSynoboot() {
 
 # USB ports
 function getUsbPorts() {
-  ARCUSBMOUNT=$(_get_conf_kv arcusbmount)
-  if [ "${ARCUSBMOUNT}" = "yes" ]; then
-    for I in $(ls -d /sys/bus/usb/devices/usb* 2>/dev/null); do
-      # ROOT
-      DCLASS=$(cat ${I}/bDeviceClass)
-      [ ! "${DCLASS}" = "09" ] && continue
-      SPEED=$(cat ${I}/speed)
-      [ ${SPEED} -lt 480 ] && continue
-      RBUS=$(cat ${I}/busnum)
-      RCHILDS=$(cat ${I}/maxchild)
-      HAVE_CHILD=0
-      for C in $(seq 1 ${RCHILDS}); do
-        SUB="${RBUS}-${C}"
-        if [ -d "${I}/${SUB}" ]; then
-          DCLASS=$(cat ${I}/${SUB}/bDeviceClass)
-          [ ! "${DCLASS}" = "09" ] && continue
-          SPEED=$(cat ${I}/${SUB}/speed)
-          [ ${SPEED} -lt 480 ] && continue
-          CHILDS=$(cat ${I}/${SUB}/maxchild)
-          HAVE_CHILD=1
-          for N in $(seq 1 ${CHILDS}); do
-            echo -n "${RBUS}-${C}.${N} "
-          done
-        fi
-      done
-      if [ ${HAVE_CHILD} -eq 0 ]; then
-        for N in $(seq 1 ${RCHILDS}); do
-          echo -n "${RBUS}-${N} "
+  for I in $(ls -d /sys/bus/usb/devices/usb* 2>/dev/null); do
+    # ROOT
+    DCLASS=$(cat ${I}/bDeviceClass)
+    [ ! "${DCLASS}" = "09" ] && continue
+    SPEED=$(cat ${I}/speed)
+    [ ${SPEED} -lt 480 ] && continue
+    RBUS=$(cat ${I}/busnum)
+    RCHILDS=$(cat ${I}/maxchild)
+    HAVE_CHILD=0
+    for C in $(seq 1 ${RCHILDS}); do
+      SUB="${RBUS}-${C}"
+      if [ -d "${I}/${SUB}" ]; then
+        DCLASS=$(cat ${I}/${SUB}/bDeviceClass)
+        [ ! "${DCLASS}" = "09" ] && continue
+        SPEED=$(cat ${I}/${SUB}/speed)
+        [ ${SPEED} -lt 480 ] && continue
+        CHILDS=$(cat ${I}/${SUB}/maxchild)
+        HAVE_CHILD=1
+        for N in $(seq 1 ${CHILDS}); do
+          echo -n "${RBUS}-${C}.${N} "
         done
       fi
     done
-  fi
+    if [ ${HAVE_CHILD} -eq 0 ]; then
+      for N in $(seq 1 ${RCHILDS}); do
+        echo -n "${RBUS}-${N} "
+      done
+    fi
+  done
   echo
 }
 
@@ -307,17 +304,20 @@ function dtModel() {
 
     # USB ports
     COUNT=1
-    for I in $(getUsbPorts); do
-      echo "    usb_slot@${COUNT} {" >>${DEST}
-      echo "      usb2 {" >>${DEST}
-      echo "        usb_port =\"${I}\";" >>${DEST}
-      echo "      };" >>${DEST}
-      echo "      usb3 {" >>${DEST}
-      echo "        usb_port =\"${I}\";" >>${DEST}
-      echo "      };" >>${DEST}
-      echo "    };" >>${DEST}
-      COUNT=$((${COUNT} + 1))
-    done
+    ARCUSBMOUNT=$(_get_conf_kv arcusbmount)
+    if [ "${ARCUSBMOUNT}" = "yes" ]; then
+      for I in $(getUsbPorts); do
+        echo "    usb_slot@${COUNT} {" >>${DEST}
+        echo "      usb2 {" >>${DEST}
+        echo "        usb_port =\"${I}\";" >>${DEST}
+        echo "      };" >>${DEST}
+        echo "      usb3 {" >>${DEST}
+        echo "        usb_port =\"${I}\";" >>${DEST}
+        echo "      };" >>${DEST}
+        echo "    };" >>${DEST}
+        COUNT=$((${COUNT} + 1))
+      done
+    fi
     echo "};" >>${DEST}
   fi
   dtc -I dts -O dtb ${DEST} >/etc/model.dtb
@@ -347,7 +347,7 @@ function nondtModel() {
     echo "get maxdisks=${MAXDISKS}"
   else
     [ ${HBA_NUMBER} -gt 0 ] && MAXDISKS=26
-    [ ${MAXDISKS} -lt 26 ] && MAXDISKS=26
+    [ ${MAXDISKS} -gt 26 ] && MAXDISKS=26
   fi
   if _check_post_k "rd" "usbportcfg"; then
     USBPORTCFG=$(($(_get_conf_kv usbportcfg)))
