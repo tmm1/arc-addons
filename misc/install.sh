@@ -61,10 +61,10 @@ if [ "${1}" = "late" ]; then
 
   # Open-VM-Tools-Fix
   if [ -d /tmpRoot/var/packages/open-vm-tools ]; then
-    ${SED_PATH} -i 's/package/root/g' /tmpRoot/var/packages/open-vm-tools/conf/privilege
+    sed -i 's/package/root/g' /tmpRoot/var/packages/open-vm-tools/conf/privilege
   fi
   if [ -d /var/packages/open-vm-tools ]; then
-    ${SED_PATH} -i 's/package/root/g' /var/packages/open-vm-tools/conf/privilege
+    sed -i 's/package/root/g' /var/packages/open-vm-tools/conf/privilege
   fi
 
   # Network
