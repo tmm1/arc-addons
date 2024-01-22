@@ -333,14 +333,14 @@ function nondtModel() {
   HBA_NUMBER=$(($(lspci -d ::107 2>/dev/null | wc -l) + $(lspci -d ::104 2>/dev/null | wc -l) + $(lspci -d ::100 2>/dev/null | wc -l)))
 
   ARCUSBMOUNT=$(_get_conf_kv arcusbmount)
-  if [ "${ARCUSBMOUNT}" = "yes" ]; then
     for I in $(ls -d /sys/block/sd* 2>/dev/null); do
       IDX=$(_atoi ${I/\/sys\/block\/sd/})
-      ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
-      [ -n "${ISUSB}" ] && USBPORTCFG=$((${USBPORTCFG} | $((1 << ${IDX}))))
+      if [ "${ARCUSBMOUNT}" = "yes" ]; then
+        ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
+        [ -n "${ISUSB}" ] && USBPORTCFG=$((${USBPORTCFG} | $((1 << ${IDX}))))
+      fi
       [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
     done
-  fi
 
   if _check_post_k "rd" "maxdisks"; then
     MAXDISKS=$(($(_get_conf_kv maxdisks)))
