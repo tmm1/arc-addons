@@ -228,6 +228,7 @@ function dtModel() {
           I=$((${I} + 1))
         done
       done
+      # 100 = SCSI, 104 = RAIDHBA, 107 = SAS
       for P in $(lspci -d ::107 2>/dev/null | cut -d' ' -f1) $(lspci -d ::104 2>/dev/null | cut -d' ' -f1) $(lspci -d ::100 2>/dev/null | cut -d' ' -f1); do
         J=1
         while true; do
@@ -304,20 +305,17 @@ function dtModel() {
 
     # USB ports
     COUNT=1
-    ARCUSBMOUNT=$(_get_conf_kv arcusbmount)
-    if [ "${ARCUSBMOUNT}" = "yes" ]; then
-      for I in $(getUsbPorts); do
-        echo "    usb_slot@${COUNT} {" >>${DEST}
-        echo "      usb2 {" >>${DEST}
-        echo "        usb_port =\"${I}\";" >>${DEST}
-        echo "      };" >>${DEST}
-        echo "      usb3 {" >>${DEST}
-        echo "        usb_port =\"${I}\";" >>${DEST}
-        echo "      };" >>${DEST}
-        echo "    };" >>${DEST}
-        COUNT=$((${COUNT} + 1))
-      done
-    fi
+    for I in $(getUsbPorts); do
+      echo "    usb_slot@${COUNT} {" >>${DEST}
+      echo "      usb2 {" >>${DEST}
+      echo "        usb_port =\"${I}\";" >>${DEST}
+      echo "      };" >>${DEST}
+      echo "      usb3 {" >>${DEST}
+      echo "        usb_port =\"${I}\";" >>${DEST}
+      echo "      };" >>${DEST}
+      echo "    };" >>${DEST}
+      COUNT=$((${COUNT} + 1))
+    done
     echo "};" >>${DEST}
   fi
   dtc -I dts -O dtb ${DEST} >/etc/model.dtb
@@ -330,17 +328,16 @@ function nondtModel() {
   USBPORTCFG=0
   ESATAPORTCFG=0
   INTERNALPORTCFG=0
+
+  # 100 = SCSI, 104 = RAIDHBA, 107 = SAS
   HBA_NUMBER=$(($(lspci -d ::107 2>/dev/null | wc -l) + $(lspci -d ::104 2>/dev/null | wc -l) + $(lspci -d ::100 2>/dev/null | wc -l)))
 
-  ARCUSBMOUNT=$(_get_conf_kv arcusbmount)
-    for I in $(ls -d /sys/block/sd* 2>/dev/null); do
-      IDX=$(_atoi ${I/\/sys\/block\/sd/})
-      if [ "${ARCUSBMOUNT}" = "yes" ]; then
-        ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
-        [ -n "${ISUSB}" ] && USBPORTCFG=$((${USBPORTCFG} | $((1 << ${IDX}))))
-      fi
-      [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
-    done
+  for I in $(ls -d /sys/block/sd* 2>/dev/null); do
+    IDX=$(_atoi ${I/\/sys\/block\/sd/})
+    ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
+    [ -n "${ISUSB}" ] && USBPORTCFG=$((${USBPORTCFG} | $((1 << ${IDX}))))
+    [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
+  done
 
   if _check_post_k "rd" "maxdisks"; then
     MAXDISKS=$(($(_get_conf_kv maxdisks)))
