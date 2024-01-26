@@ -165,7 +165,7 @@ jobs:
           tar caf ${{ github.workspace }}/source/eudev-${{ matrix.version }}.tgz -C ${{ github.workspace }}/source/output .
 
       - name: Upload to Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: addons
           path: |
@@ -190,7 +190,7 @@ jobs:
           sudo timedatectl set-timezone "Europe/Berlin"
 
       - name: download to artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: addons
           path: ./artifacts
