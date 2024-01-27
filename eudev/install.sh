@@ -38,20 +38,18 @@ elif [ "${1}" = "late" ]; then
 
   echo "eudev: copy Modules"
   isChange=0
-  export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
-  /tmpRoot/bin/cp -rnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-  cat /addons/modulelist 2>/dev/null | /tmpRoot/bin/sed '/^\s*$/d' | while IFS=' ' read -r O M; do
-    [ "${O:0:1}" = "#" ] && continue
-    [ -z "${M}" -o -z "$(ls /usr/lib/modules/${M} 2>/dev/null)" ] && continue
-    if [ "${O}" = "F" ] || [ "${O}" = "f" ]; then
-      /tmpRoot/bin/cp -vrf /usr/lib/modules/${M} /tmpRoot/usr/lib/modules/
-    else
-      /tmpRoot/bin/cp -vrn /usr/lib/modules/${M} /tmpRoot/usr/lib/modules/
-    fi
-    isChange=1
-  done
-  [ "${isChange}" = "1" ] && /usr/sbin/depmod -a -b /tmpRoot/
-
+  # The modules of SA6400 still have compatibility issues, temporarily canceling the copy.
+  if [ ! "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
+    echo "eudev: copy firmware and modules"
+    export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
+    /tmpRoot/bin/cp -vrf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
+    /tmpRoot/bin/cp -vrf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
+    /usr/sbin/depmod -a -b /tmpRoot/
+  else
+    echo "eudev: copy firmware"
+    export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
+    /tmpRoot/bin/cp -vrf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
+  fi
   echo "eudev: copy Rules"
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
