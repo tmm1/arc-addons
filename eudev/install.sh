@@ -37,7 +37,6 @@ elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
 
   echo "eudev: copy Modules"
-  isChange=0
   # The modules of SA6400 still have compatibility issues, temporarily canceling the copy.
   if [ ! "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
     echo "eudev: copy firmware and modules"
