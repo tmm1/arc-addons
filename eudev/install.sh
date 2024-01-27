@@ -1,6 +1,7 @@
 # DSM version
 MajorVersion=$(/bin/get_key_value /etc.defaults/VERSION majorversion)
 MinorVersion=$(/bin/get_key_value /etc.defaults/VERSION minorversion)
+ModuleUnique=$(/bin/get_key_value /etc.defaults/VERSION unique) # Avoid confusion with global variables
 
 echo "eudev: MajorVersion:${MajorVersion} MinorVersion:${MinorVersion}"
 
@@ -29,12 +30,17 @@ if [ "${1}" = "modules" ]; then
   /usr/bin/killall udevd
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
-
-  echo "eudev: copy Firmware"
-  export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
-  /tmpRoot/bin/cp -vnf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-  #/tmpRoot/bin/cp -vrf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-  /usr/sbin/depmod -a -b /tmpRoot/
+  echo "eudev: ${ModuleUnique}"
+  echo "eudev: copy Modules and Firmware"
+  if [ ! "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
+    export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
+    /tmpRoot/bin/cp -vrf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
+    /tmpRoot/bin/cp -vrf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
+    /usr/sbin/depmod -a -b /tmpRoot/
+  elif [ "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
+    export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
+    /tmpRoot/bin/cp -vrf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
+  fi
 
   echo "eudev: copy Rules"
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
