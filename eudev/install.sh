@@ -1,6 +1,7 @@
 # DSM version
 MajorVersion=$(/bin/get_key_value /etc.defaults/VERSION majorversion)
 MinorVersion=$(/bin/get_key_value /etc.defaults/VERSION minorversion)
+ModuleUnique=$(/bin/get_key_value /etc.defaults/VERSION unique) # Avoid confusion with global variables
 
 echo "eudev: MajorVersion:${MajorVersion} MinorVersion:${MinorVersion}"
 
@@ -27,28 +28,20 @@ if [ "${1}" = "modules" ]; then
   sleep 10
   # Remove from memory to not conflict with RAID mount scripts
   /usr/bin/killall udevd
-  # Remove kvm module
-  /usr/sbin/lsmod | grep -q ^kvm_intel && /usr/sbin/rmmod kvm_intel || true  # kvm-intel.ko
-  /usr/sbin/lsmod | grep -q ^kvm_amd && /usr/sbin/rmmod kvm_amd || true  # kvm-amd.ko
-  /usr/sbin/lsmod | grep -q ^kvm && /usr/sbin/rmmod kvm || true
-  /usr/sbin/lsmod | grep -q ^irqbypass && /usr/sbin/rmmod irqbypass || true
-
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
-
-  echo "eudev: copy Modules"
-  # The modules of SA6400 still have compatibility issues, temporarily canceling the copy.
+  echo "eudev: ${ModuleUnique}"
+  echo "eudev: copy Modules and Firmware"
   if [ ! "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
-    echo "eudev: copy firmware and modules"
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
     /tmpRoot/bin/cp -vrf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
     /tmpRoot/bin/cp -vrf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
     /usr/sbin/depmod -a -b /tmpRoot/
-  else
-    echo "eudev: copy firmware"
+  elif [ "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
     export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
     /tmpRoot/bin/cp -vrf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
   fi
+
   echo "eudev: copy Rules"
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
