@@ -17,8 +17,9 @@ if [ "${1}" = "late" ]; then
   echo "[Service]"                              >>${DEST}
   echo "Restart=always"                         >>${DEST}
   echo "RestartSec=30"                          >>${DEST}
-  echo "ExecStartPre=/usr/sbin/modprobe button" >>${DEST}
+  echo "ExecStartPre=-/sbin/modprobe button"    >>${DEST}
   echo "ExecStart=/usr/sbin/acpid -f"           >>${DEST}
+  echo "ExecStopPost=-/sbin/modprobe -r button" >>${DEST}
   echo                                          >>${DEST}
   echo "[X-Synology]"                           >>${DEST}
   echo "Author=Virtualization Team"             >>${DEST}
