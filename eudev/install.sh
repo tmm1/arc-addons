@@ -1,3 +1,5 @@
+#!/usr/bin/env ash
+
 # DSM version
 MajorVersion=$(/bin/get_key_value /etc.defaults/VERSION majorversion)
 MinorVersion=$(/bin/get_key_value /etc.defaults/VERSION minorversion)
@@ -16,7 +18,7 @@ if [ "${1}" = "modules" ]; then
   chmod 755 /usr/sbin/udevd /usr/bin/kmod /usr/bin/udevadm /usr/lib/udev/*
   /usr/sbin/depmod -a
   /usr/sbin/udevd -d || {
-    echo "FAIL"
+    echo "eudev: FAILED"
     exit 1
   }
   echo "eudev: Triggering add events to udev"
@@ -31,19 +33,21 @@ if [ "${1}" = "modules" ]; then
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
   echo "eudev: ${ModuleUnique}"
+
   echo "eudev: copy Modules and Firmware"
-  if [ ! "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
-    export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
-    /tmpRoot/bin/cp -vrf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-    /tmpRoot/bin/cp -vrf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-    /usr/sbin/depmod -a -b /tmpRoot/
-  elif [ "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
-    export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
-    /tmpRoot/bin/cp -vrf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-  fi
+  export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
+<<DISABLED
+  /tmpRoot/bin/cp -vrf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
+  /tmpRoot/bin/cp -vrf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
+  /usr/sbin/depmod -a -b /tmpRoot/
+DISABLED
 
   echo "eudev: copy Rules"
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
+  echo "eudev: copy HWDB"
+  mkdir -p /tmpRoot/etc/udev/hwdb.d
+  cp -vf /etc/udev/hwdb.d/* /tmpRoot/etc/udev/hwdb.d/
+
   DEST="/tmpRoot/lib/systemd/system/udevrules.service"
   echo "[Unit]"                                                                  >${DEST}
   echo "Description=Reload udev Rules"                                          >>${DEST}
