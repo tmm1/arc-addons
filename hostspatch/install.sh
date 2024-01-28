@@ -3,6 +3,7 @@
 if [ "${1}" = "late" ]; then
   echo "Creating service to exec Hostspatch"
   cp -vf /usr/sbin/hostspatch.sh /tmpRoot/usr/sbin/hostspatch.sh
+  
   DEST="/tmpRoot/lib/systemd/system/hostspatch.service"
   echo "[Unit]"                                                                >${DEST}
   echo "Description=Enable Hostspatch"                                        >>${DEST}

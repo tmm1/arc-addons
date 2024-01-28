@@ -4,6 +4,7 @@ if [ "${1}" = "late" ]; then
   echo "Installing daemon for storagepanel"
   cp -vf /usr/sbin/storagepanel.sh /tmpRoot/usr/sbin/storagepanel.sh
   shift
+  
   DEST="/tmpRoot/lib/systemd/system/storagepanel.service"
   echo "[Unit]"                                          >${DEST}
   echo "Description=Modify storage panel"               >>${DEST}

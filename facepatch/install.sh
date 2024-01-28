@@ -1,7 +1,7 @@
 #!/usr/bin/env ash
 
 if [ "${1}" = "late" ]; then
-  echo "Installing daemon for photosfacepatch"
+  echo "Installing daemon for facepatch"
   
   if [ -f "/tmpRoot/usr/lib/libsynosdk.so.7" ]; then
     if [ ! -f "/tmpRoot/usr/lib/libsynosdk.so.7.bak" ]; then
