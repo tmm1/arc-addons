@@ -13,7 +13,7 @@ if [ "${1}" = "late" ]; then
   echo "[Service]"                                      >>${DEST}
   echo "Type=oneshot"                                   >>${DEST}
   echo "RemainAfterExit=true"                           >>${DEST}
-  echo "ExecStart=/usr/sbin/storagepanel.sh $2 $3"      >>${DEST}
+  echo "ExecStart=/usr/sbin/storagepanel.sh $1 $2"      >>${DEST}
   echo                                                  >>${DEST}
   echo "[Install]"                                      >>${DEST}
   echo "WantedBy=multi-user.target"                     >>${DEST}
