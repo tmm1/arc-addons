@@ -34,7 +34,7 @@ elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
 
   echo "eudev: copy Modules and Firmware for ${ModuleUnique}"
-  export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
+  #export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
   #/tmpRoot/bin/cp -vrf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
   #if [ ! "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
   #  /tmpRoot/bin/cp -vrf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
