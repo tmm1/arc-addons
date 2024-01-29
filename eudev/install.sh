@@ -32,13 +32,14 @@ if [ "${1}" = "modules" ]; then
   /usr/bin/killall udevd
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
-  echo "eudev: ${ModuleUnique}"
 
-  echo "eudev: copy Modules and Firmware"
+  echo "eudev: copy Modules and Firmware for ${ModuleUnique}"
   export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
   /tmpRoot/bin/cp -vrf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
-  /tmpRoot/bin/cp -vrf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
-  /usr/sbin/depmod -a -b /tmpRoot/
+  if [ ! "${ModuleUnique}" = "synology_epyc7002_sa6400" ]; then
+    /tmpRoot/bin/cp -vrf /usr/lib/modules/* /tmpRoot/usr/lib/modules/
+    /usr/sbin/depmod -a -b /tmpRoot/
+  fi
 
   echo "eudev: copy Rules"
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
