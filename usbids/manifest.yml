@@ -1,7 +1,6 @@
 version: 1
-name: bootwait
-description: "Boot process waits until boot device (`/dev/synoboot`) is available before other processes start launching."
-system: false
+name: usbids
+description: "Update usb.map from latest Linux Source."
 beta: false
 all:
   install-script: "install.sh"

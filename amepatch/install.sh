@@ -3,8 +3,8 @@
 if [ "${1}" = "late" ]; then
   echo "Creating service to exec Enable AME Patch"
   cp -vf /usr/sbin/amepatch.sh /tmpRoot/usr/sbin/amepatch.sh
-  cp -v /usr/bin/awk /tmpRoot/usr/bin/awk
-  cp -v /usr/bin/xxd /tmpRoot/usr/bin/xxd
+  cp -vf /usr/bin/awk /tmpRoot/usr/bin/awk
+  cp -vf /usr/bin/xxd /tmpRoot/usr/bin/xxd
 
   DEST="/tmpRoot/lib/systemd/system/amepatch.service"
   echo "[Unit]"                                                                >${DEST}

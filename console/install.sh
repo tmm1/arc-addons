@@ -42,6 +42,7 @@ elif [ "${1}" = "late" ]; then
   cp -vfR /usr/share/keymaps /tmpRoot/usr/share/
   cp -fv /usr/bin/loadkeys /tmpRoot/usr/bin/
   cp -fv /usr/bin/setleds /tmpRoot/usr/bin/
+
   DEST="/tmpRoot/lib/systemd/system/keymap.service"
   echo "[Unit]"                                                                                      >${DEST}
   echo "Description=Configure keymap"                                                               >>${DEST}
