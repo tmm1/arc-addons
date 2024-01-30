@@ -34,7 +34,7 @@ elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
 
   echo "eudev: copy Modules and Firmware for ${ModuleUnique}"
-  export LD_LIBRARY_PATH=/tmpRoot/usr/bin:/tmpRoot/usr/lib
+  export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
   # Copy Firmware
   /usr/bin/cp -rf /usr/lib/firmware/* /tmpRoot/usr/lib/firmware/
   # List loaded Modules and copy them to System
