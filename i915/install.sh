@@ -2,6 +2,9 @@
 
 if [ "${1}" = "late" ]; then
   echo "Installing daemon for i915"
+  cp -vf /usr/bin/lspci /tmpRoot/usr/bin/lspci
+  cp -vf /usr/bin/sed /tmpRoot/usr/bin/sed
+  cp -vf /usr/bin/xxd /tmpRoot/usr/bin/xxd
 
   SED_PATH='/tmpRoot/usr/bin/sed'
   XXD_PATH='/tmpRoot/usr/bin/xxd'
