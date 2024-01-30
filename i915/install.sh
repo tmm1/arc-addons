@@ -12,7 +12,7 @@ if [ "${1}" = "late" ]; then
 
   # Intel GPU
   if [ -f /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf ] && [ -f /tmpRoot/usr/lib/modules/i915.ko ]; then
-    export LD_LIBRARY_PATH=/tmpRoot/usr/bin:/tmpRoot/usr/lib
+    export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
     GPU="$(${LSPCI_PATH} -n | grep 0300 | grep 8086 | cut -d " " -f 3 | ${SED_PATH} -e 's/://g')"
     echo "${GPU}" >/tmpRoot/root/i915.GPU
     if [ -n "${GPU}" ] && [ $(echo -n "${GPU}" | wc -c) -eq 8 ]; then
