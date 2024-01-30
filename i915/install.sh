@@ -2,13 +2,14 @@
 
 if [ "${1}" = "late" ]; then
   echo "Installing daemon for i915"
+
   SED_PATH='/tmpRoot/usr/bin/sed'
   XXD_PATH='/tmpRoot/usr/bin/xxd'
   LSPCI_PATH='/tmpRoot/usr/bin/lspci'
-  cp -vf "/usr/bin/sed" "/tmpRoot/usr/bin/sed"
+
   # Intel GPU
   if [ -f /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf ] && [ -f /tmpRoot/usr/lib/modules/i915.ko ]; then
-    export LD_LIBRARY_PATH=/tmpRoot/usr/bin:/tmpRoot/usr/lib:${LD_LIBRARY_PATH}
+    export LD_LIBRARY_PATH=/tmpRoot/usr/bin:/tmpRoot/usr/lib
     GPU="$(${LSPCI_PATH} -n | grep 0300 | grep 8086 | cut -d " " -f 3 | ${SED_PATH} -e 's/://g')"
     echo "${GPU}" >/tmpRoot/root/i915.GPU
     if [ -n "${GPU}" ] && [ $(echo -n "${GPU}" | wc -c) -eq 8 ]; then
