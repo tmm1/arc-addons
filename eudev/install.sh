@@ -33,6 +33,7 @@ if [ "${1}" = "modules" ]; then
 elif [ "${1}" = "late" ]; then
   echo "Starting eudev daemon - late"
 
+<<EOF
   echo "eudev: copy Modules and Firmware for ${ModuleUnique}"
   export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
   # Copy Firmware to System
@@ -41,6 +42,7 @@ elif [ "${1}" = "late" ]; then
   /usr/sbin/lsmod | /usr/bin/awk '{if (NR != 1) print $1}' | /usr/bin/xargs -I{} /usr/bin/cp -f /usr/lib/modules/{}.ko  /tmpRoot/usr/lib/modules 2>/dev/null
   # Load Modules from System
   /usr/sbin/depmod -a -b /tmpRoot/
+EOF
 
   echo "eudev: copy Rules"
   cp -rf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
