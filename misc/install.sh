@@ -26,17 +26,17 @@ if [ "${1}" = "late" ]; then
   LSPCI_PATH='/tmpRoot/usr/bin/lspci'
 
   mount -t sysfs sysfs /sys
+  modprobe processor
   modprobe acpi-cpufreq
   # CPU performance scaling
   if [ -f /tmpRoot/usr/lib/modules-load.d/70-cpufreq-kernel.conf ]; then
-    CPUFREQ=$(ls -ltr /sys/devices/system/cpu/cpufreq/* 2>/dev/null | wc -l)
-    if [ ${CPUFREQ} -eq 0 ]; then
+    cpufreq=$(ls -ltr /sys/devices/system/cpu/cpufreq/* 2>/dev/null | wc -l)
+    if [ $cpufreq -eq 0 ]; then
       echo "CPU does NOT support CPU Performance Scaling, disabling"
       ${SED_PATH} -i 's/^acpi-cpufreq/# acpi-cpufreq/g' /tmpRoot/usr/lib/modules-load.d/70-cpufreq-kernel.conf
     else
       echo "CPU supports CPU Performance Scaling, enabling"
       ${SED_PATH} -i 's/^# acpi-cpufreq/acpi-cpufreq/g' /tmpRoot/usr/lib/modules-load.d/70-cpufreq-kernel.conf
-      cp -vf /usr/lib/modules/cpufreq_* /tmpRoot/usr/lib/modules/
     fi
   fi
   umount /sys
