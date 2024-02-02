@@ -1,7 +1,7 @@
 version: 1
 name: synodbpatch
 description: "Add your Drives to Syno DriveDB"
-beta: false
+beta: true
 all:
   install-script: "install.sh"
   copy: "all"
