@@ -1,7 +1,10 @@
 #!/usr/bin/env ash
 
 if [ "${1}" = "late" ]; then
-  echo "Creating service to exec Enable AME Patch"
+  echo "Installing addon amepatch - ${1}"
+  mkdir -p "/tmpRoot/usr/arc/addons/"
+  cp -vf "${0}" "/tmpRoot/usr/arc/addons/"
+
   cp -vf /usr/bin/amepatch.sh /tmpRoot/usr/bin/amepatch.sh
   cp -vf /usr/bin/awk /tmpRoot/usr/bin/awk
   cp -vf /usr/bin/xxd /tmpRoot/usr/bin/xxd
@@ -20,4 +23,7 @@ if [ "${1}" = "late" ]; then
 
   mkdir -vp /tmpRoot/lib/systemd/system/multi-user.target.wants
   ln -vsf /usr/lib/systemd/system/amepatch.service /tmpRoot/lib/systemd/system/multi-user.target.wants/amepatch.service
+elif [ "${1}" = "uninstall" ]; then
+  echo "Installing addon amepatch - ${1}"
+  # To-Do
 fi
