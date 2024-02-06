@@ -102,7 +102,7 @@ function _kernelVersion() {
 
 # synoboot
 function checkSynoboot() {
-  [ -b /dev/synoboot -a -b /dev/synoboot1 -a -b /dev/synoboot2 ] && return
+  [ -b /dev/synoboot -a -b /dev/synoboot1 -a -b /dev/synoboot2 -a -b /dev/synoboot3 ] && return
   [ -z "${BOOTDISK}" ] && return
 
   if [ ! -b /dev/synoboot -a -d /sys/block/${BOOTDISK} ]; then
@@ -118,7 +118,8 @@ function checkSynoboot() {
     /bin/mknod /dev/synoboot2 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p2/dev | sed 's/:/ /') >/dev/null 2>&1
     rm -vf /dev/${BOOTDISK}p2
   fi
-  if [ ! -b /dev/${BOOTDISK} -a -b /dev/${BOOTDISK}p3 ]; then
+  if [ ! -b /dev/synoboot3 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}p3 ]; then
+    /bin/mknod /dev/synoboot3 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}p3/dev | sed 's/:/ /') >/dev/null 2>&1
     rm -vf /dev/${BOOTDISK}p3
   fi
   # sdN, vdN
@@ -130,7 +131,8 @@ function checkSynoboot() {
     /bin/mknod /dev/synoboot2 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}2/dev | sed 's/:/ /') >/dev/null 2>&1
     rm -vf /dev/${BOOTDISK}2
   fi
-  if [ ! -b /dev/${BOOTDISK} -a -b /dev/${BOOTDISK}3 ]; then
+  if [ ! -b /dev/synoboot3 -a -d /sys/block/${BOOTDISK}/${BOOTDISK}3 ]; then
+    /bin/mknod /dev/synoboot3 b $(cat /sys/block/${BOOTDISK}/${BOOTDISK}3/dev | sed 's/:/ /') >/dev/null 2>&1
     rm -vf /dev/${BOOTDISK}3
   fi
 }
@@ -171,8 +173,6 @@ function getUsbPorts() {
 
 #
 function dtModel() {
-  checkSynoboot
-
   DEST="/addons/model.dts"
   UNIQUE=$(_get_conf_kv unique)
   if [ ! -f "${DEST}" ]; then # Users can put their own dts.
@@ -328,10 +328,9 @@ function nondtModel() {
   USBPORTCFG=0
   ESATAPORTCFG=0
   INTERNALPORTCFG=0
-
   # 100 = SCSI, 104 = RAIDHBA, 107 = SAS
   HBA_NUMBER=$(($(lspci -d ::107 2>/dev/null | wc -l) + $(lspci -d ::104 2>/dev/null | wc -l) + $(lspci -d ::100 2>/dev/null | wc -l)))
-
+  
   for I in $(ls -d /sys/block/sd* 2>/dev/null); do
     IDX=$(_atoi ${I/\/sys\/block\/sd/})
     ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
@@ -343,8 +342,8 @@ function nondtModel() {
     MAXDISKS=$(($(_get_conf_kv maxdisks)))
     echo "get maxdisks=${MAXDISKS}"
   else
-    [ ${HBA_NUMBER} -gt 0 ] && MAXDISKS=26
-    [ ${MAXDISKS} -gt 26 ] && MAXDISKS=26
+    #[ ${HBA_NUMBER} -gt 0 ] && MAXDISKS=26
+    [ ${MAXDISKS} -ne 26 ] && MAXDISKS=26
   fi
   if _check_post_k "rd" "usbportcfg"; then
     USBPORTCFG=$(($(_get_conf_kv usbportcfg)))
@@ -386,8 +385,6 @@ function nondtModel() {
     echo "TODO: no-DT's sort!!!"
   fi
 
-  checkSynoboot
-
   # NVME
   COUNT=1
   echo "[pci]" >/etc/extensionPorts
@@ -415,19 +412,19 @@ function nondtModel() {
 
 #
 if [ "${1}" = "patches" ]; then
-  echo "Adjust disks related configs automatically - patches"
-
+  echo "Installing addon disks - ${1}"
   BOOTDISK=""
   BOOTDISK_PART3=$(blkid -L ARC3 | sed 's/\/dev\///')
   [ -n "${BOOTDISK_PART3}" ] && BOOTDISK=$(ls -d /sys/block/*/${BOOTDISK_PART3} 2>/dev/null | cut -d'/' -f4)
   [ -n "${BOOTDISK}" ] && BOOTDISK_PHYSDEVPATH="$(cat /sys/block/${BOOTDISK}/uevent | grep 'PHYSDEVPATH' | cut -d'=' -f2)" || BOOTDISK_PHYSDEVPATH=""
   echo "BOOTDISK=${BOOTDISK}"
   echo "BOOTDISK_PHYSDEVPATH=${BOOTDISK_PHYSDEVPATH}"
+  checkSynoboot
 
   [ "$(_get_conf_kv supportportmappingv2)" = "yes" ] && dtModel "${2}" || nondtModel "${2}"
 
 elif [ "${1}" = "late" ]; then
-  echo "Adjust disks related configs automatically - late"
+  echo "Installing addon disks - ${1}"
   if [ "$(_get_conf_kv supportportmappingv2)" = "yes" ]; then
     echo "Copying /etc.defaults/model.dtb"
     # copy file

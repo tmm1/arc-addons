@@ -1,10 +1,10 @@
 #!/usr/bin/env ash
 
 if [ "${1}" = "patches" ]; then
-  echo "Installing daemon for sortnetif"
+  echo "Installing addon sortnetif - ${1}"
 
   ETHLIST=""
-  ETHX=$(ls /sys/class/net/ | grep eth) # real network cards list
+  ETHX=$(ls /sys/class/net/ 2>/dev/null | grep eth) # real network cards list
   for ETH in ${ETHX}; do
     MAC="$(cat /sys/class/net/${ETH}/address | sed 's/://g' | tr '[:upper:]' '[:lower:]')"
     BUS=$(ethtool -i ${ETH} | grep bus-info | awk '{print $2}')
