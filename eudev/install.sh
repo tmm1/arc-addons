@@ -8,14 +8,10 @@ echo "eudev: MajorVersion:${MajorVersion} MinorVersion:${MinorVersion}"
 
 if [ "${1}" = "modules" ]; then
   echo "Installing addon eudev - ${1}"
-  if [ "${MajorVersion}" -lt "7" ]; then # < 7
-    tar zxf /addons/eudev-6.2.tgz -C /
+  if [ "${MinorVersion}" -lt "2" ]; then # < 2
+    tar zxf /addons/eudev-7.1.tgz -C /
   else
-    if [ "${MinorVersion}" -lt "2" ]; then # < 2
-      tar zxf /addons/eudev-7.1.tgz -C /
-    else
-      tar zxf /addons/eudev-7.2.tgz -C /
-    fi
+    tar zxf /addons/eudev-7.2.tgz -C /
   fi
   # mv -f /usr/lib/udev/rules.d/60-persistent-storage.rules /usr/lib/udev/rules.d/60-persistent-storage.rules.bak
   # mv -f /usr/lib/udev/rules.d/60-persistent-storage-tape.rules /usr/lib/udev/rules.d/60-persistent-storage-tape.rules.bak
