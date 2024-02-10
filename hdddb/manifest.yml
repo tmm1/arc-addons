@@ -1,6 +1,6 @@
 version: 1
 name: hdddb
-description: "Add your Drives to DSM DiskDB (Do not use with SynoDBPatch)"
+description: "Add your Disks to DSM compatibility DiskDB"
 beta: false
 all:
   install-script: "install.sh"
