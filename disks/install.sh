@@ -335,7 +335,9 @@ function nondtModel() {
     IDX=$(_atoi ${I/\/sys\/block\/sd/})
     ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
     [ -n "${ISUSB}" ] && USBPORTCFG=$((${USBPORTCFG} | $((1 << ${IDX}))))
-    [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
+    if [ "${3}" = "true" ]; then
+      [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
+    fi
   done
 
   if _check_post_k "rd" "maxdisks"; then
@@ -343,7 +345,7 @@ function nondtModel() {
     echo "get maxdisks=${MAXDISKS}"
   else
     #[ ${HBA_NUMBER} -gt 0 ] && MAXDISKS=26
-    [ ${MAXDISKS} -ne 26 ] && MAXDISKS=26
+    [ ${MAXDISKS} -gt 26 ] && MAXDISKS=26
   fi
   if _check_post_k "rd" "usbportcfg"; then
     USBPORTCFG=$(($(_get_conf_kv usbportcfg)))
@@ -363,9 +365,15 @@ function nondtModel() {
     INTERNALPORTCFG=$(($(_get_conf_kv internalportcfg)))
     echo "get internalportcfg=${INTERNALPORTCFG}"
   else
-    INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1)) ^ ${USBPORTCFG} ^ ${ESATAPORTCFG}))
-    _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
-    echo "set internalportcfg=${INTERNALPORTCFG}"
+    if [ "${3}" = "true" ]; then
+      INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1)) ^ ${USBPORTCFG} ^ ${ESATAPORTCFG}))
+      _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
+      echo "set internalportcfg=${INTERNALPORTCFG}"
+    else
+      INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1))))
+      _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
+      echo "set internalportcfg=${INTERNALPORTCFG}"
+    fi
   fi
 
   # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
