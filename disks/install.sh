@@ -370,7 +370,7 @@ function nondtModel() {
       _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
       echo "set internalportcfg=${INTERNALPORTCFG}"
     else
-      INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1))))
+      INTERNALPORTCFG=$((2 ** ${MAXDISKS} - 1))
       _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
       echo "set internalportcfg=${INTERNALPORTCFG}"
     fi
