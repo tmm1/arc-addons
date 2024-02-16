@@ -21,7 +21,12 @@ if [ "${1}" = "late" ]; then
       cp -vfp "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so" "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so.bak"
     fi
     echo "Patching libsynophoto-plugin-platform.so"
+    # support face and concept
     PatchELFSharp "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so" "_ZN9synophoto6plugin8platform20IsSupportedIENetworkEv" "B8 00 00 00 00 C3"
+    # force to support concept
+    PatchELFSharp "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so" "_ZN9synophoto6plugin8platform18IsSupportedConceptEv" "B8 01 00 00 00 C3"
+    # force no Gpu
+    PatchELFSharp "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so" "_ZN9synophoto6plugin8platform23IsSupportedIENetworkGpuEv" "B8 00 00 00 00 C3"
   else
     echo "libsynophoto-plugin-platform.so not found"
   fi
