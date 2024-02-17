@@ -72,4 +72,7 @@ if [ "${1}" = "late" ]; then
       cp -vf "/etc/sysconfig/network-scripts/ifcfg-eth${I}" "/tmpRoot/etc.defaults/sysconfig/network-scripts/ifcfg-eth${I}"
     fi
   done
+
+  # Cleanup DSM
+  [ -d /tmpRoot/.syno/patch ] && rm -vf /tmpRoot/.syno/patch
 fi
