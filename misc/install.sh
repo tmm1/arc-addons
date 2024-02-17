@@ -74,5 +74,5 @@ if [ "${1}" = "late" ]; then
   done
 
   # Cleanup DSM
-  [ -d /tmpRoot/.syno/patch ] && rm -vf /tmpRoot/.syno/patch
+  [ -d /tmpRoot/.syno/patch ] && rm -rf /tmpRoot/.syno/patch
 fi
