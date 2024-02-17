@@ -1,39 +1,52 @@
 #!/usr/bin/env ash
 
-if [ "${1}" = "patches" ]; then
-  echo "Installing addon i915 - ${1}"
-  if [ -n "${2}" ]; then
-    GPU="$(echo "${2}" | sed 's/://g' | tr '[:upper:]' '[:lower:]')"
-  else
-    GPU="$(lspci -n | grep 0300 | grep 8086 | cut -d " " -f 3 | sed 's/://g')"
-    if [ -z "${GPU}" ]; then
-      GPU="$(lspci -n | grep 0380 | grep 8086 | cut -d " " -f 3 | sed 's/://g')"
-    fi
-  fi
-  [ -z "${GPU}" -o $(echo -n "${GPU}" | wc -c) -ne 8 ] && echo "GPU is not detected" && exit 0
-  [ ! -f "/usr/lib/modules/i915.ko" ] && echo "i915.ko does not exist" && exit 0
-
-  if [ -n "${2}" ] || grep -iq ${GPU} /usr/bin/i915ids 2>/dev/null; then
-    isLoad=0
-    if lsmod | grep -q ^i915; then
-      isLoad=1
-      rmmod i915
-    fi
-    GPU_DEF="86800000923e0000"
-    GPU_BIN="${GPU:2:2}${GPU:0:2}0000${GPU:6:2}${GPU:4:2}0000"
-    echo "GPU:${GPU} GPU_BIN:${GPU_BIN}"
-    cp -vf "/usr/lib/modules/i915.ko" "/usr/lib/modules/i915.ko.bak"
-    sed -i "s/${GPU_DEF}/${GPU_BIN}/; s/308201f706092a86.*70656e6465647e0a//" "/usr/lib/modules/i915.ko"
-    [ "${isLoad}" = "1" ] && /usr/sbin/modprobe "/usr/lib/modules/i915.ko"
-  fi
-elif [ "${1}" = "late" ]; then
+if [ "${1}" = "late" ]; then
   echo "Installing addon i915 - ${1}"
   mkdir -p "/tmpRoot/usr/arc/addons/"
   cp -vf "${0}" "/tmpRoot/usr/arc/addons/"
-  
-  KO_FILE="/tmpRoot/usr/lib/modules/i915.ko"
-  [ ! -f "${KO_FILE}.bak" ] && cp -vf "${KO_FILE}" "${KO_FILE}.bak"
-  cp -vf "/usr/lib/modules/i915.ko" "${KO_FILE}"
+
+  # Intel GPU
+  if [ -f /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf ] && [ -f /tmpRoot/usr/lib/modules/i915.ko ]; then
+    export LD_LIBRARY_PATH=/tmpRoot/usr/bin:/tmpRoot/usr/lib:${LD_LIBRARY_PATH}
+    GPU="lspci -n | grep 0300 | grep 8086 | cut -d " " -f 3 | sed -e 's/://g')"
+    if [ -z "${GPU}" ]; then
+      GPU="lspci -n | grep 0380 | grep 8086 | cut -d " " -f 3 | sed -e 's/://g')"
+    fi
+    echo "${GPU}" >/tmpRoot/usr/arc/addons/i915.GPU
+    if [ -n "${GPU}" ] && [ $(echo -n "${GPU}" | wc -c) -eq 8 ]; then
+      if [ $(grep -i ${GPU} /usr/bin/i915ids | wc -l) -eq 0 ]; then
+        echo "Intel GPU is not detected (${GPU}), nothing to do"
+        #${SED_PATH} -i 's/^i915/# i915/g' /tmpRoot/usr/lib/modules-load.d/70-video-kernel.conf
+      else
+        GPU_DEF="86800000923e0000"
+        GPU_BIN="${GPU:2:2}${GPU:0:2}0000${GPU:6:2}${GPU:4:2}0000"
+        KO_SIZE="$(xxd -p /tmpRoot/usr/lib/modules/i915.ko | wc -c)"
+        xxd -c ${KO_SIZE} -p /tmpRoot/usr/lib/modules/i915.ko /tmpRoot/usr/arc/addons/i915.ko.hex
+        if [ $(grep -i "${GPU_BIN}" /tmpRoot/usr/arc/addons/i915.ko.hex | wc -l) -gt 0 ]; then
+          echo "Intel GPU is detected (${GPU}), already support"
+        else
+          echo "Intel GPU is detected (${GPU}), replace id"
+          if [ ! -f /tmpRoot/usr/lib/modules/i915.ko.bak ]; then
+            cp -f /tmpRoot/usr/lib/modules/i915.ko /tmpRoot/usr/lib/modules/i915.ko.bak
+          fi
+          sed -i "s/${GPU_DEF}/${GPU_BIN}/; s/308201f706092a86.*70656e6465647e0a//" /tmpRoot/usr/arc/addons/i915.ko.hex
+          if [ -n "$(cat /tmpRoot/usr/arc/addons/i915.ko.hex)" ]; then
+            xxd -r -p /tmpRoot/usr/arc/addons/i915.ko.hex >/tmpRoot/usr/lib/modules/i915.ko
+            rm -f /tmpRoot/usr/arc/addons/i915.ko.hex
+            if [ $(grep -i "${GPU_BIN}" /tmpRoot/usr/lib/modules/i915.ko | wc -l) -gt 0 ]; then
+              echo "Intel GPU is detected (${GPU}), successfully patched i915.ko"
+              rmmod i915
+              modprobe /tmpRoot/usr/lib/modules/i915.ko
+            else
+              echo "Intel GPU is detected (${GPU}), failed to patch i915.ko"
+            fi
+          else
+            echo "Intel GPU is detected (${GPU}), replace i915.ko error"
+          fi
+        fi
+      fi
+    fi
+  fi
 elif [ "${1}" = "uninstall" ]; then
   echo "Installing addon i915 - ${1}"
 

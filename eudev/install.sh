@@ -31,7 +31,7 @@ if [ "${1}" = "modules" ]; then
   sleep 10
   # Remove from memory to not conflict with RAID mount scripts
   /usr/bin/killall udevd
-  # Remove kvm module
+  # Remove KVM Module
   /usr/sbin/lsmod | grep -q ^kvm_intel && /usr/sbin/rmmod kvm_intel || true  # kvm-intel.ko
   /usr/sbin/lsmod | grep -q ^kvm_amd && /usr/sbin/rmmod kvm_amd || true  # kvm-amd.ko
   /usr/sbin/lsmod | grep -q ^kvm && /usr/sbin/rmmod kvm || true
@@ -59,11 +59,13 @@ elif [ "${1}" = "late" ]; then
   echo "isChange: ${isChange}"
   [ "${isChange}" = "true" ] && /usr/sbin/depmod -a -b /tmpRoot/
   
-  # Restore kvm module
-  /usr/sbin/insmod /usr/lib/modules/irqbypass.ko || true
-  /usr/sbin/insmod /usr/lib/modules/kvm.ko || true
-  /usr/sbin/insmod /usr/lib/modules/kvm-intel.ko || true  # kvm-intel.ko
-  /usr/sbin/insmod /usr/lib/modules/kvm-amd.ko || true  # kvm-amd.ko
+  # Restore KVM Module if CPU support it
+  if grep -q "^flags.*vmx.*" /proc/cpuinfo | grep -q "^flags.*svm.*" /proc/cpuinfo; then
+    /usr/sbin/insmod /usr/lib/modules/irqbypass.ko || true
+    /usr/sbin/insmod /usr/lib/modules/kvm.ko || true
+    /usr/sbin/insmod /usr/lib/modules/kvm-intel.ko || true  # kvm-intel.ko
+    /usr/sbin/insmod /usr/lib/modules/kvm-amd.ko || true  # kvm-amd.ko
+  fi
 
   echo "Copy rules"
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
