@@ -60,7 +60,7 @@ elif [ "${1}" = "late" ]; then
   [ "${isChange}" = "true" ] && /usr/sbin/depmod -a -b /tmpRoot/
   
   # Restore KVM Module if CPU support it
-  if grep -q "^flags.*vmx.*" /proc/cpuinfo | grep -q "^flags.*svm.*" /proc/cpuinfo; then
+  if [ "${2}" = "true" ]; then
     /usr/sbin/insmod /usr/lib/modules/irqbypass.ko || true
     /usr/sbin/insmod /usr/lib/modules/kvm.ko || true
     /usr/sbin/insmod /usr/lib/modules/kvm-intel.ko || true  # kvm-intel.ko
