@@ -199,7 +199,7 @@ jobs:
         run: |
           if [ $(ls artifacts/*.tgz 2> /dev/null | wc -l) -gt 0 ]; then
             echo "Copy eudev ..."
-            rm -rf eudev/all/addons/*
+            rm -f eudev/all/addons/eudev*.tgz
             mv -f artifacts/*.tgz eudev/all/addons/
 
             echo "Git push ..."
