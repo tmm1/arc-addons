@@ -7,11 +7,15 @@ if [ -d "/var/packages/CodecPack" ]; then
     . /etc.defaults/VERSION
 
     values=('669066909066906690' 'B801000000' '30')
+    hex_values=('1F28' '48F5' '4921' '4953' '4975' '9AC8')
     indices=(0 1 1 1 1 2)
-    cp_usr_path="/var/packages/CodecPack/target/usr"
+    cp_usr_path='/var/packages/CodecPack/target/usr'
     so="$cp_usr_path/lib/libsynoame-license.so"
+    so_backup="$cp_usr_path/lib/libsynoame-license.so.orig"
     lic="/usr/syno/etc/license/data/ame/offline_license.json"
+    lic_backup="/usr/syno/etc/license/data/ame/offline_license.json.orig"
     licsig="/usr/syno/etc/license/data/ame/offline_license.sig"
+    licsig_backup="/usr/syno/etc/license/data/ame/offline_license.sig.orig"
  
     hash_to_check="$(md5sum -b "$so" | awk '{print $1}')"
 
@@ -32,8 +36,8 @@ if [ -d "/var/packages/CodecPack" ]; then
     for ((i = 0; i < ${#hex_values[@]}; i++)); do
         offset=$(( 0x${hex_values[i]} + 0x8000 ))
         value=${values[indices[i]]}
-        printf '%s' "${value}" | xxd -r -p | dd of="${so}" bs=1 seek="${offset}" conv=notrunc
-        if [ $? -ne 0 ]; then
+        printf '%s' "$value" | xxd -r -p | dd of="$so" bs=1 seek="$offset" conv=notrunc 2>> "$logfile"
+        if [[ $? -ne 0 ]]; then
             echo -e "AME Patch: Error while writing to file!"
             exit 1
         fi
@@ -43,7 +47,7 @@ if [ -d "/var/packages/CodecPack" ]; then
     echo "${content}" >"${lic}"
 
 	if "${cp_usr_path}/bin/synoame-bin-check-license"; then
-        ${cp_usr_path}/bin/synoame-bin-auto-install-needed-codec
+        "$cp_usr_path/bin/synoame-bin-auto-install-needed-codec" 2>> "$logfile"
         echo -e "AME Patch: Successful!"
     else
         echo -e "AME Patch: Unsuccessful!"

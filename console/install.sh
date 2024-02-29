@@ -11,7 +11,7 @@ if [ "${1}" = "modules" ]; then
     done
   fi
   /usr/sbin/modprobe fbcon
-  echo "RR console - wait..." >/dev/tty1
+  echo "Arc Console - wait..." >/dev/tty1
   # Workaround for DVA1622
   if [ "${MODEL}" = "DVA1622" ]; then
     echo >/dev/tty2
