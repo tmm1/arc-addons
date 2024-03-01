@@ -76,11 +76,13 @@ elif [ "${1}" = "late" ]; then
   echo "isChange: ${isChange}"
   [ "${isChange}" = "true" ] && /usr/sbin/depmod -a -b /tmpRoot/
   
-  # Restore KVM Modules
-  /usr/sbin/insmod /usr/lib/modules/irqbypass.ko || true
-  /usr/sbin/insmod /usr/lib/modules/kvm.ko || true
-  /usr/sbin/insmod /usr/lib/modules/kvm-intel.ko || true  # kvm-intel.ko
-  /usr/sbin/insmod /usr/lib/modules/kvm-amd.ko || true  # kvm-amd.ko
+  # Restore KVM Module if CPU support it
+  if [ "${2}" = "true" ]; then
+    /usr/sbin/insmod /usr/lib/modules/irqbypass.ko || true
+    /usr/sbin/insmod /usr/lib/modules/kvm.ko || true
+    /usr/sbin/insmod /usr/lib/modules/kvm-intel.ko || true  # kvm-intel.ko
+    /usr/sbin/insmod /usr/lib/modules/kvm-amd.ko || true  # kvm-amd.ko
+  fi
 
   echo "Copy rules"
   cp -vf /usr/lib/udev/rules.d/* /tmpRoot/usr/lib/udev/rules.d/
