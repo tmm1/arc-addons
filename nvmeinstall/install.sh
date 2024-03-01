@@ -7,9 +7,12 @@ if [ "${1}" = "patches" ]; then
         [ ! -f /usr/syno/bin/scemd.syno ] && cp /usr/syno/bin/scemd /usr/syno/bin/scemd.syno
         xxd -p /usr/syno/bin/scemd | tr -d '\n' | sed 's/4584ed74b7488b4c24083b01/4584ed75b7488b4c24083b01/' | xxd -r -p - /usr/syno/bin/scemd
     fi
+    # Modify linuxrc.syno.impl
+    cp -vf "/linuxrc.syno.impl" "/linuxrc.syno.impl.syno"
+    sed -i "s/WithInternal=0/WithInternal=1/" "/linuxrc.syno.impl"
     # Only return NVMe disks as installable_disk_list and pretend to be SATA
-    mv /usr/syno/bin/synodiskport /usr/syno/bin/synodiskport.syno
-    mv /usr/syno/bin/synodiskport.nvme /usr/syno/bin/synodiskport
+    mv -f /usr/syno/bin/synodiskport /usr/syno/bin/synodiskport.syno
+    mv -f /usr/syno/bin/synodiskport.nvme /usr/syno/bin/synodiskport
 elif [ "${1}" = "late" ]; then
     # Disable NVMe resetting hibernation timer - https://www.reddit.com/r/synology/comments/129lzjg/fixing_hdd_hibernation_when_you_have_docker_on/
     # DSM 7.2.1
@@ -31,6 +34,12 @@ elif [ "${1}" = "late" ]; then
     if [ "${matches_sys_fail}" == "1" ]; then
         [ ! -f /tmpRoot/usr/lib/libhwcontrol.so.1.syno ] && cp /tmpRoot/usr/lib/libhwcontrol.so.1 /tmpRoot/usr/lib/libhwcontrol.so.1.syno
         xxd -p /tmpRoot/usr/lib/libhwcontrol.so.1 | tr -d '\n' | sed 's/73797374656d5f6372617368656400/6e6f726d616c006372617368656400/' | xxd -r -p - /tmpRoot/usr/lib/libhwcontrol.so.1
+    fi
+    # Update StorageManager to show NVMe disks
+    # DSM 7.2.1
+    matches_nvme_show=$(xxd -p /tmpRoot/usr/local/packages/@appstore/StorageManager/ui/storage_panel.js | grep -o 'if("disabled"===e.portType||e.isCacheTray())' | wc -l)
+    if [ "${matches_nvme_show}" == "1" ]; then
+        sed -i 's/if("disabled"===e.portType||e.isCacheTray())/if("disabled"===e.portType)/' /tmpRoot/usr/local/packages/@appstore/StorageManager/ui/storage_panel.js
     fi
     # Add service to sync sata disks at shutdown
     cp -vf /usr/sbin/md0sync.sh /tmpRoot/usr/sbin/md0sync.sh
