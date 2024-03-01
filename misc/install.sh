@@ -29,7 +29,7 @@ EOF
       /usr/bin/lsof -i :7681
     fi
     MSG=""
-    MSG="${MSG}RR Recovery Mode\n"
+    MSG="${MSG}Arc Recovery Mode\n"
     MSG="${MSG}To 'Force re-install DSM': please visit http://<ip>:5000/web_install.html\n" 
     MSG="${MSG}To 'Modify system files' : please mount /dev/md0\n" 
     /usr/sbin/ttyd /usr/bin/ash -c "echo -e \"${MSG}\"; ash" -l &
@@ -84,7 +84,7 @@ elif [ "${1}" = "late" ]; then
       echo "CPU Supports AES, aesni-intel should load"
     else
       echo "CPU does NOT support AES, aesni-intel will not load, disabling"
-      sed -i 's/support_aesni_intel="yes"/support_aesni_intel="no"/' /tmpRoot/etc.defaults/synoinfo.conf
+      sed -i 's/support_aesni_intel="yes"/support_aesni_intel="no"/g' /tmpRoot/etc.defaults/synoinfo.conf
       sed -i 's/^aesni-intel/# aesni-intel/g' /tmpRoot/usr/lib/modules-load.d/70-crypto-kernel.conf
     fi
   fi

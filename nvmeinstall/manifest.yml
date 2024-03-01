@@ -1,18 +1,18 @@
 version: 1
 name: nvmeinstall
-description: "Enable installation to (only) NVMe M.2 SSDs (limited testing, use at own risk!)"
+description: "Enable installation to (only) NVMe M.2 SSDs (No StoragePool on M.2 possible, use at own risk!)"
 beta: true
 all:
   install-script: "install.sh"
   copy: "all"
-apollolake: true
-broadwell: true
-broadwellnk: true
-broadwellnkv2: true
-broadwellntbap: true
-denverton: true
-geminilake: true
-purley: true
-v1000: true
-r1000: true
+apollolake: false
+broadwell: false
+broadwellnk: false
+broadwellnkv2: false
+broadwellntbap: false
+denverton: false
+geminilake: false
+purley: false
+v1000: false
+r1000: false
 epyc7002: true
