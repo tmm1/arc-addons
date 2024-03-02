@@ -6,9 +6,9 @@
 # See /LICENSE for more information.
 #
 
-HDDSORT="${2}:-false"
+HDDSORT="${2}"
 echo "disks: hddsort is ${HDDSORT}" 
-USBMOUNT="${3}:-false"
+USBMOUNT="${3}"
 echo "disks: usbmount is ${USBMOUNT}"
 
 # Get values in synoinfo.conf K=V file

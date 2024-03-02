@@ -6,9 +6,9 @@ MinorVersion=$(/bin/get_key_value /etc.defaults/VERSION minorversion)
 
 echo "eudev: MajorVersion:${MajorVersion} MinorVersion:${MinorVersion}"
 
-MODULESCOPY="${2}:-false"
+MODULESCOPY="${2}"
 echo "disks: modulescopy is ${MODULESCOPY}"
-KVMSUPPORT="${3}:-false"
+KVMSUPPORT="${3}"
 echo "disks: kvmsupport is ${KVMSUPPORT}"
 
 if [ "${1}" = "modules" ]; then
