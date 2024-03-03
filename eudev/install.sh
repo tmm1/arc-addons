@@ -6,11 +6,6 @@ MinorVersion=$(/bin/get_key_value /etc.defaults/VERSION minorversion)
 
 echo "eudev: MajorVersion:${MajorVersion} MinorVersion:${MinorVersion}"
 
-MODULESCOPY="${2:false}"
-echo "eudev: modulescopy is ${MODULESCOPY}"
-KVMSUPPORT="${3:false}"
-echo "eudev: kvmsupport is ${KVMSUPPORT}"
-
 if [ "${1}" = "modules" ]; then
   echo "Installing addon eudev - ${1}"
   if [ "${MinorVersion}" -lt "2" ]; then # < 2
@@ -41,7 +36,10 @@ if [ "${1}" = "modules" ]; then
 
 elif [ "${1}" = "late" ]; then
   echo "Installing addon eudev - ${1}"
-
+  MODULESCOPY="${2:false}"
+  echo "eudev: modulescopy is ${MODULESCOPY}"
+  KVMSUPPORT="${3:false}"
+  echo "eudev: kvmsupport is ${KVMSUPPORT}"
   echo "eudev: copy modules"
   isChange="false"
   export LD_LIBRARY_PATH=/tmpRoot/bin:/tmpRoot/lib
