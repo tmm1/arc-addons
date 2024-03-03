@@ -6,11 +6,6 @@
 # See /LICENSE for more information.
 #
 
-HDDSORT="${2:false}"
-echo "disks: hddsort is ${HDDSORT}" 
-USBMOUNT="${3:false}"
-echo "disks: usbmount is ${USBMOUNT}"
-
 # Get values in synoinfo.conf K=V file
 # 1 - key
 function _get_conf_kv() {
@@ -426,6 +421,10 @@ function nondtModel() {
 #
 if [ "${1}" = "patches" ]; then
   echo "Installing addon disks - ${1}"
+  HDDSORT="${2:false}"
+  echo "disks: hddsort is ${HDDSORT}" 
+  USBMOUNT="${3:false}"
+  echo "disks: usbmount is ${USBMOUNT}"
   BOOTDISK=""
   BOOTDISK_PART3=$(blkid -L ARC3 | sed 's/\/dev\///')
   [ -n "${BOOTDISK_PART3}" ] && BOOTDISK=$(ls -d /sys/block/*/${BOOTDISK_PART3} 2>/dev/null | cut -d'/' -f4)
@@ -438,6 +437,10 @@ if [ "${1}" = "patches" ]; then
 
 elif [ "${1}" = "late" ]; then
   echo "Installing addon disks - ${1}"
+  HDDSORT="${2:false}"
+  echo "disks: hddsort is ${HDDSORT}" 
+  USBMOUNT="${3:false}"
+  echo "disks: usbmount is ${USBMOUNT}"
   if [ "$(_get_conf_kv supportportmappingv2)" = "yes" ]; then
     echo "Copying /etc.defaults/model.dtb"
     # copy file
