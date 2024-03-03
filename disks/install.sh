@@ -6,9 +6,9 @@
 # See /LICENSE for more information.
 #
 
-HDDSORT="${2}"
+HDDSORT="${2:false}"
 echo "disks: hddsort is ${HDDSORT}" 
-USBMOUNT="${3}"
+USBMOUNT="${3:false}"
 echo "disks: usbmount is ${USBMOUNT}"
 
 # Get values in synoinfo.conf K=V file
@@ -308,20 +308,22 @@ function dtModel() {
       fi
     done
 
-    # USB ports
-    COUNT=1
-    for I in $(getUsbPorts); do
-      echo "    usb_slot@${COUNT} {" >>${DEST}
-      echo "      usb2 {" >>${DEST}
-      echo "        usb_port =\"${I}\";" >>${DEST}
-      echo "      };" >>${DEST}
-      echo "      usb3 {" >>${DEST}
-      echo "        usb_port =\"${I}\";" >>${DEST}
-      echo "      };" >>${DEST}
-      echo "    };" >>${DEST}
-      COUNT=$((${COUNT} + 1))
-    done
-    echo "};" >>${DEST}
+    if [ "${USBMOUNT}" = "true" ]; then
+      # USB ports
+      COUNT=1
+      for I in $(getUsbPorts); do
+        echo "    usb_slot@${COUNT} {" >>${DEST}
+        echo "      usb2 {" >>${DEST}
+        echo "        usb_port =\"${I}\";" >>${DEST}
+        echo "      };" >>${DEST}
+        echo "      usb3 {" >>${DEST}
+        echo "        usb_port =\"${I}\";" >>${DEST}
+        echo "      };" >>${DEST}
+        echo "    };" >>${DEST}
+        COUNT=$((${COUNT} + 1))
+      done
+      echo "};" >>${DEST}
+    fi
   fi
   dtc -I dts -O dtb ${DEST} >/etc/model.dtb
   cp -vf /etc/model.dtb /run/model.dtb
@@ -389,10 +391,6 @@ function nondtModel() {
 
   _set_conf_kv rd "maxdisks" "${MAXDISKS}"
   echo "disks: set maxdisks=${MAXDISKS}"
-
-  if [ "${1}" = "true" ]; then
-    echo "TODO: no-DT's sort!!!"
-  fi
 
   # NVME
   COUNT=1
