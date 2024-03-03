@@ -284,9 +284,11 @@ function dtModel() {
       done
     fi
     NUMPORTS=$((${I} - 1))
-    if [ $NUMPORTS -le 2 ]; then
-      # fix isSingleBay issue: if maxdisks is 1, there is no create button in the storage panel
-      NUMPORTS=4
+    # fix isSingleBay issue: if maxdisks is 1, there is no create button in the storage panel
+    if [ "$(_get_conf_kv platform_name)" = "denverton" ]; then
+      [ ${MAXDISKS} -le 2 ] && MAXDISKS=4
+    else 
+      [ ${MAXDISKS} -le 1 ] && MAXDISKS=2
     fi
     _set_conf_kv rd "maxdisks" "${NUMPORTS}"
     echo "dsisks: maxdisks=${NUMPORTS}"
@@ -302,7 +304,7 @@ function dtModel() {
       if [ -n "${PCIEPATH}" ]; then
         echo "    nvme_slot@${COUNT} {" >>${DEST}
         echo "        pcie_root = \"${PCIEPATH}\";" >>${DEST}
-        echo "        port_type = \"ssdcache\";" >>${DEST}
+        echo "        port_type = \"ssdcache\";" >>${DEST} # To-Do: check
         echo "    };" >>${DEST}
         COUNT=$((${COUNT} + 1))
       fi
@@ -350,7 +352,11 @@ function nondtModel() {
   if _check_post_k "rd" "maxdisks"; then
     MAXDISKS=$(($(_get_conf_kv maxdisks)))
     # fix isSingleBay issue: if maxdisks is 1, there is no create button in the storage panel
-    [ ${MAXDISKS} -le 2 ] && MAXDISKS=4
+    if [ "$(_get_conf_kv platform_name)" = "denverton" ]; then
+      [ ${MAXDISKS} -le 2 ] && MAXDISKS=4
+    else 
+      [ ${MAXDISKS} -le 1 ] && MAXDISKS=2
+    fi
     echo "disks: maxdisks=${MAXDISKS}"
   fi
 
