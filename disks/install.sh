@@ -196,7 +196,7 @@ function dtModel() {
       _set_conf_kv rd "support_m2_pool" "yes"
     fi
     # SATA ports
-    if [ "${HDDSORT}" = "true" ]; then
+    if [ "${1}" = "true" ]; then
       I=1
       for P in $(lspci -d ::106 2>/dev/null | cut -d' ' -f1); do
         HOSTNUM=$(ls -l /sys/class/scsi_host 2>/dev/null | grep ${P} | wc -l)
@@ -279,14 +279,15 @@ function dtModel() {
       done
     fi
     NUMPORTS=$((${I} - 1))
-    # fix isSingleBay issue: if maxdisks is 1, there is no create button in the storage panel
-    if [ "$(_get_conf_kv platform_name)" = "denverton" ]; then
-      [ ${MAXDISKS} -le 2 ] && MAXDISKS=4
-    else 
+    if _check_post_k "rd" "maxdisks"; then
+      MAXDISKS=$(($(_get_conf_kv maxdisks)))
+      # fix isSingleBay issue: if maxdisks is 1, there is no create button in the storage panel
       [ ${MAXDISKS} -le 1 ] && MAXDISKS=2
+      echo "get maxdisks=${MAXDISKS}"
+    else
+      _set_conf_kv rd "maxdisks" "${NUMPORTS}"
+      echo "maxdisks=${NUMPORTS}"
     fi
-    _set_conf_kv rd "maxdisks" "${NUMPORTS}"
-    echo "dsisks: maxdisks=${NUMPORTS}"
 
     # NVME ports
     COUNT=1
@@ -299,28 +300,26 @@ function dtModel() {
       if [ -n "${PCIEPATH}" ]; then
         echo "    nvme_slot@${COUNT} {" >>${DEST}
         echo "        pcie_root = \"${PCIEPATH}\";" >>${DEST}
-        echo "        port_type = \"ssdcache\";" >>${DEST} # To-Do: check
+        echo "        port_type = \"ssdcache\";" >>${DEST}
         echo "    };" >>${DEST}
         COUNT=$((${COUNT} + 1))
       fi
     done
 
-    if [ "${USBMOUNT}" = "true" ]; then
-      # USB ports
-      COUNT=1
-      for I in $(getUsbPorts); do
-        echo "    usb_slot@${COUNT} {" >>${DEST}
-        echo "      usb2 {" >>${DEST}
-        echo "        usb_port =\"${I}\";" >>${DEST}
-        echo "      };" >>${DEST}
-        echo "      usb3 {" >>${DEST}
-        echo "        usb_port =\"${I}\";" >>${DEST}
-        echo "      };" >>${DEST}
-        echo "    };" >>${DEST}
-        COUNT=$((${COUNT} + 1))
-      done
-      echo "};" >>${DEST}
-    fi
+    # USB ports
+    COUNT=1
+    for I in $(getUsbPorts); do
+      echo "    usb_slot@${COUNT} {" >>${DEST}
+      echo "      usb2 {" >>${DEST}
+      echo "        usb_port =\"${I}\";" >>${DEST}
+      echo "      };" >>${DEST}
+      echo "      usb3 {" >>${DEST}
+      echo "        usb_port =\"${I}\";" >>${DEST}
+      echo "      };" >>${DEST}
+      echo "    };" >>${DEST}
+      COUNT=$((${COUNT} + 1))
+    done
+    echo "};" >>${DEST}
   fi
   dtc -I dts -O dtb ${DEST} >/etc/model.dtb
   cp -vf /etc/model.dtb /run/model.dtb
@@ -339,20 +338,14 @@ function nondtModel() {
     IDX=$(_atoi ${I/\/sys\/block\/sd/})
     ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
     [ -n "${ISUSB}" ] && USBPORTCFG=$((${USBPORTCFG} | $((1 << ${IDX}))))
-    if [ "${USBMOUNT}" = "true" ] || [ -z "${ISUSB}" ]; then
-      [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
-    fi
+    [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
   done
 
   if _check_post_k "rd" "maxdisks"; then
     MAXDISKS=$(($(_get_conf_kv maxdisks)))
     # fix isSingleBay issue: if maxdisks is 1, there is no create button in the storage panel
-    if [ "$(_get_conf_kv platform_name)" = "denverton" ]; then
-      [ ${MAXDISKS} -le 2 ] && MAXDISKS=4
-    else 
-      [ ${MAXDISKS} -le 1 ] && MAXDISKS=2
-    fi
-    echo "disks: maxdisks=${MAXDISKS}"
+    [ ${MAXDISKS} -le 1 ] && MAXDISKS=2
+    echo "get maxdisks=${MAXDISKS}"
   fi
 
   # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
@@ -379,19 +372,17 @@ function nondtModel() {
     INTERNALPORTCFG=$(($(_get_conf_kv internalportcfg)))
     echo "get internalportcfg=${INTERNALPORTCFG}"
   else
-    if [ "${USBMOUNT}" = "true" ]; then
-      INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1)) ^ ${USBPORTCFG} ^ ${ESATAPORTCFG}))
-      _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
-      echo "set internalportcfg=${INTERNALPORTCFG}"
-    else
-      INTERNALPORTCFG=$((2 ** ${MAXDISKS} - 1))
-      _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
-      echo "set internalportcfg=${INTERNALPORTCFG}"
-    fi
+    INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1)) ^ ${USBPORTCFG} ^ ${ESATAPORTCFG}))
+    _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
+    echo "set internalportcfg=${INTERNALPORTCFG}"
   fi
 
   _set_conf_kv rd "maxdisks" "${MAXDISKS}"
-  echo "disks: set maxdisks=${MAXDISKS}"
+  echo "set maxdisks=${MAXDISKS}"
+
+  if [ "${1}" = "true" ]; then
+    echo "TODO: no-DT's sort!!!"
+  fi
 
   # NVME
   COUNT=1
@@ -423,8 +414,6 @@ if [ "${1}" = "patches" ]; then
   echo "Installing addon disks - ${1}"
   HDDSORT="${2:false}"
   echo "disks: hddsort is ${HDDSORT}" 
-  USBMOUNT="${3:false}"
-  echo "disks: usbmount is ${USBMOUNT}"
   BOOTDISK=""
   BOOTDISK_PART3=$(blkid -L ARC3 | sed 's/\/dev\///')
   [ -n "${BOOTDISK_PART3}" ] && BOOTDISK=$(ls -d /sys/block/*/${BOOTDISK_PART3} 2>/dev/null | cut -d'/' -f4)
@@ -433,14 +422,10 @@ if [ "${1}" = "patches" ]; then
   echo "BOOTDISK_PHYSDEVPATH=${BOOTDISK_PHYSDEVPATH}"
   checkSynoboot
 
-  [ "$(_get_conf_kv supportportmappingv2)" = "yes" ] && dtModel || nondtModel
+  [ "$(_get_conf_kv supportportmappingv2)" = "yes" ] && dtModel "${HDDSORT}" || nondtModel "${HDDSORT}"
 
 elif [ "${1}" = "late" ]; then
   echo "Installing addon disks - ${1}"
-  HDDSORT="${2:false}"
-  echo "disks: hddsort is ${HDDSORT}" 
-  USBMOUNT="${3:false}"
-  echo "disks: usbmount is ${USBMOUNT}"
   if [ "$(_get_conf_kv supportportmappingv2)" = "yes" ]; then
     echo "Copying /etc.defaults/model.dtb"
     # copy file
