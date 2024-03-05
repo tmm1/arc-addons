@@ -25,5 +25,5 @@ if [ "${1}" = "late" ]; then
   ln -vsf /usr/lib/systemd/system/amepatch.service /tmpRoot/lib/systemd/system/multi-user.target.wants/amepatch.service
 elif [ "${1}" = "uninstall" ]; then
   echo "Installing addon amepatch - ${1}"
-  # To-Do
+  #TODO: Add uninstall code here
 fi
