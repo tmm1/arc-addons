@@ -370,14 +370,14 @@ function nondtModel() {
     echo "get usbportcfg=${USBPORTCFG}"
   else
     _set_conf_kv rd "usbportcfg" "$(printf '0x%.2x' ${USBPORTCFG})"
-    echo "set usbportcfg=${USBPORTCFG}"
+    echo "set usbportcfg=$(printf '0x%.2x' ${USBPORTCFG})"
   fi
   if _check_post_k "rd" "esataportcfg"; then
     ESATAPORTCFG=$(($(_get_conf_kv esataportcfg)))
     echo "get esataportcfg=${ESATAPORTCFG}"
   else
     _set_conf_kv rd "esataportcfg" "$(printf "0x%.2x" ${ESATAPORTCFG})"
-    echo "set esataportcfg=${ESATAPORTCFG}"
+    echo "set esataportcfg=$(printf "0x%.2x" ${ESATAPORTCFG})"
   fi
   if _check_post_k "rd" "internalportcfg"; then
     INTERNALPORTCFG=$(($(_get_conf_kv internalportcfg)))
@@ -386,10 +386,10 @@ function nondtModel() {
     if [ "${USBMOUNT}" = "true" ]; then
       INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1)) ^ ${USBPORTCFG} ^ ${ESATAPORTCFG}))
     else
-      INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1)) ^ ${ESATAPORTCFG}))
+      INTERNALPORTCFG=$((2 ** ${MAXDISKS} - 1))
     fi
     _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
-    echo "set internalportcfg=${INTERNALPORTCFG}"
+    echo "set internalportcfg=$(printf "0x%.2x" ${INTERNALPORTCFG})"
   fi
 
   _set_conf_kv rd "maxdisks" "${MAXDISKS}"
