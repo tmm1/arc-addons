@@ -314,21 +314,19 @@ function dtModel() {
     done
 
     # USB ports
-    if [ "${USBMOUNT}" = "true" ]; then
-      COUNT=1
-      for I in $(getUsbPorts); do
-        echo "    usb_slot@${COUNT} {" >>${DEST}
-        echo "      usb2 {" >>${DEST}
-        echo "        usb_port =\"${I}\";" >>${DEST}
-        echo "      };" >>${DEST}
-        echo "      usb3 {" >>${DEST}
-        echo "        usb_port =\"${I}\";" >>${DEST}
-        echo "      };" >>${DEST}
-        echo "    };" >>${DEST}
-        COUNT=$((${COUNT} + 1))
-      done
-      echo "};" >>${DEST}
-    fi
+    COUNT=1
+    for I in $(getUsbPorts); do
+      echo "    usb_slot@${COUNT} {" >>${DEST}
+      echo "      usb2 {" >>${DEST}
+      echo "        usb_port =\"${I}\";" >>${DEST}
+      echo "      };" >>${DEST}
+      echo "      usb3 {" >>${DEST}
+      echo "        usb_port =\"${I}\";" >>${DEST}
+      echo "      };" >>${DEST}
+      echo "    };" >>${DEST}
+      COUNT=$((${COUNT} + 1))
+    done
+    echo "};" >>${DEST}
   fi
 
   dtc -I dts -O dtb ${DEST} >/etc/model.dtb
