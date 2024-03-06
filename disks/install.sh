@@ -279,7 +279,15 @@ function dtModel() {
         J=$((${J} + 1))
       done
     fi
-    MAXDISKS=$((${I} - 1))
+    NUMPORTS=$((${I} - 1))
+    # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
+    if ! _check_rootraidstatus && [ ${NUMPORTS} -gt 26 ]; then
+      NUMPORTS=26
+    elif ! _check_rootraidstatus && [ ${NUMPORTS} -le 4 ]; then
+      NUMPORTS=4
+    fi
+    _set_conf_kv rd "maxdisks" "${NUMPORTS}"
+    echo "maxdisks=${NUMPORTS}"
 
     # NVME ports
     COUNT=1
@@ -292,7 +300,7 @@ function dtModel() {
       if [ -n "${PCIEPATH}" ]; then
         echo "    nvme_slot@${COUNT} {" >>${DEST}
         echo "        pcie_root = \"${PCIEPATH}\";" >>${DEST}
-        echo "        port_type = \"ssdcache\";" >>${DEST} # TODO: check
+        echo "        port_type = \"ssdcache\";" >>${DEST}
         echo "    };" >>${DEST}
         COUNT=$((${COUNT} + 1))
       fi
@@ -313,22 +321,6 @@ function dtModel() {
     done
     echo "};" >>${DEST}
   fi
-
-  if _check_post_k "rd" "maxdisks"; then
-    MAXDISKS=$(_get_conf_kv maxdisks)
-    echo "get maxdisks=${MAXDISKS}"
-  fi
-
-  # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
-  if ! _check_rootraidstatus && [ ${MAXDISKS} -gt 26 ]; then
-    MAXDISKS=26
-  elif ! _check_rootraidstatus && [ ${MAXDISKS} -le 4 ]; then
-    MAXDISKS=4
-  fi
-
-  _set_conf_kv rd "maxdisks" "${MAXDISKS}"
-  echo "disks: maxdisks=${MAXDISKS}"
-
   dtc -I dts -O dtb ${DEST} >/etc/model.dtb
   cp -vf /etc/model.dtb /run/model.dtb
   /usr/syno/bin/syno_slot_mapping
@@ -339,6 +331,8 @@ function nondtModel() {
   USBPORTCFG=0
   ESATAPORTCFG=0
   INTERNALPORTCFG=0
+  # 100 = SCSI, 104 = RAID, 107 = HBA
+  HBA_NUMBER=$(($(lspci -d ::107 2>/dev/null | wc -l) + $(lspci -d ::104 2>/dev/null | wc -l) + $(lspci -d ::100 2>/dev/null | wc -l)))
 
   for I in $(ls -d /sys/block/sd* 2>/dev/null); do
     IDX=$(_atoi ${I/\/sys\/block\/sd/})
@@ -350,7 +344,7 @@ function nondtModel() {
   done
 
   if _check_post_k "rd" "maxdisks"; then
-    MAXDISKS=$(_get_conf_kv maxdisks)
+    MAXDISKS=$(($(_get_conf_kv maxdisks)))
     echo "get maxdisks=${MAXDISKS}"
   fi
 
@@ -366,14 +360,14 @@ function nondtModel() {
     echo "get usbportcfg=${USBPORTCFG}"
   else
     _set_conf_kv rd "usbportcfg" "$(printf '0x%.2x' ${USBPORTCFG})"
-    echo "set usbportcfg=$(printf '0x%.2x' ${USBPORTCFG})"
+    echo "set usbportcfg=${USBPORTCFG}"
   fi
   if _check_post_k "rd" "esataportcfg"; then
     ESATAPORTCFG=$(($(_get_conf_kv esataportcfg)))
     echo "get esataportcfg=${ESATAPORTCFG}"
   else
     _set_conf_kv rd "esataportcfg" "$(printf "0x%.2x" ${ESATAPORTCFG})"
-    echo "set esataportcfg=$(printf "0x%.2x" ${ESATAPORTCFG})"
+    echo "set esataportcfg=${ESATAPORTCFG}"
   fi
   if _check_post_k "rd" "internalportcfg"; then
     INTERNALPORTCFG=$(($(_get_conf_kv internalportcfg)))
@@ -384,8 +378,6 @@ function nondtModel() {
     else
       INTERNALPORTCFG=$((2 ** ${MAXDISKS} - 1))
     fi
-    _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
-    echo "set internalportcfg=$(printf "0x%.2x" ${INTERNALPORTCFG})"
   fi
 
   _set_conf_kv rd "maxdisks" "${MAXDISKS}"
@@ -426,7 +418,7 @@ if [ "${1}" = "patches" ]; then
   HDDSORT="${2:false}"
   echo "disks: hddsort is ${HDDSORT}" 
   USBMOUNT="${3:false}"
-  echo "disks: usbmount is ${USBMOUNT}" 
+  echo "disks: usbmount is ${USBMOUNT}"
   BOOTDISK=""
   BOOTDISK_PART3=$(blkid -L ARC3 | sed 's/\/dev\///')
   [ -n "${BOOTDISK_PART3}" ] && BOOTDISK=$(ls -d /sys/block/*/${BOOTDISK_PART3} 2>/dev/null | cut -d'/' -f4)
