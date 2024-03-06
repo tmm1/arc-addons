@@ -278,23 +278,7 @@ function dtModel() {
         J=$((${J} + 1))
       done
     fi
-    NUMPORTS=$((${I} - 1))
-    if _check_post_k "rd" "maxdisks"; then
-      MAXDISKS=$(($(_get_conf_kv maxdisks)))
-      echo "get maxdisks=${MAXDISKS}"
-    else
-      _set_conf_kv rd "maxdisks" "${NUMPORTS}"
-      echo "maxdisks=${NUMPORTS}"
-    fi
-
-    # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
-    if ! _check_rootraidstatus && [ ${MAXDISKS} -gt 26 ]; then
-      MAXDISKS=26
-      echo "disks: maxdisks=26 [${MAXDISKS}]"
-    elif ! _check_rootraidstatus && [ ${MAXDISKS} -le 1 ]; then
-      MAXDISKS=2
-      echo "disks: maxdisks=2 [${MAXDISKS}]"
-    fi
+    MAXDISKS=$((${I} - 1))
 
     # NVME ports
     COUNT=1
@@ -329,6 +313,21 @@ function dtModel() {
     echo "};" >>${DEST}
   fi
 
+  if _check_post_k "rd" "maxdisks" && [ "${USBMOUNT}" = "false" ]; then
+    MAXDISKS=$(($(_get_conf_kv maxdisks)))
+    echo "get maxdisks=${MAXDISKS}"
+  fi
+
+  # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
+  if ! _check_rootraidstatus && [ ${MAXDISKS} -gt 26 ]; then
+    MAXDISKS=26
+  elif ! _check_rootraidstatus && [ ${MAXDISKS} -le 4 ]; then
+    MAXDISKS=4
+  fi
+
+  _set_conf_kv rd "maxdisks" "${MAXDISKS}"
+  echo "disks: maxdisks=${NUMPORTS}"
+
   dtc -I dts -O dtb ${DEST} >/etc/model.dtb
   cp -vf /etc/model.dtb /run/model.dtb
   /usr/syno/bin/syno_slot_mapping
@@ -349,7 +348,7 @@ function nondtModel() {
     fi
   done
 
-  if _check_post_k "rd" "maxdisks"; then
+  if _check_post_k "rd" "maxdisks" && [ "${USBMOUNT}" = "false" ]; then
     MAXDISKS=$(($(_get_conf_kv maxdisks)))
     echo "get maxdisks=${MAXDISKS}"
   fi
@@ -357,10 +356,8 @@ function nondtModel() {
   # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
   if ! _check_rootraidstatus && [ ${MAXDISKS} -gt 26 ]; then
     MAXDISKS=26
-    echo "disks: maxdisks=26 [${MAXDISKS}]"
-  elif ! _check_rootraidstatus && [ ${MAXDISKS} -le 1 ]; then
-    MAXDISKS=2
-    echo "disks: maxdisks=2 [${MAXDISKS}]"
+  elif ! _check_rootraidstatus && [ ${MAXDISKS} -le 4 ]; then
+    MAXDISKS=4
   fi
 
   if _check_post_k "rd" "usbportcfg"; then
