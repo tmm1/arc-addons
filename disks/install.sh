@@ -153,6 +153,7 @@ function getUsbPorts() {
       if [ -d "${I}/${SUB}" ]; then
         DCLASS=$(cat ${I}/${SUB}/bDeviceClass)
         [ ! "${DCLASS}" = "09" ] && continue
+        [[ "${DCLASS}" = "08" && "${USBMOUNT}" = "false" ]] && continue
         SPEED=$(cat ${I}/${SUB}/speed)
         [ ${SPEED} -lt 480 ] && continue
         CHILDS=$(cat ${I}/${SUB}/maxchild)
@@ -228,7 +229,7 @@ function dtModel() {
           I=$((${I} + 1))
         done
       done
-      # 100 = SCSI, 104 = RAIDHBA, 107 = SAS
+      # 100 = SCSI, 104 = RAID, 107 = HBA
       for P in $(lspci -d ::107 2>/dev/null | cut -d' ' -f1) $(lspci -d ::104 2>/dev/null | cut -d' ' -f1) $(lspci -d ::100 2>/dev/null | cut -d' ' -f1); do
         J=1
         while true; do
@@ -313,8 +314,8 @@ function dtModel() {
     echo "};" >>${DEST}
   fi
 
-  if _check_post_k "rd" "maxdisks" && [ "${USBMOUNT}" = "false" ]; then
-    MAXDISKS=$(($(_get_conf_kv maxdisks)))
+  if _check_post_k "rd" "maxdisks"; then
+    MAXDISKS=$(_get_conf_kv maxdisks)
     echo "get maxdisks=${MAXDISKS}"
   fi
 
@@ -348,8 +349,8 @@ function nondtModel() {
     fi
   done
 
-  if _check_post_k "rd" "maxdisks" && [ "${USBMOUNT}" = "false" ]; then
-    MAXDISKS=$(($(_get_conf_kv maxdisks)))
+  if _check_post_k "rd" "maxdisks"; then
+    MAXDISKS=$(_get_conf_kv maxdisks)
     echo "get maxdisks=${MAXDISKS}"
   fi
 
