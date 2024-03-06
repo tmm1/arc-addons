@@ -327,7 +327,7 @@ function dtModel() {
   fi
 
   _set_conf_kv rd "maxdisks" "${MAXDISKS}"
-  echo "disks: maxdisks=${NUMPORTS}"
+  echo "disks: maxdisks=${MAXDISKS}"
 
   dtc -I dts -O dtb ${DEST} >/etc/model.dtb
   cp -vf /etc/model.dtb /run/model.dtb
