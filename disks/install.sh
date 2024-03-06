@@ -153,6 +153,7 @@ function getUsbPorts() {
       if [ -d "${I}/${SUB}" ]; then
         DCLASS=$(cat ${I}/${SUB}/bDeviceClass)
         [ ! "${DCLASS}" = "09" ] && continue
+        [[ "${DCLASS}" = "08" && "${USBMOUNT}" = "false" ]] && continue
         SPEED=$(cat ${I}/${SUB}/speed)
         [ ${SPEED} -lt 480 ] && continue
         CHILDS=$(cat ${I}/${SUB}/maxchild)
@@ -228,7 +229,7 @@ function dtModel() {
           I=$((${I} + 1))
         done
       done
-      # 100 = SCSI, 104 = RAIDHBA, 107 = SAS
+      # 100 = SCSI, 104 = RAID, 107 = HBA
       for P in $(lspci -d ::107 2>/dev/null | cut -d' ' -f1) $(lspci -d ::104 2>/dev/null | cut -d' ' -f1) $(lspci -d ::100 2>/dev/null | cut -d' ' -f1); do
         J=1
         while true; do
@@ -278,23 +279,7 @@ function dtModel() {
         J=$((${J} + 1))
       done
     fi
-    NUMPORTS=$((${I} - 1))
-    if _check_post_k "rd" "maxdisks"; then
-      MAXDISKS=$(($(_get_conf_kv maxdisks)))
-      echo "get maxdisks=${MAXDISKS}"
-    else
-      _set_conf_kv rd "maxdisks" "${NUMPORTS}"
-      echo "maxdisks=${NUMPORTS}"
-    fi
-
-    # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
-    if ! _check_rootraidstatus && [ ${MAXDISKS} -gt 26 ]; then
-      MAXDISKS=26
-      echo "disks: maxdisks=26 [${MAXDISKS}]"
-    elif ! _check_rootraidstatus && [ ${MAXDISKS} -le 1 ]; then
-      MAXDISKS=2
-      echo "disks: maxdisks=2 [${MAXDISKS}]"
-    fi
+    MAXDISKS=$((${I} - 1))
 
     # NVME ports
     COUNT=1
@@ -329,6 +314,21 @@ function dtModel() {
     echo "};" >>${DEST}
   fi
 
+  if _check_post_k "rd" "maxdisks"; then
+    MAXDISKS=$(_get_conf_kv maxdisks)
+    echo "get maxdisks=${MAXDISKS}"
+  fi
+
+  # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
+  if ! _check_rootraidstatus && [ ${MAXDISKS} -gt 26 ]; then
+    MAXDISKS=26
+  elif ! _check_rootraidstatus && [ ${MAXDISKS} -le 4 ]; then
+    MAXDISKS=4
+  fi
+
+  _set_conf_kv rd "maxdisks" "${MAXDISKS}"
+  echo "disks: maxdisks=${NUMPORTS}"
+
   dtc -I dts -O dtb ${DEST} >/etc/model.dtb
   cp -vf /etc/model.dtb /run/model.dtb
   /usr/syno/bin/syno_slot_mapping
@@ -350,17 +350,15 @@ function nondtModel() {
   done
 
   if _check_post_k "rd" "maxdisks"; then
-    MAXDISKS=$(($(_get_conf_kv maxdisks)))
+    MAXDISKS=$(_get_conf_kv maxdisks)
     echo "get maxdisks=${MAXDISKS}"
   fi
 
   # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
   if ! _check_rootraidstatus && [ ${MAXDISKS} -gt 26 ]; then
     MAXDISKS=26
-    echo "disks: maxdisks=26 [${MAXDISKS}]"
-  elif ! _check_rootraidstatus && [ ${MAXDISKS} -le 1 ]; then
-    MAXDISKS=2
-    echo "disks: maxdisks=2 [${MAXDISKS}]"
+  elif ! _check_rootraidstatus && [ ${MAXDISKS} -le 4 ]; then
+    MAXDISKS=4
   fi
 
   if _check_post_k "rd" "usbportcfg"; then
