@@ -228,7 +228,7 @@ function dtModel() {
           I=$((${I} + 1))
         done
       done
-      # 100 = SCSI, 104 = RAIDHBA, 107 = SAS
+      # 100 = SCSI, 104 = RAID, 107 = HBA
       for P in $(lspci -d ::107 2>/dev/null | cut -d' ' -f1) $(lspci -d ::104 2>/dev/null | cut -d' ' -f1) $(lspci -d ::100 2>/dev/null | cut -d' ' -f1); do
         J=1
         while true; do
@@ -328,33 +328,23 @@ function nondtModel() {
   USBPORTCFG=0
   ESATAPORTCFG=0
   INTERNALPORTCFG=0
-  # 100 = SCSI, 104 = RAIDHBA, 107 = SAS
+  # 100 = SCSI, 104 = RAID, 107 = HBA
   HBA_NUMBER=$(($(lspci -d ::107 2>/dev/null | wc -l) + $(lspci -d ::104 2>/dev/null | wc -l) + $(lspci -d ::100 2>/dev/null | wc -l)))
-
+  
   for I in $(ls -d /sys/block/sd* 2>/dev/null); do
     IDX=$(_atoi ${I/\/sys\/block\/sd/})
     ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
     [ -n "${ISUSB}" ] && USBPORTCFG=$((${USBPORTCFG} | $((1 << ${IDX}))))
-    if [ "${3}" = "true" ] || [ -z "${ISUSB}" ]; then
-      [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
-    fi
+    [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
   done
 
   if _check_post_k "rd" "maxdisks"; then
     MAXDISKS=$(($(_get_conf_kv maxdisks)))
-    # fix isSingleBay issue: if maxdisks is 1, there is no create button in the storage panel
-    [ ${MAXDISKS} -le 2 ] && MAXDISKS=4
     echo "get maxdisks=${MAXDISKS}"
   else
-    [ ${MAXDISKS} -lt 26 ] && MAXDISKS=26
+    #[ ${HBA_NUMBER} -gt 0 ] && MAXDISKS=26
+    [ ${MAXDISKS} -ne 26 ] && MAXDISKS=26
   fi
-
-  # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
-  if ! _check_rootraidstatus && [ ${MAXDISKS} -gt 26 ]; then
-    MAXDISKS=26
-    echo "set maxdisks=26 [${MAXDISKS}]"
-  fi
-
   if _check_post_k "rd" "usbportcfg"; then
     USBPORTCFG=$(($(_get_conf_kv usbportcfg)))
     echo "get usbportcfg=${USBPORTCFG}"
@@ -373,19 +363,23 @@ function nondtModel() {
     INTERNALPORTCFG=$(($(_get_conf_kv internalportcfg)))
     echo "get internalportcfg=${INTERNALPORTCFG}"
   else
-    if [ "${3}" = "true" ]; then
-      INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1)) ^ ${USBPORTCFG} ^ ${ESATAPORTCFG}))
-      _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
-      echo "set internalportcfg=${INTERNALPORTCFG}"
-    else
-      INTERNALPORTCFG=$((2 ** ${MAXDISKS} - 1))
-      _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
-      echo "set internalportcfg=${INTERNALPORTCFG}"
-    fi
+    INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1)) ^ ${USBPORTCFG} ^ ${ESATAPORTCFG}))
+    _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
+    echo "set internalportcfg=${INTERNALPORTCFG}"
   fi
 
-  _set_conf_kv rd "maxdisks" "${MAXDISKS}"
-  echo "set maxdisks=${MAXDISKS}"
+  # Raidtool will read maxdisks, but when maxdisks is greater than 27, formatting error will occur 8%.
+  if ! _check_rootraidstatus && [ ${MAXDISKS} -gt 26 ]; then
+    _set_conf_kv rd "maxdisks" "26"
+    echo "set maxdisks=26 [${MAXDISKS}]"
+  # fix isSingleBay issue: if maxdisks is 1, there is no create button in the storage panel
+  elif ! _check_rootraidstatus && [ ${MAXDISKS} -le 2 ]; then
+    _set_conf_kv rd "maxdisks" "4"
+    echo "set maxdisks=4 [${MAXDISKS}]"
+  else
+    _set_conf_kv rd "maxdisks" "${MAXDISKS}"
+    echo "set maxdisks=${MAXDISKS}"
+  fi
 
   if [ "${1}" = "true" ]; then
     echo "TODO: no-DT's sort!!!"

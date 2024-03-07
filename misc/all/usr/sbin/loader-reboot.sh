@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ash
 
 function use() {
   echo "Use: ${0} junior|config"

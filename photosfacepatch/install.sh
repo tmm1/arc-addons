@@ -5,40 +5,25 @@ if [ "${1}" = "late" ]; then
   mkdir -p "/tmpRoot/usr/arc/addons/"
   cp -vf "${0}" "/tmpRoot/usr/arc/addons/"
   
-  if [ -f "/tmpRoot/usr/lib/libsynosdk.so.7" ]; then
-    if [ ! -f "/tmpRoot/usr/lib/libsynosdk.so.7.bak" ]; then
-      echo "Backup libsynosdk.so.7"
-      cp -vfp "/tmpRoot/usr/lib/libsynosdk.so.7" "/tmpRoot/usr/lib/libsynosdk.so.7.bak"
-    fi
-    echo "Patching libsynosdk.so.7"
-    PatchELFSharp "/tmpRoot/usr/lib/libsynosdk.so.7" "SYNOFSIsRemoteFS" "B8 00 00 00 00 C3"
-  else
-    echo "libsynosdk.so.7 not found"
-  fi
-  if [ -f "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so" ]; then
-    if [ ! -f "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so.bak" ]; then
-      echo "Backup libsynophoto-plugin-platform.so"
-      cp -vfp "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so" "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so.bak"
-    fi
-    echo "Patching libsynophoto-plugin-platform.so"
-    # support face and concept
-    PatchELFSharp "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so" "_ZN9synophoto6plugin8platform20IsSupportedIENetworkEv" "B8 00 00 00 00 C3"
-    # force to support concept
-    PatchELFSharp "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so" "_ZN9synophoto6plugin8platform18IsSupportedConceptEv" "B8 01 00 00 00 C3"
-    # force no Gpu
-    PatchELFSharp "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so" "_ZN9synophoto6plugin8platform23IsSupportedIENetworkGpuEv" "B8 00 00 00 00 C3"
-  else
-    echo "libsynophoto-plugin-platform.so not found"
-  fi
+  echo "Creating service to exec photosfacepatch"
+  cp -vf /usr/bin/photosfacepatch.sh /tmpRoot/usr/bin/photosfacepatch.sh
+  cp -vf /usr/bin/PatchELFSharp /tmpRoot/usr/bin/PatchELFSharp
+  
+  DEST="/tmpRoot/usr/lib/systemd/system/photosfacepatch.service"
+  echo "[Unit]"                                                                >${DEST}
+  echo "Description=Enable photosfacepatch"                                   >>${DEST}
+  echo                                                                        >>${DEST}
+  echo "[Service]"                                                            >>${DEST}
+  echo "Type=oneshot"                                                         >>${DEST}
+  echo "RemainAfterExit=true"                                                 >>${DEST}
+  echo "ExecStart=/usr/bin/photosfacepatch.sh"                                >>${DEST}
+  echo                                                                        >>${DEST}
+  echo "[Install]"                                                            >>${DEST}
+  echo "WantedBy=multi-user.target"                                           >>${DEST}
+
+  mkdir -vp /tmpRoot/lib/systemd/system/multi-user.target.wants
+  ln -vsf /usr/lib/systemd/system/photosfacepatch.service /tmpRoot/lib/systemd/system/multi-user.target.wants/photosfacepatch.service
 elif [ "${1}" = "uninstall" ]; then
   echo "Installing addon photosfacepatch - ${1}"
-
-  if [ -f "/tmpRoot/usr/lib/libsynosdk.so.7.bak" ]; then
-    echo "Restore libsynosdk.so.7"
-    mv -f "/tmpRoot/usr/lib/libsynosdk.so.7.bak" "/tmpRoot/usr/lib/libsynosdk.so.7"
-  fi
-  if [ -f "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so.bak" ]; then
-    echo "Restore libsynophoto-plugin-platform.so"
-    mv -f "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so.bak" "/tmpRoot/var/packages/SynologyPhotos/target/usr/lib/libsynophoto-plugin-platform.so"
-  fi
+  #TODO: Add uninstall code here
 fi
