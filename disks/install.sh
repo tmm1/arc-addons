@@ -153,6 +153,9 @@ function getUsbPorts() {
       if [ -d "${I}/${SUB}" ]; then
         DCLASS=$(cat ${I}/${SUB}/bDeviceClass)
         [ ! "${DCLASS}" = "09" ] && continue
+        if [ ${1} = "false" ]; then
+          [ "${DCLASS}" = "08" ] && continue
+        fi
         SPEED=$(cat ${I}/${SUB}/speed)
         [ ${SPEED} -lt 480 ] && continue
         CHILDS=$(cat ${I}/${SUB}/maxchild)
@@ -305,7 +308,7 @@ function dtModel() {
 
     # USB ports
     COUNT=1
-    for I in $(getUsbPorts); do
+    for I in $(getUsbPorts "${2}"); do
       echo "    usb_slot@${COUNT} {" >>${DEST}
       echo "      usb2 {" >>${DEST}
       echo "        usb_port =\"${I}\";" >>${DEST}
@@ -318,6 +321,7 @@ function dtModel() {
     done
     echo "};" >>${DEST}
   fi
+  rm -f /etc/model.dtb
   dtc -I dts -O dtb ${DEST} >/etc/model.dtb
   cp -vf /etc/model.dtb /run/model.dtb
   /usr/syno/bin/syno_slot_mapping
@@ -328,22 +332,19 @@ function nondtModel() {
   USBPORTCFG=0
   ESATAPORTCFG=0
   INTERNALPORTCFG=0
-  # 100 = SCSI, 104 = RAID, 107 = HBA
-  HBA_NUMBER=$(($(lspci -d ::107 2>/dev/null | wc -l) + $(lspci -d ::104 2>/dev/null | wc -l) + $(lspci -d ::100 2>/dev/null | wc -l)))
   
   for I in $(ls -d /sys/block/sd* 2>/dev/null); do
     IDX=$(_atoi ${I/\/sys\/block\/sd/})
     ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
     [ -n "${ISUSB}" ] && USBPORTCFG=$((${USBPORTCFG} | $((1 << ${IDX}))))
-    [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
+    if [ "${2}" = "true" ] || [ ! -n "${ISUSB}" ]; then
+      [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
+    fi
   done
 
   if _check_post_k "rd" "maxdisks"; then
     MAXDISKS=$(($(_get_conf_kv maxdisks)))
     echo "get maxdisks=${MAXDISKS}"
-  else
-    #[ ${HBA_NUMBER} -gt 0 ] && MAXDISKS=26
-    [ ${MAXDISKS} -ne 26 ] && MAXDISKS=26
   fi
   if _check_post_k "rd" "usbportcfg"; then
     USBPORTCFG=$(($(_get_conf_kv usbportcfg)))
@@ -363,7 +364,7 @@ function nondtModel() {
     INTERNALPORTCFG=$(($(_get_conf_kv internalportcfg)))
     echo "get internalportcfg=${INTERNALPORTCFG}"
   else
-    INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1)) ^ ${USBPORTCFG} ^ ${ESATAPORTCFG}))
+    INTERNALPORTCFG=$((2 ** ${MAXDISKS} - 1))
     _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
     echo "set internalportcfg=${INTERNALPORTCFG}"
   fi
@@ -420,8 +421,8 @@ if [ "${1}" = "patches" ]; then
   echo "BOOTDISK=${BOOTDISK}"
   echo "BOOTDISK_PHYSDEVPATH=${BOOTDISK_PHYSDEVPATH}"
   checkSynoboot
-
-  [ "$(_get_conf_kv supportportmappingv2)" = "yes" ] && dtModel "${2}" || nondtModel "${2}"
+  # 2 = hddsort / 3 = usbmount
+  [ "$(_get_conf_kv supportportmappingv2)" = "yes" ] && dtModel "${2}" "${3}" || nondtModel "${2}" "${3}"
 
 elif [ "${1}" = "late" ]; then
   echo "Installing addon disks - ${1}"
@@ -431,12 +432,21 @@ elif [ "${1}" = "late" ]; then
     cp -vf /etc/model.dtb /tmpRoot/etc/model.dtb
     cp -vf /etc/model.dtb /tmpRoot/etc.defaults/model.dtb
   else
-    echo "Adjust maxdisks and internalportcfg automatically"
-    # sysfs is unpopulated here, get the values from junior synoinfo.conf
-    MAXDISKS=$(_get_conf_kv maxdisks)
-    USBPORTCFG=$(_get_conf_kv usbportcfg)
-    ESATAPORTCFG=$(_get_conf_kv esataportcfg)
-    INTERNALPORTCFG=$(_get_conf_kv internalportcfg)
+    # Check USB Mount Option
+    if [ "${3}" = "true" ]; then
+      echo "Adjust maxdisks and internalportcfg for USB Mount Option"
+      MAXDISKS=26
+      USBPORTCFG=0x00
+      ESATAPORTCFG=0x00
+      INTERNALPORTCFG=0x3ffffff
+    else
+      echo "Adjust maxdisks and internalportcfg automatically"
+      # sysfs is unpopulated here, get the values from junior synoinfo.conf
+      MAXDISKS=$(_get_conf_kv maxdisks)
+      USBPORTCFG=$(_get_conf_kv usbportcfg)
+      ESATAPORTCFG=$(_get_conf_kv esataportcfg)
+      INTERNALPORTCFG=$(_get_conf_kv internalportcfg)
+    fi
     # log
     echo "maxdisks=${MAXDISKS}"
     echo "usbportcfg=${USBPORTCFG}"
