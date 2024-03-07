@@ -153,7 +153,7 @@ function getUsbPorts() {
       if [ -d "${I}/${SUB}" ]; then
         DCLASS=$(cat ${I}/${SUB}/bDeviceClass)
         [ ! "${DCLASS}" = "09" ] && continue
-        [[ "${DCLASS}" = "08" && "${USBMOUNT}" = "false" ]] && continue
+        [ "${USBMOUNT}" = "false" ] && [ "${DCLASS}" = "08" ] && continue
         SPEED=$(cat ${I}/${SUB}/speed)
         [ ${SPEED} -lt 480 ] && continue
         CHILDS=$(cat ${I}/${SUB}/maxchild)
