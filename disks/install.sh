@@ -196,7 +196,7 @@ function dtModel() {
       _set_conf_kv rd "support_m2_pool" "yes"
     fi
     # SATA ports
-    if [ "${1}" = "true" ]; then
+    if [ "${HDDSORT}" = "true" ]; then
       I=1
       for P in $(lspci -d ::106 2>/dev/null | cut -d' ' -f1); do
         HOSTNUM=$(ls -l /sys/class/scsi_host 2>/dev/null | grep ${P} | wc -l)
@@ -305,7 +305,7 @@ function dtModel() {
 
     # USB ports
     COUNT=1
-    for I in $(getUsbPorts "${2}"); do
+    for I in $(getUsbPorts); do
       echo "    usb_slot@${COUNT} {" >>${DEST}
       echo "      usb2 {" >>${DEST}
       echo "        usb_port =\"${I}\";" >>${DEST}
@@ -334,7 +334,7 @@ function nondtModel() {
     IDX=$(_atoi ${I/\/sys\/block\/sd/})
     ISUSB="$(cat ${I}/uevent 2>/dev/null | grep PHYSDEVPATH | grep usb)"
     [ -n "${ISUSB}" ] && USBPORTCFG=$((${USBPORTCFG} | $((1 << ${IDX}))))
-    if [[ "${2}" = "true" || -z "${ISUSB}" ]]; then
+    if [ -z "${ISUSB}" ] || [ "${USBMOUNT}" = "true"]; then
       [ $((${IDX} + 1)) -ge ${MAXDISKS} ] && MAXDISKS=$((${IDX} + 1))
     fi
   done
@@ -361,7 +361,7 @@ function nondtModel() {
     INTERNALPORTCFG=$(($(_get_conf_kv internalportcfg)))
     echo "get internalportcfg=${INTERNALPORTCFG}"
   else
-    if [ "${2}" = "true" ]; then
+    if [ "${USBMOUNT}" = "true" ]; then
       INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1)) ^ ${USBPORTCFG} ^ ${ESATAPORTCFG}))
     else
       INTERNALPORTCFG=$((2 ** ${MAXDISKS} - 1))
@@ -415,6 +415,9 @@ function nondtModel() {
 #
 if [ "${1}" = "patches" ]; then
   echo "Installing addon disks - ${1}"
+  # 2 = hddsort / 3 = usbmount
+  HDDSORT="${2}"
+  USBMOUNT="${3}"
   BOOTDISK=""
   BOOTDISK_PART3=$(blkid -L ARC3 | sed 's/\/dev\///')
   [ -n "${BOOTDISK_PART3}" ] && BOOTDISK=$(ls -d /sys/block/*/${BOOTDISK_PART3} 2>/dev/null | cut -d'/' -f4)
@@ -422,8 +425,7 @@ if [ "${1}" = "patches" ]; then
   echo "BOOTDISK=${BOOTDISK}"
   echo "BOOTDISK_PHYSDEVPATH=${BOOTDISK_PHYSDEVPATH}"
   checkSynoboot
-  # 2 = hddsort / 3 = usbmount
-  [ "$(_get_conf_kv supportportmappingv2)" = "yes" ] && dtModel "${2}" "${3}" || nondtModel "${2}" "${3}"
+  [ "$(_get_conf_kv supportportmappingv2)" = "yes" ] && dtModel || nondtModel
 
 elif [ "${1}" = "late" ]; then
   echo "Installing addon disks - ${1}"
@@ -435,7 +437,7 @@ elif [ "${1}" = "late" ]; then
   else
     # Check USB Mount Option
     if [ "${3}" = "force" ]; then
-      echo "Adjust maxdisks and internalportcfg for USB Mount Option"
+      echo "Adjust maxdisks and internalportcfg to force USB Mount Option"
       MAXDISKS=26
       USBPORTCFG=0x00
       ESATAPORTCFG=0x00
