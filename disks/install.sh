@@ -153,9 +153,6 @@ function getUsbPorts() {
       if [ -d "${I}/${SUB}" ]; then
         DCLASS=$(cat ${I}/${SUB}/bDeviceClass)
         [ ! "${DCLASS}" = "09" ] && continue
-        if [ ${1} = "false" ]; then
-          [ "${DCLASS}" = "08" ] && continue
-        fi
         SPEED=$(cat ${I}/${SUB}/speed)
         [ ${SPEED} -lt 480 ] && continue
         CHILDS=$(cat ${I}/${SUB}/maxchild)
@@ -364,7 +361,11 @@ function nondtModel() {
     INTERNALPORTCFG=$(($(_get_conf_kv internalportcfg)))
     echo "get internalportcfg=${INTERNALPORTCFG}"
   else
-    INTERNALPORTCFG=$((2 ** ${MAXDISKS} - 1))
+    if [ "${2}" = "true" ]; then
+      INTERNALPORTCFG=$(($((2 ** ${MAXDISKS} - 1)) ^ ${USBPORTCFG} ^ ${ESATAPORTCFG}))
+    else
+      INTERNALPORTCFG=$((2 ** ${MAXDISKS} - 1))
+    fi
     _set_conf_kv rd "internalportcfg" "$(printf "0x%.2x" ${INTERNALPORTCFG})"
     echo "set internalportcfg=${INTERNALPORTCFG}"
   fi
@@ -433,7 +434,7 @@ elif [ "${1}" = "late" ]; then
     cp -vf /etc/model.dtb /tmpRoot/etc.defaults/model.dtb
   else
     # Check USB Mount Option
-    if [ "${3}" = "true" ]; then
+    if [ "${3}" = "force" ]; then
       echo "Adjust maxdisks and internalportcfg for USB Mount Option"
       MAXDISKS=26
       USBPORTCFG=0x00
