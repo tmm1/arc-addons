@@ -1,5 +1,8 @@
 #!/usr/bin/env ash
+
 if [ "${1}" = "patches" ]; then
+    echo "Installing addon nvmeinstall - ${1}"
+
     # Add NVMe disks to installable_disk_list - https://jim-plus.translate.goog/blog/post/jim/synology-installation-with-nvme-disks-only?_x_tr_sl=zh-CN&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=sc
     # DSM 7.2.1
     matches_nvme_add=$(xxd -p /usr/syno/bin/scemd | tr -d '\n' | grep -o '4584ed74b7488b4c24083b01' | wc -l)
@@ -14,6 +17,8 @@ if [ "${1}" = "patches" ]; then
     mv -f /usr/syno/bin/synodiskport /usr/syno/bin/synodiskport.syno
     mv -f /usr/syno/bin/synodiskport.nvme /usr/syno/bin/synodiskport
 elif [ "${1}" = "late" ]; then
+    echo "Installing addon nvmeinstall - ${1}"
+
     # Disable NVMe resetting hibernation timer - https://www.reddit.com/r/synology/comments/129lzjg/fixing_hdd_hibernation_when_you_have_docker_on/
     # DSM 7.2.1
     matches_hiber_nvme=$(xxd -p /tmpRoot/usr/syno/bin/scemd | tr -d '\n' | grep -o '4889eebf0100000048890424e8bfd1feff4889eebf0200000089c3e8b0d1feff4889eebf07000000e8a3d1feff85db' | wc -l)
