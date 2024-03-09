@@ -8,7 +8,7 @@ if [ "${1}" = "patches" ]; then
     matches_nvme_add=$(xxd -p /usr/syno/bin/scemd | tr -d '\n' | grep -o '4584ed74b7488b4c24083b01' | wc -l)
     if [ "${matches_nvme_add}" == "1" ]; then
         [ ! -f /usr/syno/bin/scemd.syno ] && cp /usr/syno/bin/scemd /usr/syno/bin/scemd.syno
-        xxd -p /usr/syno/bin/scemd | tr -d '\n' | sed -i 's/4584ed74b7488b4c24083b01/4584ed75b7488b4c24083b01/g' | xxd -r -p - /usr/syno/bin/scemd
+        xxd -p /usr/syno/bin/scemd.syno | tr -d '\n' | sed 's/4584ed74b7488b4c24083b01/4584ed75b7488b4c24083b01/g' | xxd -r -p - /usr/syno/bin/scemd
     fi
     # Modify linuxrc.syno.impl
     cp -vf "/linuxrc.syno.impl" "/linuxrc.syno.impl.syno"
