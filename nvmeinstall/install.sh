@@ -24,21 +24,21 @@ elif [ "${1}" = "late" ]; then
     matches_hiber_nvme=$(xxd -p /tmpRoot/usr/syno/bin/scemd | tr -d '\n' | grep -o '4889eebf0100000048890424e8bfd1feff4889eebf0200000089c3e8b0d1feff4889eebf07000000e8a3d1feff85db' | wc -l)
     if [ "${matches_hiber_nvme}" == "1" ]; then
         [ ! -f /tmpRoot/usr/syno/bin/scemd.syno ] && cp /tmpRoot/usr/syno/bin/scemd /tmpRoot/usr/syno/bin/scemd.syno
-        xxd -p /tmpRoot/usr/syno/bin/scemd | tr -d '\n' | sed -i 's/4889eebf0100000048890424e8bfd1feff4889eebf0200000089c3e8b0d1feff4889eebf07000000e8a3d1feff85db/4889eebf0100000048890424e8bfd1feff4889eebf0200000089c3e8b0d1feff4889eebf0b000000e8a3d1feff85db/g' | xxd -r -p - /tmpRoot/usr/syno/bin/scemd
+        xxd -p /tmpRoot/usr/syno/bin/scemd | tr -d '\n' | sed 's/4889eebf0100000048890424e8bfd1feff4889eebf0200000089c3e8b0d1feff4889eebf07000000e8a3d1feff85db/4889eebf0100000048890424e8bfd1feff4889eebf0200000089c3e8b0d1feff4889eebf0b000000e8a3d1feff85db/g' | xxd -r -p - /tmpRoot/usr/syno/bin/scemd
     fi
     # Fix SMART check waking up SATA disks - https://www.reddit.com/r/synology/comments/129lzjg/fixing_hdd_hibernation_when_you_have_docker_on/
     # DSM 7.2.1
     matches_hiber_smart=$(xxd -p /tmpRoot/usr/syno/sbin/synostoraged | tr -d '\n' | grep -o '4889debf03000000e82778ffff85c00f886f0100004889debf07000000e81278ffff85c00f88300100004889debf0b000000e8' | wc -l)
     if [ "${matches_hiber_smart}" == "1" ]; then
         [ ! -f /tmpRoot/usr/syno/sbin/synostoraged.syno ] && cp /tmpRoot/usr/syno/sbin/synostoraged /tmpRoot/usr/syno/sbin/synostoraged.syno
-        xxd -p /tmpRoot/usr/syno/sbin/synostoraged | tr -d '\n' | sed -i 's/4889debf03000000e82778ffff85c00f886f0100004889debf07000000e81278ffff85c00f88300100004889debf0b000000e8/4889debf03000000e82778ffff85c00f886f010000eb13debf07000000e81278ffff85c00f88300100004889debf0b000000e8/g' | xxd -r -p - /tmpRoot/usr/syno/sbin/synostoraged
+        xxd -p /tmpRoot/usr/syno/sbin/synostoraged | tr -d '\n' | sed 's/4889debf03000000e82778ffff85c00f886f0100004889debf07000000e81278ffff85c00f88300100004889debf0b000000e8/4889debf03000000e82778ffff85c00f886f010000eb13debf07000000e81278ffff85c00f88300100004889debf0b000000e8/g' | xxd -r -p - /tmpRoot/usr/syno/sbin/synostoraged
     fi
     # Suppress "system partion failure" warning
     # DSM 7.2.1
     matches_sys_fail=$(xxd -p /tmpRoot/usr/lib/libhwcontrol.so.1 | tr -d '\n' | grep -o '73797374656d5f6372617368656400' | wc -l)
     if [ "${matches_sys_fail}" == "1" ]; then
         [ ! -f /tmpRoot/usr/lib/libhwcontrol.so.1.syno ] && cp /tmpRoot/usr/lib/libhwcontrol.so.1 /tmpRoot/usr/lib/libhwcontrol.so.1.syno
-        xxd -p /tmpRoot/usr/lib/libhwcontrol.so.1 | tr -d '\n' | sed -i 's/73797374656d5f6372617368656400/6e6f726d616c006372617368656400/g' | xxd -r -p - /tmpRoot/usr/lib/libhwcontrol.so.1
+        xxd -p /tmpRoot/usr/lib/libhwcontrol.so.1 | tr -d '\n' | sed 's/73797374656d5f6372617368656400/6e6f726d616c006372617368656400/g' | xxd -r -p - /tmpRoot/usr/lib/libhwcontrol.so.1
     fi
     # Update StorageManager to show NVMe disks
     # DSM 7.2.1
